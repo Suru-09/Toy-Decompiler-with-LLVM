@@ -5,6 +5,7 @@
 *.idea
 build-cmake-debug/
 .idea/
+build-cmake-debug
 
 
 # Library Stuff
@@ -14,4 +15,5 @@ build-cmake-debug/
 
 # Build
 
-build/	
+build/
+build	
