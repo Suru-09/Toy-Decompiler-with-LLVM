@@ -1,0 +1,13 @@
+# how to add bison PATH for brew to see instead of xCode commant tools
+
+export PATH="$(brew --prefix bison)/bin:$PATH"
+
+# how to add llvm into PATH:
+
+echo 'export PATH="/opt/homebrew/opt/llvm/bin:$PATH"' >> ~/.zshrc
+LDFLAGS="-L/opt/homebrew/opt/llvm/lib/c++ -Wl,-rpath,/opt/homebrew/opt/llvm/lib/c++"
+
+# How to make compilers see llvm
+
+export LDFLAGS="-L/opt/homebrew/opt/llvm/lib"
+export CPPFLAGS="-I/opt/homebrew/opt/llvm/include"

@@ -48,7 +48,7 @@
 # This software is distributed WITHOUT ANY WARRANTY; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #=============================================================================
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.18.2)
 ########## Private ##########
 if(NOT DEFINED RE2C_PUBLIC_VAR_NS)
     set(RE2C_PUBLIC_VAR_NS "RE2C")
