@@ -1,2 +1,0 @@
-/Library/Developer/CommandLineTools/usr/bin/ar qc libBison-Parser-graphviz.a "CMakeFiles/Bison-Parser-graphviz.dir/AstViz.cpp.o"
-/Library/Developer/CommandLineTools/usr/bin/ranlib libBison-Parser-graphviz.a

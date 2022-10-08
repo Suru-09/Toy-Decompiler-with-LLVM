@@ -1,2 +1,0 @@
-/Library/Developer/CommandLineTools/usr/bin/ar qc libbizonu.a CMakeFiles/bizonu.dir/toy_parser.cpp.o CMakeFiles/bizonu.dir/toy_parser.cc.o
-/Library/Developer/CommandLineTools/usr/bin/ranlib libbizonu.a
