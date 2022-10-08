@@ -1,0 +1,10 @@
+/Users/suru/Documents/GitCloning/BisonParser/build/CMakeFiles/Bison-Parser.dir
+/Users/suru/Documents/GitCloning/BisonParser/build/CMakeFiles/edit_cache.dir
+/Users/suru/Documents/GitCloning/BisonParser/build/CMakeFiles/rebuild_cache.dir
+/Users/suru/Documents/GitCloning/BisonParser/build/bison/CMakeFiles/lexer.dir
+/Users/suru/Documents/GitCloning/BisonParser/build/bison/CMakeFiles/bizonu.dir
+/Users/suru/Documents/GitCloning/BisonParser/build/bison/CMakeFiles/edit_cache.dir
+/Users/suru/Documents/GitCloning/BisonParser/build/bison/CMakeFiles/rebuild_cache.dir
+/Users/suru/Documents/GitCloning/BisonParser/build/graphviz/CMakeFiles/Bison-Parser-graphviz.dir
+/Users/suru/Documents/GitCloning/BisonParser/build/graphviz/CMakeFiles/edit_cache.dir
+/Users/suru/Documents/GitCloning/BisonParser/build/graphviz/CMakeFiles/rebuild_cache.dir

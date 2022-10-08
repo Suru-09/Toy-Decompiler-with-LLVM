@@ -1,0 +1,17 @@
+# Apple stuff
+*.DS_STORE
+
+# CLion stuff
+*.idea
+build-cmake-debug/
+.idea/
+
+
+# Library Stuff
+.so
+.o
+
+
+# Build
+
+build/	

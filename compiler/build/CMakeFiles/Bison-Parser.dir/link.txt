@@ -1,0 +1,1 @@
+/Library/Developer/CommandLineTools/usr/bin/c++  -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.0.sdk -mmacosx-version-min=12.6 -Wl,-search_paths_first -Wl,-headerpad_max_install_names "CMakeFiles/Bison-Parser.dir/main.cpp.o" -o Bison-Parser  bison/libbizonu.a graphviz/libBison-Parser-graphviz.a 

@@ -1,0 +1,49 @@
+def main (a, b, c) { 
+
+    while(2356) {
+        if(123 + 1) {
+            return "white";
+        }
+        
+        if (1 == 5) {
+            var pnm = 1 + 2 - 5, wtf
+            return 125;
+        }
+        if(3 + 4) {
+            var ciocan
+            return 14;
+        }
+        if (1 - 2) {
+            var ciocalata
+            return 124;
+        }
+        
+    }
+}
+
+def portocala(mandarina, clementina) {
+
+    mandarina += "clementine" + "mandarine";
+    clementina -= 789;
+    clementina /= 7;
+    clementina *= 789;
+
+    ++clementina;
+    --clementina;
+
+    if ( clementina || mandarina )
+    {
+        if ( clementina && mandarina )
+        {
+            return 2 ? "portocala" : "mere";
+        }
+    }
+
+    while(mandarina + clementina) {
+        if (mandarina < clementina) {
+            return "pamant";
+        }
+        return "lamaie";
+    }
+}
+
