@@ -1,8 +1,0 @@
-# Igore build
-build/
-cmake-build-debug/
-
-
-# Ignore JetBrains
-*.idea
-

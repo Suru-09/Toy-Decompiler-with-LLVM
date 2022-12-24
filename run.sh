@@ -1,9 +1,7 @@
-#Delete old folder, in case it was compiled on a different arhitecture
-rm -rf build/;
-mkdir build;
-
 current_dir=$PWD;
 
+rm -rf build;
+mkdir build;
 cd build/;
 
 cmake ../;
@@ -12,6 +10,8 @@ MACHINE_TYPE=`uname -m`
 if [ ${MACHINE_TYPE} == 'arm64' ]
 then
     export PATH="$(brew --prefix bison)/bin:$PATH";
+else
+    echo "error";
 fi
 
 if cmake --build .; then 
@@ -20,3 +20,5 @@ else
 echo "Build failed, operation will be aborted!";
 exit
 fi
+
+./Reverse-Engineering-Tool

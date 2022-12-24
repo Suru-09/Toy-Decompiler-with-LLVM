@@ -19,4 +19,4 @@ echo "Build failed, operation will be aborted!";
 exit
 fi
 
-./Bison-Parser ../bison/test.txt
+./Reverse-Engineering-Tool
