@@ -2,14 +2,13 @@ current_dir=$PWD;
 
 cd build/;
 
-cmake ../;
 
 MACHINE_TYPE=`uname -m`
 if [ ${MACHINE_TYPE} == 'arm64' ]
 then
-    export PATH="$(brew --prefix bison)/bin:$PATH";
+    cmake ../ -Darch:String="arm64";
 else
-    echo "error";
+    cmake ../ -Darch:String="x86";
 fi
 
 if cmake --build .; then 
@@ -19,4 +18,4 @@ echo "Build failed, operation will be aborted!";
 exit
 fi
 
-./Reverse-Engineering-Tool
+./src/Reverse-Engineering-Tool
