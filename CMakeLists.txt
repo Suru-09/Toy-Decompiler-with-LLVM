@@ -17,15 +17,20 @@ endif()
 message(STATUS "Found CAPSTONE ${Capstone_INCLUDE}")
 # CAPSTONE DEPENDECIES ----- END --------
 
+set (ZLIB_LIBRARY "/opt/homebrew/Cellar/zlib/1.2.13/")
+set (ZLIB_INCLUDE_DIR "/opt/homebrew/Cellar/zlib/1.2.13/include")
 
 # LLVM DEPENDECIES ----- START --------
-find_package(LLVM CONFIG REQUIRED)
+find_package(LLVM REQUIRED CONFIG)
 
 message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
 message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
 
 include_directories(${LLVM_INCLUDE_DIRS})
-add_definitions(${LLVM_DEFINITIONS})
+separate_arguments(LLVM_DEFINITIONS_LIST NATIVE_COMMAND ${LLVM_DEFINITIONS})
+add_definitions(${LLVM_DEFINITIONS_LIST})
+
+#llvm_map_components_to_libnames(llvm_libs support core irreader)
 # LLVM DEPENDECIES ----- END --------
 
 project(Reverse-Engineering-Tool)
