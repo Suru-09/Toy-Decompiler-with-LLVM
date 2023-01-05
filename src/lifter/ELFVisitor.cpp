@@ -7,5 +7,5 @@ void lifter::ELFVisitor::visit(std::shared_ptr<ARM64Strategy> arm) {
 
 
 void lifter::ELFVisitor::visit(std::shared_ptr<X86Strategy> x86) {
-    
+    std::cout << "At the moment x86_64 ELFs are not working!\n";
 }

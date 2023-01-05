@@ -9,7 +9,8 @@ namespace lifter {
 
 class IVisitor;
 
-class ARM64Strategy : public IArchitectureStrategy {
+class ARM64Strategy : public IArchitectureStrategy, public std::enable_shared_from_this<ARM64Strategy>
+{
 public:
     ARM64Strategy() = default;
     void lift(const std::string& file);

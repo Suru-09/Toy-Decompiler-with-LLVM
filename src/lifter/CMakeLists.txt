@@ -5,6 +5,8 @@ add_library(${PROJECT_NAME}-lifter
     ELFVisitor.cpp
     ExecutableType.cpp
     LifterContext.cpp
+    StrategyFactory.cpp
+    VisitorFactory.cpp
     X86Strategy.cpp
 )
 

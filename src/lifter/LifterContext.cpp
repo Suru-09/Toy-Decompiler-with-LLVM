@@ -2,8 +2,8 @@
 
 #include <iostream>
 
-#include "lifter/ELFVisitor.h"
 #include "lifter/ExecutableType.h"
+#include "lifter/VisitorFactory.h"
 
 void lifter::LifterContext::setStrategy(std::shared_ptr<IArchitectureStrategy> strategy) {
     this->strategy = std::move(strategy);
@@ -16,8 +16,10 @@ lifter::LifterContext::LifterContext(const std::string& file)
 
 void lifter::LifterContext::executeStrategy() {
     if(strategy != nullptr) {
-        ExecutableType::getBinaryType(file);
-        std::shared_ptr<lifter::ELFVisitor> elfVisitor = std::make_shared<lifter::ELFVisitor>(shared_from_this());
-        strategy->visit(elfVisitor);
+        auto binaryType = ExecutableType::getBinaryType(file);
+        std::shared_ptr<lifter::VisitorFactory> visitorFactory = 
+            std::make_shared<lifter::VisitorFactory>(shared_from_this());
+        auto visitor = visitorFactory->createVisitor(binaryType);
+        strategy->visit(visitor);
     }
 }

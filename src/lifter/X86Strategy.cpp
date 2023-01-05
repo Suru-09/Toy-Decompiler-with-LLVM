@@ -6,5 +6,4 @@ void lifter::X86Strategy::visit(std::shared_ptr<IVisitor> v) {
 }
 
 void lifter::X86Strategy::lift(const std::string& file) {
-
 }

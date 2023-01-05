@@ -3,6 +3,8 @@
 
 #include <iostream>
 
+#include <llvm/Object/Binary.h>
+
 namespace lifter {
 
 class ExecutableType {
@@ -12,6 +14,7 @@ public:
     };
 
     static BinaryType getBinaryType(const std::string& file_path);
+    static llvm::Triple::ArchType getArchType(const std::string& file_path);
 };
 
 }   // namesapce lifter
