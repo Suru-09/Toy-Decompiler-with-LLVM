@@ -8,16 +8,19 @@
 
 namespace lifter {
 
-class LifterContext {
+class LifterContext : public std::enable_shared_from_this<LifterContext>
+{
 private:
-    std::unique_ptr<IArchitectureStrategy> strategy;
+    std::shared_ptr<IArchitectureStrategy> strategy;
     std::string file;
 public:
     LifterContext() = delete;
     LifterContext(const std::string& file);
     
-    void setStrategy(std::unique_ptr<IArchitectureStrategy> strategy);
+    void setStrategy(std::shared_ptr<IArchitectureStrategy> strategy);
     void executeStrategy();
+
+    void liftX86ELF();
 };
 
 }   // end of namespace lifter

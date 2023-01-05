@@ -1,8 +1,10 @@
 cmake_minimum_required(VERSION 3.22)
 
 add_library(${PROJECT_NAME}-lifter
-    LifterContext.cpp
     ARM64Strategy.cpp
+    ELFVisitor.cpp
+    ExecutableType.cpp
+    LifterContext.cpp
     X86Strategy.cpp
 )
 

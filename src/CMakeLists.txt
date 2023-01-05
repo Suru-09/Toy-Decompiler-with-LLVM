@@ -11,10 +11,13 @@ add_executable(${PROJECT_NAME}
     main.cpp
 )
 
-llvm_map_components_to_libnames(llvm_libs support core irreader)
+# Selecting which libraries of LLVM are being used
+# and then append them to the llvm_libs variable
+# so that they can be later linked to the executable
+llvm_map_components_to_libnames(llvm_libs support core irreader object)
 
 target_link_libraries(${PROJECT_NAME} 
-    PUBLIC
+    PRIVATE
         ${llvm_libs}
         ${Capstone_LIB}/libcapstone.a
         ${PROJECT_NAME}-lifter
