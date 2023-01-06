@@ -2,6 +2,8 @@
 #define __X86_STRATEGY__H
 
 #include <memory>
+#include <llvm/IR/Module.h>
+#include <llvm/Support/Error.h>
 
 #include "IArchitectureStrategy.h"
 
@@ -15,7 +17,12 @@ public:
     X86_64Strategy() = default;
     void liftELF(const std::string& file);
     void visit(std::shared_ptr<IVisitor> v);
-    void extractSection(const std::string& section_name);
+    std::vector<std::unique_ptr<llvm::Module>> 
+        extractSections(
+            llvm::ErrorOr<std::shared_ptr<llvm::MemoryBuffer>> memoryBuff
+        );
+private:
+    llvm::LLVMContext context;
 };
 
 }   // end of namespace lifter

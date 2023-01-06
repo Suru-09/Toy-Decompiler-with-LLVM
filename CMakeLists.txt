@@ -38,4 +38,16 @@ add_definitions(${LLVM_DEFINITIONS_LIST})
 
 # LLVM DEPENDECIES ----- END --------
 
+
+# SPDLOG DEPENDECIES ----- START --------
+find_package(spdlog REQUIRED)
+
+message(STATUS "Found SPDLOG ${spdlog_INCLUDE_DIRS}")
+
+include_directories(${LLVM_INCLUDE_DIRS})
+separate_arguments(LLVM_DEFINITIONS_LIST NATIVE_COMMAND ${LLVM_DEFINITIONS})
+add_definitions(${LLVM_DEFINITIONS_LIST})
+
+# LLSPDLOGVM DEPENDECIES ----- END --------
+
 add_subdirectory(src)

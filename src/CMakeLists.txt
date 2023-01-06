@@ -25,6 +25,7 @@ target_link_libraries(${PROJECT_NAME}
         ${llvm_libs}
         ${Capstone_LIB}/libcapstone.a
         ${PROJECT_NAME}-lifter
+        spdlog::spdlog
 )
 
 target_include_directories(${PROJECT_NAME}
@@ -34,6 +35,7 @@ target_include_directories(${PROJECT_NAME}
         ${CMAKE_SOURCE_DIR}/test
         ${Capstone_INCLUDE}
         ${LLVM_INCLUDE_DIRS}
+        ${spdlog_INCLUDE_DIRS}
 )
 
 target_compile_options(${PROJECT_NAME}

@@ -6,6 +6,8 @@
 #include "lifter/StrategyFactory.h"
 #include "lifter/ExecutableType.h"
 
+#include "spdlog/spdlog.h"
+
 
 int main(int argc, char** argv) {
     std::string testing_file = "../test/plm.exe";
