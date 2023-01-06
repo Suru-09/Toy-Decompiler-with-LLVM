@@ -23,3 +23,7 @@ void lifter::LifterContext::executeStrategy() {
         strategy->visit(visitor);
     }
 }
+
+std::string& lifter::LifterContext::getFile() {
+    return file;
+}

@@ -10,8 +10,8 @@ std::shared_ptr<lifter::IArchitectureStrategy> lifter::StrategyFactory::createSt
     const char* archStr = llvm::Triple::getArchTypeName(arch).data();
     switch(arch) {
         case llvm::Triple::x86_64:
-            return std::make_shared<lifter::X86Strategy>();
-        case llvm::Triple::arm:
+            return std::make_shared<lifter::X86_64Strategy>();
+        case llvm::Triple::aarch64:
             return std::make_shared<lifter::ARM64Strategy>();
         default:
             std::cout << "Architecture: [" << archStr << "] is not supported yet!";

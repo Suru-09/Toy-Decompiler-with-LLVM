@@ -9,12 +9,13 @@ namespace lifter {
 
 class IVisitor;
 
-class X86Strategy : public IArchitectureStrategy, public std::enable_shared_from_this<X86Strategy>
+class X86_64Strategy : public IArchitectureStrategy, public std::enable_shared_from_this<X86_64Strategy>
 {
 public:
-    X86Strategy() = default;
-    void lift(const std::string& file);
+    X86_64Strategy() = default;
+    void liftELF(const std::string& file);
     void visit(std::shared_ptr<IVisitor> v);
+    void extractSection(const std::string& section_name);
 };
 
 }   // end of namespace lifter

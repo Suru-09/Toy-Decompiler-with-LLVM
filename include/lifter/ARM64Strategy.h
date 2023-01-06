@@ -13,7 +13,7 @@ class ARM64Strategy : public IArchitectureStrategy, public std::enable_shared_fr
 {
 public:
     ARM64Strategy() = default;
-    void lift(const std::string& file);
+    void liftELF(const std::string& file);
     void visit(std::shared_ptr<IVisitor> v);
 };
 

@@ -3,6 +3,10 @@ cmake_minimum_required(VERSION 3.22)
 set(CMAKE_CXX_REQUIRED 17)
 SET(CMAKE_CXX_STANDARD 17)
 
+set(CXX_FLAGS 
+    -o3
+)
+
 
 add_subdirectory(lifter)
 
@@ -30,4 +34,9 @@ target_include_directories(${PROJECT_NAME}
         ${CMAKE_SOURCE_DIR}/test
         ${Capstone_INCLUDE}
         ${LLVM_INCLUDE_DIRS}
+)
+
+target_compile_options(${PROJECT_NAME}
+    PRIVATE
+        ${CXX_FLAGS}
 )

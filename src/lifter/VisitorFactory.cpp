@@ -13,7 +13,7 @@ std::shared_ptr<lifter::IVisitor> lifter::VisitorFactory::createVisitor(lifter::
 {
     switch(binType) {
         case lifter::ExecutableType::BinaryType::ELF:
-            return std::make_shared<lifter::ELFVisitor>(lifterContext);
+            return std::make_shared<lifter::ELFVisitor>(lifterContext->getFile());
         case lifter::ExecutableType::BinaryType::PE:
         case lifter::ExecutableType::BinaryType::MACH_O:
         case lifter::ExecutableType::BinaryType::OTHER:

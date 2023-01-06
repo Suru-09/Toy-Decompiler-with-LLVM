@@ -17,10 +17,9 @@ public:
     LifterContext() = delete;
     LifterContext(const std::string& file);
     
+    std::string& getFile();
     void setStrategy(std::shared_ptr<IArchitectureStrategy> strategy);
     void executeStrategy();
-
-    void liftX86ELF();
 };
 
 }   // end of namespace lifter

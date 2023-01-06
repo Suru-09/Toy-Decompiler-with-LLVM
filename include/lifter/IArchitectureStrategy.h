@@ -10,7 +10,7 @@ namespace lifter {
 
 class IArchitectureStrategy {
 public:
-    virtual void lift(const std::string& file) = 0;
+    virtual void liftELF(const std::string& file) = 0;
     virtual void visit(std::shared_ptr<IVisitor> v) = 0;
     virtual ~IArchitectureStrategy() = default;
 };

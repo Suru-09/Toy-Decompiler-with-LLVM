@@ -1,11 +1,10 @@
 #include "lifter/ELFVisitor.h"
 
-void lifter::ELFVisitor::visit(std::shared_ptr<ARM64Strategy> arm) {
-    // POSSIBLE FUTURE IMPLEMENTATION FOR ARM
-    std::cout << "At the moment ARM ELFs are not supported!\n";
-}
 
+lifter::ELFVisitor::ELFVisitor(const std::string& file_path)
+: file(file_path) 
+{}
 
-void lifter::ELFVisitor::visit(std::shared_ptr<X86Strategy> x86) {
-    std::cout << "At the moment x86_64 ELFs are not working!\n";
+void lifter::ELFVisitor::visit(std::shared_ptr<IArchitectureStrategy> strategy) {
+    strategy->liftELF(file);
 }

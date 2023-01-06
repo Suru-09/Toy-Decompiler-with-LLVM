@@ -7,13 +7,11 @@
 namespace lifter
 {
 
-class ARM64Strategy;
-class X86Strategy;
+class IArchitectureStrategy;
     
 class IVisitor {
 public:
-    virtual void visit(std::shared_ptr<ARM64Strategy> arm) = 0;
-    virtual void visit(std::shared_ptr<X86Strategy> x86) = 0;
+    virtual void visit(std::shared_ptr<IArchitectureStrategy> strategy) = 0;
 };
 
 } // namespac lifter

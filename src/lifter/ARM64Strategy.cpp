@@ -1,10 +1,9 @@
 #include "lifter/ARM64Strategy.h"
 
 void lifter::ARM64Strategy::visit(std::shared_ptr<IVisitor> v) {
-    std::shared_ptr<ARM64Strategy> arm{shared_from_this()};
-    v->visit(arm);
+    v->visit(shared_from_this());
 }
 
-void lifter::ARM64Strategy::lift(const std::string& file) {
-
+void lifter::ARM64Strategy::liftELF(const std::string& file) {
+    std::cout << "Starting to lift an ARM64 ELF!\n";
 }

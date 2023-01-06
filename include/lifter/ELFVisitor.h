@@ -13,13 +13,10 @@ namespace lifter
 class ELFVisitor: public IVisitor 
 {
 public:
-    ELFVisitor(std::shared_ptr<LifterContext> ctx) 
-    : liftContext(ctx) {}
-    void visit(std::shared_ptr<ARM64Strategy> arm);
-    void visit(std::shared_ptr<X86Strategy> x86);
-
+    ELFVisitor(const std::string& file_path);
+    void visit(std::shared_ptr<IArchitectureStrategy> strategy);
 private:
-    std::shared_ptr<LifterContext> liftContext;
+    std::string file;
 };
 
 } // namespac lifter
