@@ -4,12 +4,10 @@ set(CMAKE_CXX_REQUIRED 17)
 SET(CMAKE_CXX_STANDARD 17)
 
 set(CXX_FLAGS 
-    -o3
+    -O3
 )
 
-
 add_subdirectory(lifter)
-
 
 add_executable(${PROJECT_NAME}  
     main.cpp
@@ -21,10 +19,10 @@ add_executable(${PROJECT_NAME}
 llvm_map_components_to_libnames(llvm_libs support core irreader object)
 
 target_link_libraries(${PROJECT_NAME} 
-    PRIVATE
-        ${llvm_libs}
+    PUBLIC
         ${Capstone_LIB}/libcapstone.a
         ${PROJECT_NAME}-lifter
+        ${llvm_libs}
         spdlog::spdlog
 )
 

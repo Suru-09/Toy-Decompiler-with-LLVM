@@ -9,14 +9,12 @@
 
 namespace lifter {
 
-class IVisitor;
 
-class X86_64Strategy : public IArchitectureStrategy, public std::enable_shared_from_this<X86_64Strategy>
+class X86_64ELFStrategy : public IArchitectureStrategy
 {
 public:
-    X86_64Strategy() = default;
-    void liftELF(const std::string& file);
-    void visit(std::shared_ptr<IVisitor> v);
+    X86_64ELFStrategy() = default;
+    void lift(const std::string& file);
     std::vector<std::unique_ptr<llvm::Module>> 
         extractSections(
             llvm::ErrorOr<std::shared_ptr<llvm::MemoryBuffer>> memoryBuff

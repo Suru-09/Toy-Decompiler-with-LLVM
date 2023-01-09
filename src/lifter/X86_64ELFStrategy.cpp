@@ -1,4 +1,4 @@
-#include "lifter/X86Strategy.h"
+#include "lifter/X86_64ELFStrategy.h"
 
 #include <memory>
 #include <iostream>
@@ -12,11 +12,8 @@
 #include <llvm/IRReader/IRReader.h>
 #include <llvm/Support/raw_ostream.h>
 
-void lifter::X86_64Strategy::visit(std::shared_ptr<IVisitor> v) {
-    v->visit(shared_from_this());
-}
 
-void lifter::X86_64Strategy::liftELF(const std::string& file) {
+void lifter::X86_64ELFStrategy::lift(const std::string& file) {
     using namespace llvm;
     std::cout << "Starting to lift an X86_64 ELF!\n";
     ErrorOr<std::shared_ptr<MemoryBuffer>> memoryBuff = 
@@ -38,7 +35,7 @@ void lifter::X86_64Strategy::liftELF(const std::string& file) {
 
 
 std::vector<std::unique_ptr<llvm::Module>> 
-    lifter::X86_64Strategy::extractSections(
+    lifter::X86_64ELFStrategy::extractSections(
         llvm::ErrorOr<std::shared_ptr<llvm::MemoryBuffer>> memoryBuff) 
 {
     using namespace llvm;

@@ -4,7 +4,7 @@ cd build/;
 
 
 MACHINE_TYPE=`uname -m`
-if [ ${MACHINE_TYPE} == 'arm64' ]
+if [ "$MACHINE_TYPE" -eq "arm64" ]
 then
     cmake ../ -Darch:String="arm64";
 else

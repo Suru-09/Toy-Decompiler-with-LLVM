@@ -1,6 +1,8 @@
 #ifndef __STRATEGY_FACTORY__H
 #define __STRATEGY_FACTORY__H
 
+
+#include "lifter/ExecutableType.h"
 #include "IArchitectureStrategy.h"
 #include <llvm/Object/Binary.h>
 
@@ -11,7 +13,8 @@ namespace lifter
 
 class StrategyFactory {
 public:
-    static std::shared_ptr<IArchitectureStrategy> createStrategy(llvm::Triple::ArchType arch);
+    virtual std::shared_ptr<IArchitectureStrategy> createStrategy(ExecutableType::BinaryType binType) = 0;
+    static std::shared_ptr<StrategyFactory> getStrategy(llvm::Triple::ArchType arch);
 };
 
 } // namespace lifter
