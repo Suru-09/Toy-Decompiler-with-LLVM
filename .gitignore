@@ -3,9 +3,7 @@
 
 # CLion stuff
 *.idea
-build-cmake-debug/
 .idea/
-build-cmake-debug
 
 # vscode stuff
 .vscode
@@ -17,8 +15,8 @@ build-cmake-debug
 .so
 .o
 
-
 # Build
-
 build/
-build	
+build
+build-cmake-debug/
+cmake-build-debug/

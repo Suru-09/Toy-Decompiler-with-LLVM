@@ -1,7 +1,7 @@
 #include "lifter/StrategyFactory.h"
 
-#include "lifter/X86_64StrategyFactory.h"
-#include "lifter/ARM64StrategyFactory.h"
+#include "lifter/x86_64/X86_64StrategyFactory.h"
+#include "lifter/arm64/ARM64StrategyFactory.h"
 
 #include <iostream>
 

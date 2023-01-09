@@ -1,7 +1,7 @@
-#include "lifter/ARM64StrategyFactory.h"
+#include "lifter/arm64/ARM64StrategyFactory.h"
 
 
-#include "lifter/ARM64ELFStrategy.h"
+#include "lifter/arm64/ARM64ELFStrategy.h"
 
 std::shared_ptr<lifter::IArchitectureStrategy> 
     lifter::ARM64StrategyFactory::createStrategy(ExecutableType::BinaryType binType) 

@@ -3,7 +3,7 @@
 
 #include <memory>
 
-#include "IArchitectureStrategy.h"
+#include "lifter/IArchitectureStrategy.h"
 
 namespace lifter {
 

@@ -5,7 +5,7 @@
 #include <llvm/IR/Module.h>
 #include <llvm/Support/Error.h>
 
-#include "IArchitectureStrategy.h"
+#include "lifter/IArchitectureStrategy.h"
 
 namespace lifter {
 

@@ -2,7 +2,7 @@
 #define __X86_64STRATEGY_FACTORY__H
 
 
-#include "StrategyFactory.h"
+#include "lifter/StrategyFactory.h"
 #include <llvm/Object/Binary.h>
 
 

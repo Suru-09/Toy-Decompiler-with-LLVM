@@ -1,13 +1,13 @@
 cmake_minimum_required(VERSION 3.22)
 
 add_library(${PROJECT_NAME}-lifter
-    ARM64Strategy.cpp
+        arm64/ARM64Strategy.cpp
     ExecutableType.cpp
     LifterContext.cpp
     StrategyFactory.cpp
-    X86_64ELFStrategy.cpp
-    X86_64StrategyFactory.cpp
-    ARM64StrategyFactory.cpp
+        x86_64/X86_64ELFStrategy.cpp
+        x86_64/X86_64StrategyFactory.cpp
+        arm64/ARM64StrategyFactory.cpp
 )
 
 target_include_directories(${PROJECT_NAME}-lifter
