@@ -8,6 +8,8 @@
 #include <llvm/Support/FileSystem.h>
 #include <llvm/Object/Binary.h>
 
+#include "spdlog/spdlog.h"
+
 lifter::ExecutableType::BinaryType lifter::ExecutableType::getBinaryType(const std::string& file_path) {
     using namespace llvm;
 
@@ -15,7 +17,7 @@ lifter::ExecutableType::BinaryType lifter::ExecutableType::getBinaryType(const s
         = object::ObjectFile::createObjectFile(file_path);
 
     if(auto error = expected_binary.takeError()) {
-        std::cout << "Either the path or the binary is invalid!\n";
+        spdlog::error("Either the path or the binary is invalid!");
         return lifter::ExecutableType::BinaryType::ERROR;
     }
     
@@ -23,7 +25,7 @@ lifter::ExecutableType::BinaryType lifter::ExecutableType::getBinaryType(const s
     object::ObjectFile* binary = object.getBinary();
 
     if(!binary) {
-        std::cout << "The ObjectFile resulted from the path given is invalid!\n";
+        spdlog::error("The ObjectFile resulted from the path given is invalid!");
         return lifter::ExecutableType::BinaryType::ERROR;
     }
 
@@ -41,7 +43,7 @@ llvm::Triple::ArchType lifter::ExecutableType::getArchType(const std::string& fi
         = object::ObjectFile::createObjectFile(file_path);
 
     if(auto error = expected_binary.takeError()) {
-        std::cout << "Either the path or the binary is invalid!\n";
+        spdlog::error("Either the path or the binary is invalid!\n");
         return llvm::Triple::ArchType::UnknownArch;
     }
     

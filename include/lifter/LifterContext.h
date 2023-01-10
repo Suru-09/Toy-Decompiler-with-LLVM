@@ -8,7 +8,7 @@
 
 namespace lifter {
 
-class LifterContext : public std::enable_shared_from_this<LifterContext>
+class LifterContext
 {
 private:
     std::shared_ptr<IArchitectureStrategy> strategy;

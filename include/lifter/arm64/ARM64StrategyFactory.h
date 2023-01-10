@@ -13,7 +13,7 @@ namespace lifter
 
 class ARM64StrategyFactory : public StrategyFactory {
 public:
-    std::shared_ptr<IArchitectureStrategy> createStrategy(ExecutableType::BinaryType binType);
+    std::unique_ptr<IArchitectureStrategy> createStrategy(ExecutableType::BinaryType binType);
 };
 
 } // namespace lifter

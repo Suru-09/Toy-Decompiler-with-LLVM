@@ -5,7 +5,7 @@
 
 #include <iostream>
 
-std::shared_ptr<lifter::StrategyFactory> lifter::StrategyFactory::getStrategy(llvm::Triple::ArchType arch) {
+std::shared_ptr<lifter::StrategyFactory> lifter::StrategyFactory::getArch(llvm::Triple::ArchType arch) {
     const char* archStr = llvm::Triple::getArchTypeName(arch).data();
     switch(arch) {
         case llvm::Triple::x86_64:

@@ -7,7 +7,9 @@ set(CXX_FLAGS
     -O3
 )
 
+add_subdirectory(utils)
 add_subdirectory(lifter)
+
 
 add_executable(${PROJECT_NAME}  
     main.cpp
@@ -19,21 +21,28 @@ add_executable(${PROJECT_NAME}
 llvm_map_components_to_libnames(llvm_libs support core irreader object)
 
 target_link_libraries(${PROJECT_NAME} 
-    PUBLIC
-        #${Capstone_LIB}/libcapstone.a
+    PRIVATE
+        ${PROJECT_NAME}-utils
         ${PROJECT_NAME}-lifter
+        ${Capstone_LIB}/libcapstone.a
+        # DO NOT MOVE LLVM UPPER(it will try to link it wrongly 
+        # -> linking errors in .txt sections of own libs)
         ${llvm_libs}
         spdlog::spdlog
 )
 
+set(INCL_DIR
+    ${CMAKE_BINARY_DIR}
+    ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_SOURCE_DIR}/test
+    ${Capstone_INCLUDE}
+    ${LLVM_INCLUDE_DIRS}
+    ${spdlog_INCLUDE_DIRS}
+)
+
 target_include_directories(${PROJECT_NAME}
-    PUBLIC
-        ${CMAKE_BINARY_DIR}
-        ${CMAKE_SOURCE_DIR}/include
-        ${CMAKE_SOURCE_DIR}/test
-        ${Capstone_INCLUDE}
-        ${LLVM_INCLUDE_DIRS}
-        ${spdlog_INCLUDE_DIRS}
+    PRIVATE
+        ${INCL_DIR}
 )
 
 target_compile_options(${PROJECT_NAME}

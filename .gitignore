@@ -20,3 +20,15 @@ build/
 build
 build-cmake-debug/
 cmake-build-debug/
+
+
+# Ignore IDA generated files
+*.id*
+*.nam
+*.til
+
+
+# temporary ignore .dot files
+*.dot
+*.dsm
+*.ll
