@@ -3,6 +3,17 @@
 ## **Contents**
 -----------------------
 
+## Dependencies
+-----------------------
+
+| **Name** | **Version** |
+| --- | :---: |
+| Cmake | >= 22  |
+| LLVM | >= 14  |
+| spdlog | latest  |
+| C++ | 17 |
+
+
 ## **About**
 -----------------------
 - This tool will be a reverse engineering tool supposed to help in decomposing
