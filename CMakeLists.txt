@@ -10,14 +10,20 @@ set(CMAKE_CXX_REQUIRED 17)
 SET(CMAKE_CXX_STANDARD 17)
 
 SET(arch "arch" CACHE STRING "")
+SET(work "work" CACHE STRING "")
 
 # # CAPSTONE DEPENDECIES ----- START --------
 if (${arch} STREQUAL "arm64")
     set(Capstone_LIB /Users/suru/Documents/GitCloning/capstone/build)
     set(Capstone_INCLUDE /Users/suru/Documents/GitCloning/capstone/include)
 elseif(${arch} STREQUAL "x86")
-    set(Capstone_LIB /mnt/d/GithubCloning/capstone/build)
-    set(Capstone_INCLUDE /mnt/d/GithubCloning/capstone/include)
+    if(${work} STREQUAL "ON")
+        set(Capstone_LIB /home/users/dragoss/Documents/licenta/capstone/build)
+        set(Capstone_INCLUDE /home/users/dragoss/Documents/licenta/capstone/include)
+    elseif(${work} STREQUAL "OFF")
+        set(Capstone_LIB /mnt/d/GithubCloning/capstone/build)
+        set(Capstone_INCLUDE /mnt/d/GithubCloning/capstone/include)
+    endif()
 endif()
 
 message(STATUS "Found CAPSTONE ${Capstone_INCLUDE}")

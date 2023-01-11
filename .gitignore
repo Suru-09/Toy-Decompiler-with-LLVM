@@ -32,3 +32,4 @@ cmake-build-debug/
 *.dot
 *.dsm
 *.ll
+*.bc

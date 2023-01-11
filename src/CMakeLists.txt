@@ -22,6 +22,7 @@ llvm_map_components_to_libnames(llvm_libs support core irreader object)
 
 target_link_libraries(${PROJECT_NAME} 
     PRIVATE
+        ${PROJECT_NAME}-udm
         ${PROJECT_NAME}-utils
         ${PROJECT_NAME}-lifter
         ${Capstone_LIB}/libcapstone.a
