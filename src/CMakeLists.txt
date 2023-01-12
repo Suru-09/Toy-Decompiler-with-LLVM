@@ -7,6 +7,7 @@ set(CXX_FLAGS
     -O3
 )
 
+add_subdirectory(udm)
 add_subdirectory(utils)
 add_subdirectory(lifter)
 
@@ -22,7 +23,7 @@ llvm_map_components_to_libnames(llvm_libs support core irreader object)
 
 target_link_libraries(${PROJECT_NAME} 
     PRIVATE
-        #${PROJECT_NAME}-udm
+        ${PROJECT_NAME}-udm
         ${PROJECT_NAME}-utils
         ${PROJECT_NAME}-lifter
         ${Capstone_LIB}/libcapstone.a

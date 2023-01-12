@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 3.22)
 
 add_library(${PROJECT_NAME}-udm
-    LifterUtils.cpp
+    cfa/CFG.cpp
+    cfa/CFGNode.cpp
 )
 
 target_include_directories(${PROJECT_NAME}-udm
