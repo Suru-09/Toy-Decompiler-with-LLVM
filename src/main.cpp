@@ -17,7 +17,7 @@ int main(int argc, char** argv) {
       exit(1);
    }
    
-   // TO DO: Modify the way of logging
+   // TODO: Modify the way of logging
    // auto logger = spdlog::stdout_color_mt("console");
    // logger->set_pattern("[%Y-%m-%d %T.%e] [%l] [%n:%#] %v");
    //lifterCtx->executeStrategy();
