@@ -2,7 +2,7 @@
 #include <memory>
 
 #include "utils/LifterUtils.h"
-#include "udm/cfa/CFG.h"
+#include "udm/UDM.h"
 #include "spdlog/spdlog.h"
 
 
@@ -18,7 +18,7 @@ int main(int argc, char** argv) {
    }
       
    //lifterCtx->executeStrategy();
-   std::unique_ptr<udm::CFG> cfg = std::make_unique<udm::CFG>(testing_file + ".ll");
-   cfg->execute();
+   std::unique_ptr<udm::UDM> udm = std::make_unique<udm::UDM>(testing_file + ".ll");
+   udm->execute();
    return 0;
 }
