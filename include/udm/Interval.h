@@ -42,6 +42,14 @@ public:
     */
     llvm::BasicBlock* getBlock(size_t index) const noexcept;
 
+
+    /**
+     * @param pred: vector of the predecessors of a block.
+     * @brief Checks if all the predecessors are in the interval.
+     * @return true  if all the predecessors are in the interval, false otherwise.
+    */
+    bool containsPredecessors(const std::vector<std::string>& pred) const;
+
     llvm::BasicBlock* getFirstBlock() const noexcept;
     llvm::BasicBlock* getLastBlock() const noexcept;
     size_t size() const noexcept;

@@ -40,7 +40,7 @@ void udm::UDM::execute()
 
     for(llvm::Function &f: mod->functions())
     {
-        if(f.getName() == "calc_sum" || f.getName() == "fibo" || f.getName() =="main")
+        if(f.getName() == "calc_sum" || f.getName() == "fibo" || f.getName() =="main" || f.getName() == "n_way_conditional_switch")
         {
             auto intv = fAnalysis.intervals(f);
             spdlog::info("Function name: <{}>(), length of intervals: {}", f.getName(), intv.size());

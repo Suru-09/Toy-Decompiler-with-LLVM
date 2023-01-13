@@ -7,7 +7,7 @@
 
 
 int main(int argc, char** argv) {
-   std::string testing_file = "../testing_files/elfC/test";
+   std::string testing_file = "../testing_files/elfC/loops";
 
    std::shared_ptr<lifter::LifterContext> lifterCtx = utils::getLifterCtx(testing_file);
 

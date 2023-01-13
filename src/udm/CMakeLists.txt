@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 3.22)
 
 add_library(${PROJECT_NAME}-udm
-    FncInfo.cpp
+    BBInfo.cpp
+    DerivedSequence.cpp
+    FuncInfo.cpp
     FunctionsAnalysis.cpp
     Interval.cpp
     UDM.cpp

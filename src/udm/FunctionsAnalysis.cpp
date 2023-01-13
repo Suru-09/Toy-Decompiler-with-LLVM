@@ -17,7 +17,8 @@
 #include <iostream>
 #include <set>
 
-std::string udm::FunctionsAnalysis::instructionToString(llvm::Instruction &I) {
+std::string udm::FunctionsAnalysis::instructionToString(llvm::Instruction &I)
+{
    std::string buf;
    llvm::raw_string_ostream os(buf);
    I.print(os);
@@ -33,7 +34,6 @@ std::vector<udm::Interval> udm::FunctionsAnalysis::intervals(llvm::Function& f)
 
     while(ri != rpot.end())
     {
-       spdlog::info("The duck?");
        llvm::BasicBlock* bb = (*ri);
 
        Interval interval;
@@ -44,7 +44,7 @@ std::vector<udm::Interval> udm::FunctionsAnalysis::intervals(llvm::Function& f)
         auto predecessors = getPredecessors(bb);
         spdlog::warn("Size of predecessors: <{}>", predecessors.size());
 
-        while(allPredecessorsInInterval(predecessors, interval))
+        while(interval.containsPredecessors(predecessors))
         {
             ++ri;
             if(ri == rpot.end())
@@ -66,18 +66,6 @@ std::vector<udm::Interval> udm::FunctionsAnalysis::intervals(llvm::Function& f)
     return intervals;
 }
 
-bool udm::FunctionsAnalysis::allPredecessorsInInterval(const std::vector<std::string>& pred, const Interval& interval) const
-{
-    for(auto& bbName: pred)
-    {
-        // if the given basic block is not in the interval return false
-        if(interval.getBlock(bbName) == nullptr)
-        {
-            return false;
-        }
-    }
-    return true;
-}
 
 std::vector<std::string> udm::FunctionsAnalysis::getPredecessors(llvm::BasicBlock* bb)
 {
@@ -88,4 +76,9 @@ std::vector<std::string> udm::FunctionsAnalysis::getPredecessors(llvm::BasicBloc
     }
 
     return predecessors;
+}
+
+std::unordered_map<std::string, udm::FuncInfo> udm::FunctionsAnalysis::getFunctionsInfo() const
+{
+    return functionsInfo;
 }

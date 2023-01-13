@@ -2,64 +2,72 @@
 #include <stdlib.h>
 
 
-void n_way_conditional_switch(int n)
+int n_way_conditional_switch(int n)
 {
     int choice = 5;
     switch(n)
     {
         case 1:
-            break;
+            return choice + 15;
         case 2:
-            break;
+            return choice + 13;
         case 3:
-            break;
+            return choice + 11;
         case 5:
             printf("Found myself!\n");
-            break;
+            return choice;
         default:
-            exit(2);
+            return -1;
     }
 }
 
-void for_loop() 
+int for_loop(int j) 
 {
-    int i = 0;
-    for(int i = 0; i < 10; ++i)
+    int acc = 0;
+    for(int i = j; i < 16; ++i)
     {
         int  a = 2, b = 5;
         int z = a + b;
+        acc += z;
         i += 1;
     }
+    return acc;
 }
 
-void while_pre_tested_loop() 
+int while_pre_tested_loop(int flag_2) 
 {
-    int i = 0;
-    while(i <= 10)
+    int i = flag_2;
+    int acc = 0;
+    while(i <= 15)
     {
         int  a = 2, b = 5;
         int z = a + b;
+        acc += z;
         i += 1;
     }
+    return acc;
 }
 
-void while_post_tested_loop() 
+int while_post_tested_loop(int flag) 
 {
-    int i = 0;
+    int i = flag;
+    int acc = 0;
     do
     {
         int  a = 2, b = 5;
         int z = a + b;
+        acc += z;
         i += 1;
-    }while(i <= 10);
+    }while(i <= 15);
+    return acc;
 }
 
 int main()
 {   
-    n_way_conditional_switch(5);
-    for_loop();
-    while_pre_tested_loop();
-    while_post_tested_loop();
+    printf("%d\n", n_way_conditional_switch(5));
+    printf("%d\n", for_loop(5));
+    printf("%d\n", while_pre_tested_loop(5));
+    printf("%d\n", while_post_tested_loop(5));
     
     return 0;
 }

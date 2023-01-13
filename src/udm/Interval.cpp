@@ -1,6 +1,19 @@
 #include "udm/Interval.h"
 
 
+bool udm::Interval::containsPredecessors(const std::vector<std::string>& pred) const
+{
+    for(auto& bbName: pred)
+    {
+        // if the given basic block is not in the interval return false
+        if(getBlock(bbName) == nullptr)
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
 bool udm::Interval::addBlock(llvm::BasicBlock* bb)
 {
     auto found = std::find_if(bBlocks.begin(), bBlocks.end(), [&bb](llvm::BasicBlock* b) {
