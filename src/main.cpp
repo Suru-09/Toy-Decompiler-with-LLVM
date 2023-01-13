@@ -16,7 +16,10 @@ int main(int argc, char** argv) {
       spdlog::critical("Invalid lifterContext created(nullptr)!");
       exit(1);
    }
-      
+   
+   // TO DO: Modify the way of logging
+   // auto logger = spdlog::stdout_color_mt("console");
+   // logger->set_pattern("[%Y-%m-%d %T.%e] [%l] [%n:%#] %v");
    //lifterCtx->executeStrategy();
    std::unique_ptr<udm::UDM> udm = std::make_unique<udm::UDM>(testing_file + ".ll");
    udm->execute();

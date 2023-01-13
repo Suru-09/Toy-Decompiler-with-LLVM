@@ -10,16 +10,15 @@
 namespace udm
 {
 
+/**
+ * @brief Class that represents an interval of basic blocks.
+ * An interval is a larger construct that can contain multiple basic blocks,
+ * and is used to represent a more complex section of code, such as a loop or a conditional statement.
+*/
 class Interval {
 public:
     Interval() = default;
-
-    /**
-     * @brief Deleted copy constructor and copy assignment operator.
-     * We do not need to move an Interval object !!!.
-    */
-    Interval&& operator=(const Interval&& other) = delete;
-    Interval(const Interval&& other) = delete;
+    
     /**
      * @param bb: BasicBlock to be added to the interval.
      * @brief Adds an element at the end of the interval, if the element doesn't exist

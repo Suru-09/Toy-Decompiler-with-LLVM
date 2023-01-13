@@ -7,7 +7,7 @@ bool udm::Interval::addBlock(llvm::BasicBlock* bb)
         return b->getName() == bb->getName();
     });
 
-    if(found == bBlocks.end())
+    if(found != bBlocks.end())
     {
         return false;
     }

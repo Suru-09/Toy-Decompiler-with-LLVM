@@ -25,53 +25,53 @@ std::string udm::FunctionsAnalysis::instructionToString(llvm::Instruction &I) {
    return buf;
 }
 
-std::vector<std::set<llvm::BasicBlock *>> udm::FunctionsAnalysis::intervals(llvm::Function& f)
+std::vector<udm::Interval> udm::FunctionsAnalysis::intervals(llvm::Function& f)
 {
-    std::vector<std::set<llvm::BasicBlock*>> intervals;
-    
+    std::vector<udm::Interval> intervals;
     llvm::ReversePostOrderTraversal<llvm::Function*> rpot(&f);
     auto ri = rpot.begin();
+
     while(ri != rpot.end())
     {
        spdlog::info("The duck?");
        llvm::BasicBlock* bb = (*ri);
-       std::set<llvm::BasicBlock*> interval;
-       interval.emplace(bb);
+
+       Interval interval;
+       interval.addBlock(bb);
+
        spdlog::info("BB in RPOT: {}", bb->getName());
 
-        auto predeces = getPredecessors(bb);
-        spdlog::warn("Size of predecess: {}", predeces.size());
+        auto predecessors = getPredecessors(bb);
+        spdlog::warn("Size of predecessors: <{}>", predecessors.size());
 
-        while(allPredecessorsInInterval(predeces, interval))
+        while(allPredecessorsInInterval(predecessors, interval))
         {
             ++ri;
             if(ri == rpot.end())
             {
                 break;
             }
-            predeces = getPredecessors(bb);
+            predecessors = getPredecessors(bb);
             bb = (*ri);
-            interval.emplace(bb);
+            interval.addBlock(bb);
         }
-        
        
        if(ri != rpot.end())
        {
            ++ri;
        }
+       spdlog::warn("Size of interval: <{}>", interval.size());
        intervals.emplace_back(interval);
-       interval.clear();
     }
     return intervals;
 }
 
-bool udm::FunctionsAnalysis::allPredecessorsInInterval(std::vector<std::string> pred, std::set<llvm::BasicBlock*> interval)
+bool udm::FunctionsAnalysis::allPredecessorsInInterval(const std::vector<std::string>& pred, const Interval& interval) const
 {
     for(auto& bbName: pred)
     {
-        if( std::find_if(interval.begin(), interval.end(), [&](llvm::BasicBlock* elem){
-            return elem->getName() == llvm::StringRef{bbName};
-            }) == interval.end())
+        // if the given basic block is not in the interval return false
+        if(interval.getBlock(bbName) == nullptr)
         {
             return false;
         }

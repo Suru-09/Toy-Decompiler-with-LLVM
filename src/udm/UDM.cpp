@@ -43,11 +43,11 @@ void udm::UDM::execute()
         if(f.getName() == "calc_sum" || f.getName() == "fibo" || f.getName() =="main")
         {
             auto intv = fAnalysis.intervals(f);
-            spdlog::info("Length of intervals: {}", intv.size());
+            spdlog::info("Function name: <{}>(), length of intervals: {}", f.getName(), intv.size());
             for(auto& interval: intv)
             {
                 spdlog::info("Interval size: {}", interval.size());
-                for(auto& bb: interval)
+                for(auto& bb: interval.getBBlocks())
                 {
                     spdlog::info("BB in interval: {}", bb->getName());
                 }

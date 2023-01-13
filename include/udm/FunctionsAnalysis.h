@@ -8,15 +8,17 @@
 #include <llvm/IR/BasicBlock.h>
 #include <llvm/IR/Instruction.h>
 
+#include "udm/Interval.h"
+
 namespace udm
 {
 
 class FunctionsAnalysis {
 public:
-    std::vector<std::set<llvm::BasicBlock *>> intervals(llvm::Function& f);     
+    std::vector<udm::Interval> intervals(llvm::Function& f);     
 private:
     std::string instructionToString(llvm::Instruction &I);
-    bool allPredecessorsInInterval(std::vector<std::string> pred, std::set<llvm::BasicBlock*> interval);
+    bool allPredecessorsInInterval(const std::vector<std::string>& pred, const udm::Interval& interval) const;
     std::vector<std::string> getPredecessors(llvm::BasicBlock* bb);
 };
 
