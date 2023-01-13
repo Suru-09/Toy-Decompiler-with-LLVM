@@ -18,11 +18,6 @@ public:
     void execute();
 private:
     std::string irFile;
-
-    std::string instructionToString(llvm::Instruction &I);
-    std::vector<std::set<llvm::BasicBlock *>> intervals(llvm::Function& f);
-    bool allPredecessorsInInterval(std::vector<std::string> pred, std::set<llvm::BasicBlock*> interval);
-    std::vector<std::string> getPredecessors(llvm::BasicBlock* bb);
 };
     
 } // namespace udm

@@ -1,5 +1,7 @@
 #include "udm/UDM.h"
 
+#include "udm/FunctionsAnalysis.h"
+
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/Module.h"
 #include "llvm/IRReader/IRReader.h"
@@ -22,80 +24,6 @@ udm::UDM::UDM(const std::string& IRFile)
 {
 }
 
-std::string udm::UDM::instructionToString(llvm::Instruction &I) {
-   std::string buf;
-   llvm::raw_string_ostream os(buf);
-   I.print(os);
-   os.flush();
-   return buf;
-}
-
-std::vector<std::set<llvm::BasicBlock *>> udm::UDM::intervals(llvm::Function& f)
-{
-    std::vector<std::set<llvm::BasicBlock*>> intervals;
-    
-    llvm::ReversePostOrderTraversal<llvm::Function*> rpot(&f);
-    auto ri = rpot.begin();
-    while(ri != rpot.end())
-    {
-       spdlog::info("The duck?");
-       llvm::BasicBlock* bb = (*ri);
-       std::set<llvm::BasicBlock*> interval;
-       interval.emplace(bb);
-       spdlog::info("BB in RPOT: {}", bb->getName());
-
-        auto predeces = getPredecessors(bb);
-        spdlog::warn("Size of predecess: {}", predeces.size());
-
-        while(allPredecessorsInInterval(predeces, interval))
-        {
-            ++ri;
-            if(ri == rpot.end())
-            {
-                break;
-            }
-            predeces = getPredecessors(bb);
-            bb = (*ri);
-            interval.emplace(bb);
-        }
-        
-       
-       if(ri != rpot.end())
-       {
-           ++ri;
-       }
-       intervals.emplace_back(interval);
-       interval.clear();
-    }
-    return intervals;
-}
-
-bool udm::UDM::allPredecessorsInInterval(std::vector<std::string> pred, std::set<llvm::BasicBlock*> interval)
-{
-    for(auto& bbName: pred)
-    {
-        if( std::find_if(interval.begin(), interval.end(), [&](llvm::BasicBlock* elem){
-            return elem->getName() == llvm::StringRef{bbName};
-            }) == interval.end())
-        {
-            return false;
-        }
-    }
-    return true;
-}
-
-std::vector<std::string> udm::UDM::getPredecessors(llvm::BasicBlock* bb)
-{
-    std::vector<std::string> predecessors;
-    for(auto pred: llvm::predecessors(bb))
-    {
-        predecessors.emplace_back(pred->getName());
-    }
-
-    return predecessors;
-}
-
-
 void udm::UDM::execute()
 {
     llvm::LLVMContext context;
@@ -108,11 +36,13 @@ void udm::UDM::execute()
         exit(1);
     }
 
+    udm::FunctionsAnalysis fAnalysis;
+
     for(llvm::Function &f: mod->functions())
     {
         if(f.getName() == "calc_sum" || f.getName() == "fibo" || f.getName() =="main")
         {
-            auto intv = intervals(f);
+            auto intv = fAnalysis.intervals(f);
             spdlog::info("Length of intervals: {}", intv.size());
             for(auto& interval: intv)
             {
