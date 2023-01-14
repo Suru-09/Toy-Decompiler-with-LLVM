@@ -12,7 +12,5 @@ add_library(${PROJECT_NAME}-lifter
 
 target_include_directories(${PROJECT_NAME}-lifter
     PRIVATE
-        ${CMAKE_SOURCE_DIR}/include
-        ${Capstone_INCLUDE}
         ${INCL_DIR}
 )

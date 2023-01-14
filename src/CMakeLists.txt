@@ -22,7 +22,7 @@ add_executable(${PROJECT_NAME}
 llvm_map_components_to_libnames(llvm_libs support core irreader object)
 
 target_link_libraries(${PROJECT_NAME} 
-    PRIVATE
+    PUBLIC
         ${PROJECT_NAME}-udm
         ${PROJECT_NAME}-utils
         ${PROJECT_NAME}-lifter
@@ -31,15 +31,6 @@ target_link_libraries(${PROJECT_NAME}
         # -> linking errors in .txt sections of own libs)
         ${llvm_libs}
         spdlog::spdlog
-)
-
-set(INCL_DIR
-    ${CMAKE_BINARY_DIR}
-    ${CMAKE_SOURCE_DIR}/include
-    ${CMAKE_SOURCE_DIR}/test
-    ${Capstone_INCLUDE}
-    ${LLVM_INCLUDE_DIRS}
-    ${spdlog_INCLUDE_DIRS}
 )
 
 target_include_directories(${PROJECT_NAME}

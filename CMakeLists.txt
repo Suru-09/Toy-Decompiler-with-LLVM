@@ -12,6 +12,8 @@ SET(CMAKE_CXX_STANDARD 17)
 SET(arch "arch" CACHE STRING "")
 SET(work "work" CACHE STRING "")
 
+message(STATUS "Architecture compiled on: <${arch}>")
+
 # # CAPSTONE DEPENDECIES ----- START --------
 if (${arch} STREQUAL "arm64")
     set(Capstone_LIB /Users/suru/Documents/GitCloning/capstone/build)
@@ -45,7 +47,25 @@ add_definitions(${LLVM_DEFINITIONS_LIST})
 # SPDLOG DEPENDECIES ----- START --------
 find_package(spdlog REQUIRED)
 
-message(STATUS "Found SPDLOG ${spdlog_INCLUDE_DIRS}")
+if(${arch} STREQUAL "arm64")
+    set(spdlog_INCLUDE_DIRS /opt/homebrew/Cellar/spdlog/1.11.0/include)
+    set(fmt_INCLUDE_DIRS /opt/homebrew/Cellar/fmt/9.1.0/include)
+endif()    
+
+
+message(STATUS "Found SPDLOG lib in: <${spdlog_INCLUDE_DIRS}>")
+message(STATUS "Found SPDLOG in: <${spdlog_INCLUDE_DIRS}>")
 # LLSPDLOGVM DEPENDECIES ----- END --------
+
+set(INCL_DIR
+    ${CMAKE_BINARY_DIR}
+    ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_SOURCE_DIR}/test
+    ${Capstone_INCLUDE}
+    ${LLVM_INCLUDE_DIRS}
+    ${spdlog_INCLUDE_DIRS}
+    $<$<STREQUAL:"${arch}","arm64">:${fmt_INCLUDE_DIRS}>
+)
+
 
 add_subdirectory(src)

@@ -11,7 +11,5 @@ add_library(${PROJECT_NAME}-udm
 
 target_include_directories(${PROJECT_NAME}-udm
     PRIVATE
-        ${CMAKE_SOURCE_DIR}/include
-        ${Capstone_INCLUDE}
         ${INCL_DIR}
 )

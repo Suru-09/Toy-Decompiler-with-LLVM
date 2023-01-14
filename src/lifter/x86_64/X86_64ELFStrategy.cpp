@@ -87,8 +87,8 @@ std::vector<std::unique_ptr<llvm::Module>>
         if (count > 0) {
             // Iterate over the disassembled instructions
             for (size_t j = 0; j < count; j++) {
-                printf( "0x%"PRIx64":\t%s\t\t%s\n", insn[j].address, insn[j].mnemonic,
-                        insn[j].op_str);
+                // printf( "0x%"PRIx64":\t%s\t\t%s\n", insn[j].address, insn[j].mnemonic,
+                //         insn[j].op_str);
             }
 
             // Free the disassembled instructions
