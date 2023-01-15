@@ -205,49 +205,39 @@ udm::IntervalGraph udm::IntervalGraph::intervalsGraph(llvm::Function& f, udm::Fu
 
 std::pair<std::string, std::string> udm::IntervalGraph::backEdgeToPreviousInterval(udm::Interval interval)
 {
-    for(auto intv: intervals)
+    for(auto& bb : interval)
     {
-        for(auto bb: interval)
+        auto predecessors = utils::UdmUtils::getPredecessors(bb);
+        for(auto& pred : predecessors)
         {
-            spdlog::warn("Current BB: <{}>", bb->getName().str());
-            auto succesors = utils::UdmUtils::getSuccessors(bb);
-            for(auto& succ : succesors)
+            if(isLowerBB(pred, bb->getName().str()))
             {
-                spdlog::warn("Sucessor: <{}>", succ);
-                if(isUpperBB(succ, bb->getName().str()))
-                {
-                    return std::make_pair(succ, bb->getName().str());
-                }
+                return std::make_pair(pred, bb->getName().str());
             }
-        }
-
-        if(intv == interval)
-        {
-            break;
         }
     }
     
     return std::make_pair("", "");
 }
 
-bool udm::IntervalGraph::isUpperBB(std::string firstBB, std::string secondBB)
+bool udm::IntervalGraph::isLowerBB(std::string firstBB, std::string secondBB)
 {
     bool foundFirst = false;
     for(auto& interval : intervals)
     {
         for(auto& bb : interval)
-        {
-            spdlog::warn("Current ISUPPERBB: <{}>", bb->getName().str());
-            if(bb->getName().str() == firstBB)
-            {
-                foundFirst = true;
-            }
+        {            
             if(bb->getName().str() == secondBB)
             {
-                if(foundFirst)
+                if(!foundFirst)
                 {
                     return true;
                 }
+            }
+            
+            if(bb->getName().str() == firstBB)
+            {
+                foundFirst = true;
             }
         }
     }
@@ -258,11 +248,7 @@ bool udm::IntervalGraph::isUpperBB(std::string firstBB, std::string secondBB)
 void udm::IntervalGraph::loopStructure(udm::FuncInfo& funcInfo)
 {
     for(auto& interval : intervals)
-    {
-        for(auto& bb : interval)
-        {
-            spdlog::warn("Current BB in LOOPSTRUCTURE: <{}>", bb->getName().str());
-        }
+    { 
         auto backEdge = backEdgeToPreviousInterval(interval);
         spdlog::critical(
             "Backedge: <{}> -> <{}>",
@@ -310,27 +296,31 @@ bool udm::IntervalGraph::isBBbeforeInterval(std::string& bbName, udm::Interval i
 
 std::vector<std::string> udm::IntervalGraph::getAllNodesBetweenLatchAndHeader(std::pair<std::string, std::string> backEdge)
 {
-    bool start = false;
-    std::string stop = backEdge.second;
+    bool startAdd = false;
+    std::string stop = backEdge.first;
     std::vector<std::string> nodesBetweenLatchAndHeader;
 
     for(auto& interval : intervals)
     {
-        if(interval.containsBlock(backEdge.first))
+        for(auto& bb : interval)
         {
-            start = true;
-        }
-        if(start)
-        {
-            for(auto& bb : interval)
+            if(bb->getName().str() == backEdge.second)
+            {
+                startAdd = true;
+            }
+
+            if(startAdd)
             {
                 nodesBetweenLatchAndHeader.push_back(bb->getName().str());
-                if(bb->getName().str() == stop)
+            }
+
+            if(bb->getName().str() == stop)
+            {
+                for(auto& tf : nodesBetweenLatchAndHeader)
                 {
-                    start = false;
-                    return nodesBetweenLatchAndHeader;
+                   spdlog::critical("Node between latch and header: <{}>", tf);
                 }
-                
+                return nodesBetweenLatchAndHeader;
             }
         }
     }

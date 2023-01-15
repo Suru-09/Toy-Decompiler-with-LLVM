@@ -54,7 +54,7 @@ public:
     */
     std::pair<std::string, std::string> backEdgeToPreviousInterval(Interval interval);
 
-    bool isUpperBB(std::string firstBB, std::string secondBB);
+    bool isLowerBB(std::string firstBB, std::string secondBB);
 
     void loopStructure(FuncInfo& funcInfo);
     std::vector<std::string> getAllNodesBetweenLatchAndHeader(std::pair<std::string, std::string> backEdge);
