@@ -5,6 +5,7 @@
 #include <vector>
 
 #include <llvm/IR/BasicBlock.h>
+#include "FuncInfo.h"
 
 
 namespace udm
@@ -50,12 +51,42 @@ public:
     */
     bool containsPredecessors(const std::vector<std::string>& pred) const;
 
+    /**
+     * @param bb: BasicBlock to be checked.
+     * @brief Checks if the given BasicBlock is in the interval.
+     * @return true if the given BasicBlock is in the interval, false otherwise.
+    */
+    bool containsBlock(llvm::BasicBlock* bb) const noexcept;
+
+     /**
+     * @param bb: BasicBlock to be checked.
+     * @brief Checks if the given BasicBlock is in the interval.
+     * @return true if the given BasicBlock is in the interval, false otherwise.
+    */
+    bool containsBlock(const std::string& bbName) const noexcept;
+
+
+    /**
+     * @brief Removes all the elements from the interval. 
+     */
+    void clear() noexcept;
+
+    /**
+     * @brief Returns the first element of the interval.
+     * @return the first element of the interval if it exists, an empty BB otherwise.
+    */
     llvm::BasicBlock* getFirstBlock() const noexcept;
+    /**
+     * @brief Returns the last element of the interval.
+     * @return the last element of the interval if it exists, an empty BB otherwise.
+    */
     llvm::BasicBlock* getLastBlock() const noexcept;
     size_t size() const noexcept;
     bool isEmpty() const noexcept;
     std::vector<llvm::BasicBlock*> getBBlocks() const noexcept;
     std::vector<llvm::BasicBlock*> setBBlocks(std::vector<llvm::BasicBlock*> bbs);
+
+    static std::vector<udm::Interval> intervals(llvm::Function& f, udm::FuncInfo& funcInfo);
 private:
     std::vector<llvm::BasicBlock*> bBlocks;
 };

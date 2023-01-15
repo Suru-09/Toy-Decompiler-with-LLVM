@@ -16,12 +16,11 @@ namespace udm
 
 class FunctionsAnalysis {
 public:
-    std::vector<udm::Interval> intervals(llvm::Function& f);     
+    std::vector<udm::Interval> intervals(llvm::Function& f, udm::FuncInfo& funcInfo);
     std::unordered_map<std::string, udm::FuncInfo> getFunctionsInfo() const;
 private:
     std::string instructionToString(llvm::Instruction &I);
     bool allPredecessorsInInterval(const std::vector<std::string>& pred, const udm::Interval& interval) const;
-    std::vector<std::string> getPredecessors(llvm::BasicBlock* bb);
 
     std::unordered_map<std::string, udm::FuncInfo> functionsInfo;
 };

@@ -1,6 +1,7 @@
 #include "udm/UDM.h"
 
 #include "udm/FunctionsAnalysis.h"
+#include "udm/Interval.h"
 
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/Module.h"
@@ -40,9 +41,10 @@ void udm::UDM::execute()
 
     for(llvm::Function &f: mod->functions())
     {
+        udm::FuncInfo funcInfo;
         if(f.getName() == "calc_sum" || f.getName() == "fibo" || f.getName() =="main" || f.getName() == "n_way_conditional_switch")
         {
-            auto intv = fAnalysis.intervals(f);
+            auto intv = udm::Interval::intervals(f, funcInfo);
             spdlog::info("Function name: <{}>(), length of intervals: {}", f.getName(), intv.size());
             for(auto& interval: intv)
             {

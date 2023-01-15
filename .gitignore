@@ -31,5 +31,4 @@ cmake-build-debug/
 # temporary ignore .dot files
 *.dot
 *.dsm
-*.ll
 *.bc
