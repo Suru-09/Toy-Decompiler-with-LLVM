@@ -160,7 +160,6 @@ std::vector<udm::Interval> udm::Interval::intervals(llvm::Function& f, udm::Func
                 ++ri;
             }
         }
-       spdlog::warn("Size of interval: <{}>", interval.size());
        intervals.emplace_back(interval);
     }
 
