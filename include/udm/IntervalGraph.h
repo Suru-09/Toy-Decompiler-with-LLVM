@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "udm/Interval.h"
+#include "udm/BBInfo.h"
 
 #include <llvm/IR/BasicBlock.h>
 
@@ -55,6 +56,11 @@ public:
     std::pair<std::string, std::string> backEdgeToPreviousInterval(Interval interval);
 
     bool isLowerBB(std::string firstBB, std::string secondBB);
+    size_t getNumSuccessors(std::string bbName);
+    size_t getNumPredecessors(std::string bbName);
+    llvm::BasicBlock* getBB(std::string bbName);
+
+    udm::BBInfo::LoopType getLoopType(std::pair<std::string, std::string> backEdge);
 
     void loopStructure(FuncInfo& funcInfo);
     std::vector<std::string> getAllNodesBetweenLatchAndHeader(std::pair<std::string, std::string> backEdge);

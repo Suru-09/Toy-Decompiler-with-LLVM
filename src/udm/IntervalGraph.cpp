@@ -212,7 +212,7 @@ std::pair<std::string, std::string> udm::IntervalGraph::backEdgeToPreviousInterv
         {
             if(isLowerBB(pred, bb->getName().str()))
             {
-                return std::make_pair(pred, bb->getName().str());
+                return std::make_pair(bb->getName().str(), pred);
             }
         }
     }
@@ -263,6 +263,13 @@ void udm::IntervalGraph::loopStructure(udm::FuncInfo& funcInfo)
                 {
                     funcInfo[bbName].setIsLoop(true);
                 }
+            }
+
+            if(funcInfo.exists(backEdge.first))
+            {
+                auto type = getLoopType(backEdge);
+                spdlog::info("I am setting: <{}> with value: <{}>", backEdge.first, udm::BBInfo::getLoopTypeString(static_cast<size_t>(type)));
+                funcInfo[backEdge.first].setLoopType(type);
             }
         }
     }
@@ -316,13 +323,108 @@ std::vector<std::string> udm::IntervalGraph::getAllNodesBetweenLatchAndHeader(st
 
             if(bb->getName().str() == stop)
             {
-                for(auto& tf : nodesBetweenLatchAndHeader)
-                {
-                   spdlog::critical("Node between latch and header: <{}>", tf);
-                }
+                // for(auto& tf : nodesBetweenLatchAndHeader)
+                // {
+                //    spdlog::critical("Node between latch and header: <{}>", tf);
+                // }
                 return nodesBetweenLatchAndHeader;
             }
         }
     }
     return nodesBetweenLatchAndHeader;
+}
+
+size_t udm::IntervalGraph::getNumSuccessors(std::string bbName)
+{
+    size_t count = 0;
+    for(auto& interval : intervals)
+    {
+        auto block = interval.getBlock(bbName);
+        if(block != nullptr)
+        {
+            return utils::UdmUtils::getSuccessors(block).size();
+        }
+    }
+    return count;
+}
+
+size_t udm::IntervalGraph::getNumPredecessors(std::string bbName)
+{
+    auto block = getBB(bbName);
+    if(block != nullptr)
+    {
+        return utils::UdmUtils::getPredecessors(block).size();
+    }
+    return -1;
+}
+
+llvm::BasicBlock* udm::IntervalGraph::getBB(std::string bbName)
+{
+    for(auto& interval : intervals)
+    {
+        auto block = interval.getBlock(bbName);
+        if(block != nullptr)
+        {
+            return block;
+        }
+    }
+    return nullptr;
+}
+
+udm::BBInfo::LoopType udm::IntervalGraph::getLoopType(std::pair<std::string, std::string> backEdge)
+{
+    if(backEdge.first.empty())
+    {
+        return udm::BBInfo::LoopType::NONE;
+    }
+
+    auto nodesBetweenLatchAndHeader = getAllNodesBetweenLatchAndHeader(backEdge);
+    size_t nodeTypeHeader = getNumSuccessors(backEdge.first); 
+    size_t nodeTypeLatch = getNumSuccessors(backEdge.second);
+
+    spdlog::critical("Node header: <{}>", nodeTypeHeader);
+    spdlog::critical("Node latch: <{}>", nodeTypeLatch);
+
+    if(nodeTypeHeader >= 2)
+    {
+        if(nodeTypeLatch >= 2)
+        {   
+            auto bb = getBB(backEdge.second);
+            if(!bb)
+            {
+                spdlog::critical("BB is null");
+                return udm::BBInfo::LoopType::NONE;
+            }
+            auto predecessors = utils::UdmUtils::getPredecessors(bb);
+            for(auto& pred : predecessors)
+            {
+                if(std::find(nodesBetweenLatchAndHeader.begin(), nodesBetweenLatchAndHeader.end(), pred) != nodesBetweenLatchAndHeader.end())
+                {
+                    return udm::BBInfo::LoopType::DO_WHILE;
+                }
+                else
+                {
+                    return udm::BBInfo::LoopType::WHILE;
+                }
+            }
+        }
+        else
+        {
+            return udm::BBInfo::LoopType::DO_WHILE;
+        }
+    }
+    else
+    {
+        if(nodeTypeLatch >= 2)
+        {
+            return udm::BBInfo::LoopType::WHILE;
+        }
+        else
+        {
+            return udm::BBInfo::LoopType::INFINITE;
+        }
+    }
+    
+
+    return udm::BBInfo::LoopType::NONE;
 }

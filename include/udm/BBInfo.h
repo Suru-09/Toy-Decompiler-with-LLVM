@@ -22,6 +22,7 @@ public:
     void setIsIfStatement(bool isIfStatement);
     void setLoopType(LoopType loopType);
 
+    static std::string getLoopTypeString(size_t loopT);
     void print() const;
 private:
     LoopType loopType;

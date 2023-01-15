@@ -54,5 +54,22 @@ void udm::BBInfo::print() const
     spdlog::info("isHeader: {}", isHeader);
     spdlog::info("isLoop: {}", isLoop);
     spdlog::info("isIfStatement: {}", isIfStatement);
-    spdlog::info("loopType: {}", static_cast<int>(loopType));
+    spdlog::info("loopType: {}", getLoopTypeString(static_cast<size_t>(loopType)));
+}
+
+std::string udm::BBInfo::getLoopTypeString(size_t loopT)
+{
+    switch (loopT)
+    {
+        case 0:
+            return "WHILE";
+        case 1:
+            return "DO_WHILE";
+        case 2:
+            return "INFINITE";
+        case 3:
+            return "NONE";
+        default:
+            return "ERROR";
+    }
 }
