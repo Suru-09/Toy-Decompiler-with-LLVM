@@ -12,6 +12,7 @@ namespace utils {
 class UdmUtils {
 public:
     static std::vector<std::string> getPredecessors(llvm::BasicBlock* bb);
+    static std::vector<std::string> getSuccessors(llvm::BasicBlock* bb);
 };
 
 } // utils

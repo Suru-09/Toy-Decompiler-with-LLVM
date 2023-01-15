@@ -13,3 +13,14 @@ std::vector<std::string> utils::UdmUtils::getPredecessors(llvm::BasicBlock* bb)
 
     return predecessors;
 }
+
+std::vector<std::string> utils::UdmUtils::getSuccessors(llvm::BasicBlock* bb)
+{
+    std::vector<std::string> successors;
+    for(auto succ: llvm::successors(bb))
+    {
+        successors.emplace_back(succ->getName());
+    }
+
+    return successors;
+}

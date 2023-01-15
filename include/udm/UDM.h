@@ -16,6 +16,7 @@ class UDM {
 public:
     UDM(const std::string& IRFile);
     void execute();
+    void printLoops(llvm::Function& f);
 private:
     std::string irFile;
 };

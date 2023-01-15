@@ -11,12 +11,6 @@
 namespace udm
 {
 
-    // Aliases for iterators
-    using iterator = std::vector<llvm::BasicBlock*>::iterator;
-    using reverse_iterator = std::vector<llvm::BasicBlock*>::reverse_iterator;
-    using const_iterator = std::vector<llvm::BasicBlock*>::const_iterator;
-    using const_reverse_iterator = std::vector<llvm::BasicBlock*>::const_reverse_iterator;
-
 /**
  * @brief Class that represents an interval of basic blocks.
  * An interval is a larger construct that can contain multiple basic blocks,
@@ -92,24 +86,30 @@ public:
     std::vector<llvm::BasicBlock*> getBBlocks() const noexcept;
     std::vector<llvm::BasicBlock*> setBBlocks(std::vector<llvm::BasicBlock*> bbs);
 
-    // Iterators
-    reverse_iterator rbegin() noexcept { return bBlocks.rbegin(); }
-    reverse_iterator rend() noexcept { return bBlocks.rend(); }
-    const_reverse_iterator rbegin() const noexcept { return bBlocks.rbegin(); }
-    const_reverse_iterator rend() const noexcept { return bBlocks.rend(); }
-    iterator begin() noexcept { return bBlocks.begin(); }
-    iterator end() noexcept { return bBlocks.end(); }
-    const_iterator begin() const noexcept { return bBlocks.begin(); }
-    const_iterator end() const noexcept { return bBlocks.end(); }
+    void appendFront(const Interval& interval);
+    void appendBack(const Interval& interval);
 
-    /***
-     * @param f: Function to be analyzed.
-     * @param funcInfo: FuncInfo object that contains the information about the function.
-     * @brief Calculates the intervals of a function which helps to represent the control flow structures.
-     * Also adds information about each BB in the funcInfo object.
-     * @return a vector of intervals that represent the intervals of the function.
-    */
-    static std::vector<udm::Interval> intervals(llvm::Function& f, udm::FuncInfo& funcInfo);
+
+    // Aliases for iterators
+    using iterator = std::vector<llvm::BasicBlock*>::iterator;
+    using reverse_iterator = std::vector<llvm::BasicBlock*>::reverse_iterator;
+    using const_iterator = std::vector<llvm::BasicBlock*>::const_iterator;
+    using const_reverse_iterator = std::vector<llvm::BasicBlock*>::const_reverse_iterator;
+    // Iterators
+    reverse_iterator rbegin();
+    reverse_iterator rend();
+    const_reverse_iterator crbegin();
+    const_reverse_iterator crend();
+    iterator begin() noexcept;
+    iterator end() noexcept;
+    const_iterator cbegin() const noexcept;
+    const_iterator cend() const noexcept;
+
+   
+    bool operator==(const Interval& other) const noexcept;
+    bool operator!=(const Interval& other) const noexcept;
+    llvm::BasicBlock* operator[](size_t index) const noexcept;
+
 private:
     std::vector<llvm::BasicBlock*> bBlocks;
 };

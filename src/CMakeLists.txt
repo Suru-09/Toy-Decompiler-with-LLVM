@@ -19,7 +19,7 @@ add_executable(${PROJECT_NAME}
 # Selecting which libraries of LLVM are being used
 # and then append them to the llvm_libs variable
 # so that they can be later linked to the executable
-llvm_map_components_to_libnames(llvm_libs support core irreader object)
+llvm_map_components_to_libnames(llvm_libs support core irreader object analysis)
 
 target_link_libraries(${PROJECT_NAME} 
     PUBLIC

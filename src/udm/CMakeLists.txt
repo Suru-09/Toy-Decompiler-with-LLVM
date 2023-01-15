@@ -6,6 +6,7 @@ add_library(${PROJECT_NAME}-udm
     FuncInfo.cpp
     FunctionsAnalysis.cpp
     Interval.cpp
+    IntervalGraph.cpp
     UDM.cpp
 )
 

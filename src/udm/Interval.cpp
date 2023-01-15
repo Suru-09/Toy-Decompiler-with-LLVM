@@ -99,81 +99,6 @@ std::vector<llvm::BasicBlock*> udm::Interval::setBBlocks(std::vector<llvm::Basic
     return bBlocks;
 }
 
-std::vector<udm::Interval> udm::Interval::intervals(llvm::Function& f, udm::FuncInfo& funcInfo)
-{
-    std::vector<udm::Interval> intervals;
-    std::vector<llvm::BasicBlock*> headers;
-    llvm::ReversePostOrderTraversal<llvm::Function*> rpot(&f);
-    auto ri = rpot.begin();
-
-    while(ri != rpot.end())
-    {
-       llvm::BasicBlock* bb = (*ri);
-       udm::Interval interval;
-
-       // the first basic block in a function is always a header
-       if(headers.empty())
-       {
-            headers.push_back(bb);
-       }
-       // also a header is also contained in the interval
-       interval.addBlock(headers.back());
-       interval.addBlock(bb);
-
-        auto predecessors = utils::UdmUtils::getPredecessors(bb);
-        spdlog::debug("Size of predecessors: <{}>", predecessors.size());
-
-        // If there exists a header after the current interval, the last element of
-        // the while loop should become the new header, therefore we need to keep track
-        // if the final element was processed or not
-        bool lastElementWasInInterval = false;
-        while(interval.containsPredecessors(predecessors))
-        {
-            ++ri;
-            if(ri == rpot.end())
-            {
-                break;
-            }
-            bb = (*ri);
-            predecessors = utils::UdmUtils::getPredecessors(bb);
-            if(!interval.containsPredecessors(predecessors))
-            {
-                lastElementWasInInterval = true;
-                break;
-            }
-            interval.addBlock(bb);
-        }
-
-        // if there any more basic blocks, add the next one as a header
-        if(ri != rpot.end())
-        {
-            if(!lastElementWasInInterval)
-            {
-                ++ri;
-            }
-            
-            
-            if(ri != rpot.end())
-            {
-                llvm::BasicBlock* next = (*ri);
-                headers.push_back(next);
-                ++ri;
-            }
-        }
-       intervals.emplace_back(interval);
-    }
-
-    // if the last interval does not contain the last header, add it
-    // special case when the last basic block is an entire interval
-    if(!intervals.back().containsBlock(headers.back()))
-        {
-            Interval inter;
-            inter.addBlock(headers.back());
-            intervals.emplace_back(inter);
-        }
-    return intervals;
-}
-
 bool udm::Interval::containsBlock(llvm::BasicBlock* bb) const noexcept
 {
     auto found = std::find_if(bBlocks.begin(), bBlocks.end(), [&bb](llvm::BasicBlock* b) {
@@ -206,3 +131,84 @@ void udm::Interval::clear() noexcept
 {
     bBlocks.clear();
 }
+
+bool udm::Interval::operator==(const Interval& other) const noexcept
+{
+    if(bBlocks.size() != other.bBlocks.size())
+    {
+        return false;
+    }
+
+    for(size_t i = 0; i < bBlocks.size(); ++i)
+    {
+        if(bBlocks[i]->getName() != other.bBlocks[i]->getName())
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool udm::Interval::operator!=(const Interval& other) const noexcept
+{
+    return !(*this == other);
+}
+
+
+llvm::BasicBlock* udm::Interval::operator[](size_t index) const noexcept
+{
+    return index > bBlocks.size() ? nullptr : bBlocks[index];
+}
+
+udm::Interval::iterator udm::Interval::begin() noexcept
+{
+    return bBlocks.begin();
+}
+
+udm::Interval::iterator udm::Interval::end() noexcept
+{
+    return bBlocks.end();
+}
+
+udm::Interval::const_iterator udm::Interval::cbegin() const noexcept
+{
+    return bBlocks.begin();
+}
+
+udm::Interval::const_iterator udm::Interval::cend() const noexcept
+{
+    return bBlocks.end();
+}
+
+udm::Interval::reverse_iterator udm::Interval::rbegin()
+{
+    return bBlocks.rbegin();
+}
+
+udm::Interval::reverse_iterator udm::Interval::rend()
+{
+    return bBlocks.rend();
+}
+
+udm::Interval::const_reverse_iterator udm::Interval::crbegin()
+{
+    return bBlocks.rbegin();
+}
+
+udm::Interval::const_reverse_iterator udm::Interval::crend()
+{
+    return bBlocks.rend();
+}
+
+void udm::Interval::appendBack(const Interval& other)
+{
+    bBlocks.insert(bBlocks.end(), other.bBlocks.begin(), other.bBlocks.end());
+}
+
+void udm::Interval::appendFront(const Interval& other)
+{
+    bBlocks.insert(bBlocks.begin(), other.bBlocks.begin(), other.bBlocks.end());
+}
+
+
