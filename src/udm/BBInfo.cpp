@@ -6,7 +6,8 @@ udm::BBInfo::BBInfo() :
 isHeader(false),
 isLoop(false),
 isIfStatement(false),
-loopType(LoopType::NONE) 
+loopType(LoopType::NONE),
+followNode("Empty")
 {}
 
 bool udm::BBInfo::getIsHeader() const
@@ -55,6 +56,7 @@ void udm::BBInfo::print() const
     spdlog::info("isLoop: {}", isLoop);
     spdlog::info("isIfStatement: {}", isIfStatement);
     spdlog::info("loopType: {}", getLoopTypeString(static_cast<size_t>(loopType)));
+    spdlog::info("followNode: {}", followNode);
 }
 
 std::string udm::BBInfo::getLoopTypeString(size_t loopT)
@@ -72,4 +74,14 @@ std::string udm::BBInfo::getLoopTypeString(size_t loopT)
         default:
             return "ERROR";
     }
+}
+
+void udm::BBInfo::setFollowNode(std::string followNode)
+{
+    this->followNode = followNode;
+}
+
+std::string udm::BBInfo::getFollowNode() const
+{
+    return followNode;
 }

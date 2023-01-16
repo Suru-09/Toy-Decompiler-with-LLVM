@@ -60,10 +60,40 @@ public:
     size_t getNumPredecessors(std::string bbName);
     llvm::BasicBlock* getBB(std::string bbName);
 
+
+    std::string getFollowNode(std::pair<std::string, std::string> backEdge);
+
+    /**
+     * @param backEdge: pair<string, string> where first string is the header and the second string 
+     * is the latch of the previous interval.
+     * @brief Calculates the loop type of the back edge.
+     * @return udm::BBInfo::LoopType(DO_WHILE, WHILE, INFINITE, NONE).
+    */
     udm::BBInfo::LoopType getLoopType(std::pair<std::string, std::string> backEdge);
 
+    /**
+     * @param funcInfo: FuncInfo object that contains the information about the function.
+     * @brief Calculates the control flow structures of the function and completes information
+     * about the function such as follow node and loop type.
+    */
     void loopStructure(FuncInfo& funcInfo);
+
+
+    /**
+     * @param backEdge: pair<string, string> where first string is the header and the second string 
+     * is the latch of the previous interval.
+     * @brief Calculates the nodes between the latch and the header of the back edge.
+     * @return a vector of strings that contains the names of the nodes between the latch and the header.
+    */
     std::vector<std::string> getAllNodesBetweenLatchAndHeader(std::pair<std::string, std::string> backEdge);
+
+
+    /**
+     * @param bbName: Name of the basic block.
+     * @param interval: Interval to be searched.
+     * @brief Checks if the basic block is before the interval.
+     * @return true if the basic block is before the interval, false otherwise.
+    */
     bool isBBbeforeInterval(std::string& bbName, Interval interval);
 
     /**

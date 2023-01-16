@@ -12,6 +12,11 @@ public:
         WHILE, DO_WHILE, INFINITE, NONE
     };
 
+    enum class IFTYPE
+    {
+        NONE
+    };
+
     explicit BBInfo();
     bool getIsHeader() const;
     bool getIsLoop() const;
@@ -21,11 +26,14 @@ public:
     void setIsLoop(bool isLoop);
     void setIsIfStatement(bool isIfStatement);
     void setLoopType(LoopType loopType);
+    void setFollowNode(std::string followNode);
+    std::string getFollowNode() const;
 
     static std::string getLoopTypeString(size_t loopT);
     void print() const;
 private:
     LoopType loopType;
+    std::string followNode;
     bool isHeader;
     bool isLoop;
     bool isIfStatement;
