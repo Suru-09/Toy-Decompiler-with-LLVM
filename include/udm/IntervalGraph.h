@@ -8,13 +8,15 @@
 #include "udm/BBInfo.h"
 
 #include <llvm/IR/BasicBlock.h>
+#include <llvm/IR/Dominators.h>
+#include "llvm/Analysis/PostDominators.h"
 
 namespace udm {
 
 class IntervalGraph {
 public:
     IntervalGraph() = default;
-    IntervalGraph(const std::vector<Interval>& intervals) : intervals(intervals) {}
+    IntervalGraph(const std::vector<Interval>& intervals, llvm::PostDominatorTree& dt);
     
     bool addInterval(Interval interval);
     bool containsInterval(Interval interval) const;
@@ -80,6 +82,22 @@ public:
 
 
     /**
+     * @param bb : Basic block to be searched.
+     * @brief Finds the immediate dominator of a basic block.
+     * @return the immediate dominator of the basic block.
+    */
+    llvm::BasicBlock* findImediateDominator(llvm::BasicBlock* bb);
+
+
+    /**
+     * @param funcInfo: FuncInfo object that contains the information about the function.
+     * @brief Calculates the control flow structures of the function and completes information
+     * about the function such as the follow node for two way conditional branches.
+    */
+    void twoWayConditionalBranch(FuncInfo& funcInfo);
+
+
+    /**
      * @param backEdge: pair<string, string> where first string is the header and the second string 
      * is the latch of the previous interval.
      * @brief Calculates the nodes between the latch and the header of the back edge.
@@ -103,9 +121,10 @@ public:
      * Also adds information about each BB in the funcInfo object.
      * @return a IntervalGraph object that represents the intervals of the function.
     */
-    static IntervalGraph intervalsGraph(llvm::Function& f, FuncInfo& funcInfo);
+    static std::vector<Interval> intervalsGraph(llvm::Function& f, FuncInfo& funcInfo);
 private:
     std::vector<Interval> intervals;
+    llvm::PostDominatorTree& dt;
 };
 
 }  // namespace udm

@@ -48,7 +48,7 @@ dec_label_pc_1080:
   %0 = trunc i64 %arg6 to i32, !insn.addr !9
   %1 = bitcast i64* %stack_var_8 to i8**, !insn.addr !9
   %2 = inttoptr i64 %arg3 to void ()*, !insn.addr !9
-  %3 = call i32 @__libc_start_main(i64 4786, i32 %0, i8** nonnull %1, void ()* null, void ()* null, void ()* %2), !insn.addr !9
+  %3 = call i32 @__libc_start_main(i64 4793, i32 %0, i8** nonnull %1, void ()* null, void ()* null, void ()* %2), !insn.addr !9
   %4 = call i64 @__asm_hlt(), !insn.addr !10
   unreachable, !insn.addr !10
 }
@@ -147,79 +147,123 @@ dec_label_pc_11d6:                                ; preds = %dec_label_pc_1185, 
 define i32 @for_loop(i32 %j) local_unnamed_addr {
 dec_label_pc_11d8:
   %stack_var_-28.0.lcssa.reg2mem = alloca i32, !insn.addr !34
-  %0 = icmp slt i32 %j, 16, !insn.addr !35
+  %stack_var_-28.01.reg2mem = alloca i32, !insn.addr !34
+  %storemerge2.reg2mem = alloca i32, !insn.addr !34
+  %0 = icmp sgt i32 %j, 0, !insn.addr !35
+  store i32 0, i32* %storemerge2.reg2mem, !insn.addr !35
+  store i32 0, i32* %stack_var_-28.01.reg2mem, !insn.addr !35
   store i32 0, i32* %stack_var_-28.0.lcssa.reg2mem, !insn.addr !35
-  br i1 %0, label %dec_label_pc_11f2.lr.ph, label %dec_label_pc_121f, !insn.addr !35
+  br i1 %0, label %dec_label_pc_11f3, label %dec_label_pc_1222, !insn.addr !35
 
-dec_label_pc_11f2.lr.ph:                          ; preds = %dec_label_pc_11d8
-  %1 = sub i32 15, %j
-  %2 = udiv i32 %1, 2
-  %3 = mul i32 %2, 7
-  %4 = add i32 %3, 7
-  store i32 %4, i32* %stack_var_-28.0.lcssa.reg2mem
-  br label %dec_label_pc_121f
+dec_label_pc_11f3:                                ; preds = %dec_label_pc_11d8, %dec_label_pc_11f3
+  %stack_var_-28.01.reload = load i32, i32* %stack_var_-28.01.reg2mem
+  %storemerge2.reload = load i32, i32* %storemerge2.reg2mem
+  %1 = add i32 %stack_var_-28.01.reload, 7, !insn.addr !36
+  %2 = add i32 %storemerge2.reload, 2, !insn.addr !37
+  %3 = icmp slt i32 %2, %j, !insn.addr !35
+  store i32 %2, i32* %storemerge2.reg2mem, !insn.addr !35
+  store i32 %1, i32* %stack_var_-28.01.reg2mem, !insn.addr !35
+  store i32 %1, i32* %stack_var_-28.0.lcssa.reg2mem, !insn.addr !35
+  br i1 %3, label %dec_label_pc_11f3, label %dec_label_pc_1222, !insn.addr !35
 
-dec_label_pc_121f:                                ; preds = %dec_label_pc_11f2.lr.ph, %dec_label_pc_11d8
+dec_label_pc_1222:                                ; preds = %dec_label_pc_11f3, %dec_label_pc_11d8
   %stack_var_-28.0.lcssa.reload = load i32, i32* %stack_var_-28.0.lcssa.reg2mem
-  ret i32 %stack_var_-28.0.lcssa.reload, !insn.addr !36
+  ret i32 %stack_var_-28.0.lcssa.reload, !insn.addr !38
 
 ; uselistorder directives
-  uselistorder i32* %stack_var_-28.0.lcssa.reg2mem, { 0, 2, 1 }
+  uselistorder i32* %storemerge2.reg2mem, { 2, 0, 1 }
+  uselistorder i32* %stack_var_-28.01.reg2mem, { 2, 0, 1 }
+  uselistorder i32 2, { 1, 0 }
+  uselistorder i32 %j, { 1, 0 }
+  uselistorder label %dec_label_pc_11f3, { 1, 0 }
 }
 
 define i32 @while_pre_tested_loop(i32 %flag_2) local_unnamed_addr {
-dec_label_pc_1224:
-  %0 = icmp slt i32 %flag_2, 16, !insn.addr !37
-  %1 = mul i32 %flag_2, -7
-  %2 = add i32 %1, 112
-  %stack_var_-24.0.lcssa = select i1 %0, i32 %2, i32 0
-  ret i32 %stack_var_-24.0.lcssa, !insn.addr !38
+dec_label_pc_1227:
+  %stack_var_-24.0.lcssa.reg2mem = alloca i32, !insn.addr !39
+  %stack_var_-28.01.reg2mem = alloca i32, !insn.addr !39
+  %stack_var_-24.02.reg2mem = alloca i32, !insn.addr !39
+  %0 = icmp slt i32 %flag_2, 0, !insn.addr !40
+  store i32 0, i32* %stack_var_-24.02.reg2mem, !insn.addr !40
+  store i32 0, i32* %stack_var_-28.01.reg2mem, !insn.addr !40
+  store i32 0, i32* %stack_var_-24.0.lcssa.reg2mem, !insn.addr !40
+  br i1 %0, label %dec_label_pc_126d, label %dec_label_pc_1242, !insn.addr !40
+
+dec_label_pc_1242:                                ; preds = %dec_label_pc_1227, %dec_label_pc_1242
+  %stack_var_-28.01.reload = load i32, i32* %stack_var_-28.01.reg2mem
+  %stack_var_-24.02.reload = load i32, i32* %stack_var_-24.02.reg2mem
+  %1 = add i32 %stack_var_-24.02.reload, 7, !insn.addr !41
+  %2 = add i32 %stack_var_-28.01.reload, 1, !insn.addr !42
+  %3 = icmp sgt i32 %2, %flag_2, !insn.addr !40
+  store i32 %1, i32* %stack_var_-24.02.reg2mem, !insn.addr !40
+  store i32 %2, i32* %stack_var_-28.01.reg2mem, !insn.addr !40
+  store i32 %1, i32* %stack_var_-24.0.lcssa.reg2mem, !insn.addr !40
+  br i1 %3, label %dec_label_pc_126d, label %dec_label_pc_1242, !insn.addr !40
+
+dec_label_pc_126d:                                ; preds = %dec_label_pc_1242, %dec_label_pc_1227
+  %stack_var_-24.0.lcssa.reload = load i32, i32* %stack_var_-24.0.lcssa.reg2mem
+  ret i32 %stack_var_-24.0.lcssa.reload, !insn.addr !43
+
+; uselistorder directives
+  uselistorder i32* %stack_var_-24.02.reg2mem, { 2, 0, 1 }
+  uselistorder i32* %stack_var_-28.01.reg2mem, { 2, 0, 1 }
+  uselistorder i32 %flag_2, { 1, 0 }
+  uselistorder label %dec_label_pc_1242, { 1, 0 }
 }
 
 define i32 @while_post_tested_loop(i32 %flag) local_unnamed_addr {
-dec_label_pc_126c:
-  %0 = add i32 %flag, 1
-  %1 = icmp sgt i32 %0, 16
-  %smax = select i1 %1, i32 %0, i32 16
-  %2 = sub i32 %smax, %flag
-  %3 = mul i32 %2, 7
-  ret i32 %3, !insn.addr !39
+dec_label_pc_1272:
+  %stack_var_-24.0.reg2mem = alloca i32, !insn.addr !44
+  %0 = icmp slt i32 %flag, 16, !insn.addr !45
+  store i32 0, i32* %stack_var_-24.0.reg2mem, !insn.addr !46
+  br label %dec_label_pc_128b, !insn.addr !46
+
+dec_label_pc_128b:                                ; preds = %dec_label_pc_128b, %dec_label_pc_1272
+  %stack_var_-24.0.reload = load i32, i32* %stack_var_-24.0.reg2mem
+  %1 = add i32 %stack_var_-24.0.reload, 7, !insn.addr !47
+  store i32 %1, i32* %stack_var_-24.0.reg2mem, !insn.addr !45
+  br i1 %0, label %dec_label_pc_128b, label %dec_label_pc_12b4, !insn.addr !45
+
+dec_label_pc_12b4:                                ; preds = %dec_label_pc_128b
+  ret i32 %1, !insn.addr !48
 
 ; uselistorder directives
-  uselistorder i32 16, { 1, 2, 3, 4, 0 }
+  uselistorder i32 %1, { 1, 0 }
+  uselistorder i32* %stack_var_-24.0.reg2mem, { 1, 0, 2 }
+  uselistorder i32 16, { 1, 0 }
 }
 
 define i32 @main() local_unnamed_addr {
-dec_label_pc_12b2:
-  %0 = call i32 @n_way_conditional_switch(i32 5), !insn.addr !40
-  %1 = zext i32 %0 to i64, !insn.addr !41
-  %2 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @global_var_2012, i64 0, i64 0), i64 %1), !insn.addr !42
-  %3 = call i32 @for_loop(i32 5), !insn.addr !43
-  %4 = zext i32 %3 to i64, !insn.addr !44
-  %5 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @global_var_2012, i64 0, i64 0), i64 %4), !insn.addr !45
-  %6 = call i32 @while_pre_tested_loop(i32 5), !insn.addr !46
-  %7 = zext i32 %6 to i64, !insn.addr !47
-  %8 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @global_var_2012, i64 0, i64 0), i64 %7), !insn.addr !48
-  %9 = call i32 @while_post_tested_loop(i32 5), !insn.addr !49
-  %10 = zext i32 %9 to i64, !insn.addr !50
-  %11 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @global_var_2012, i64 0, i64 0), i64 %10), !insn.addr !51
-  ret i32 0, !insn.addr !52
+dec_label_pc_12b9:
+  %0 = call i32 @n_way_conditional_switch(i32 5), !insn.addr !49
+  %1 = zext i32 %0 to i64, !insn.addr !50
+  %2 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @global_var_2012, i64 0, i64 0), i64 %1), !insn.addr !51
+  %3 = call i32 @for_loop(i32 5), !insn.addr !52
+  %4 = zext i32 %3 to i64, !insn.addr !53
+  %5 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @global_var_2012, i64 0, i64 0), i64 %4), !insn.addr !54
+  %6 = call i32 @while_pre_tested_loop(i32 5), !insn.addr !55
+  %7 = zext i32 %6 to i64, !insn.addr !56
+  %8 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @global_var_2012, i64 0, i64 0), i64 %7), !insn.addr !57
+  %9 = call i32 @while_post_tested_loop(i32 5), !insn.addr !58
+  %10 = zext i32 %9 to i64, !insn.addr !59
+  %11 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @global_var_2012, i64 0, i64 0), i64 %10), !insn.addr !60
+  ret i32 0, !insn.addr !61
 
 ; uselistorder directives
-  uselistorder i32 0, { 1, 2, 0 }
+  uselistorder i32 0, { 7, 0, 1, 2, 3, 8, 4, 5, 6, 9 }
   uselistorder i32 (i8*, ...)* @printf, { 0, 1, 3, 2, 4 }
   uselistorder i64 0, { 2, 3, 4, 5, 7, 1, 0, 8, 6 }
   uselistorder i32 5, { 1, 2, 3, 4, 0, 6, 5 }
 }
 
 define i64 @_fini() local_unnamed_addr {
-dec_label_pc_1344:
+dec_label_pc_1348:
   %0 = alloca i64
   %1 = load i64, i64* %0
-  ret i64 %1, !insn.addr !53
+  ret i64 %1, !insn.addr !62
 
 ; uselistorder directives
-  uselistorder i32 1, { 1, 5, 2, 6, 3, 0, 7, 4 }
+  uselistorder i32 1, { 1, 2, 13, 5, 4, 3, 8, 7, 6, 11, 9, 0, 12, 10 }
 }
 
 declare i32 @puts(i8*) local_unnamed_addr
@@ -269,22 +313,31 @@ declare i64 @__asm_hlt() local_unnamed_addr
 !32 = !{i64 4559}
 !33 = !{i64 4567}
 !34 = !{i64 4568}
-!35 = !{i64 4637}
-!36 = !{i64 4643}
-!37 = !{i64 4709}
-!38 = !{i64 4715}
-!39 = !{i64 4785}
-!40 = !{i64 4799}
-!41 = !{i64 4804}
-!42 = !{i64 4821}
-!43 = !{i64 4831}
-!44 = !{i64 4836}
-!45 = !{i64 4853}
-!46 = !{i64 4863}
-!47 = !{i64 4868}
-!48 = !{i64 4885}
-!49 = !{i64 4895}
-!50 = !{i64 4900}
-!51 = !{i64 4917}
-!52 = !{i64 4928}
-!53 = !{i64 4944}
+!35 = !{i64 4640}
+!36 = !{i64 4623}
+!37 = !{i64 4630}
+!38 = !{i64 4646}
+!39 = !{i64 4647}
+!40 = !{i64 4715}
+!41 = !{i64 4702}
+!42 = !{i64 4705}
+!43 = !{i64 4721}
+!44 = !{i64 4722}
+!45 = !{i64 4786}
+!46 = !{i64 4740}
+!47 = !{i64 4775}
+!48 = !{i64 4792}
+!49 = !{i64 4806}
+!50 = !{i64 4811}
+!51 = !{i64 4828}
+!52 = !{i64 4838}
+!53 = !{i64 4843}
+!54 = !{i64 4860}
+!55 = !{i64 4870}
+!56 = !{i64 4875}
+!57 = !{i64 4892}
+!58 = !{i64 4902}
+!59 = !{i64 4907}
+!60 = !{i64 4924}
+!61 = !{i64 4935}
+!62 = !{i64 4948}

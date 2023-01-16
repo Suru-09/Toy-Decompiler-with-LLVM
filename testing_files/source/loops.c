@@ -24,7 +24,7 @@ int n_way_conditional_switch(int n)
 int for_loop(int j) 
 {
     int acc = 0;
-    for(int i = j; i < 16; ++i)
+    for(int i = 0; i < j; ++i)
     {
         int  a = 2, b = 5;
         int z = a + b;
@@ -36,9 +36,9 @@ int for_loop(int j)
 
 int while_pre_tested_loop(int flag_2) 
 {
-    int i = flag_2;
+    int i = 0;
     int acc = 0;
-    while(i <= 15)
+    while(i <= flag_2)
     {
         int  a = 2, b = 5;
         int z = a + b;
@@ -50,7 +50,7 @@ int while_pre_tested_loop(int flag_2)
 
 int while_post_tested_loop(int flag) 
 {
-    int i = flag;
+    int i = 0;
     int acc = 0;
     do
     {
@@ -58,7 +58,7 @@ int while_post_tested_loop(int flag)
         int z = a + b;
         acc += z;
         i += 1;
-    }while(i <= 15);
+    }while(flag <= 15);
     return acc;
 }
 

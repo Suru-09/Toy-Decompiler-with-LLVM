@@ -12,6 +12,14 @@
 
 #include <spdlog/spdlog.h>
 
+
+udm::IntervalGraph::IntervalGraph(const std::vector<Interval>& intervals, llvm::PostDominatorTree& dt)
+: 
+intervals(intervals),
+dt(dt)
+{
+}
+
 bool udm::IntervalGraph::addInterval(Interval interval)
 {
     auto found = std::find_if(intervals.begin(), intervals.end(), [&interval](Interval i) {
@@ -121,7 +129,7 @@ const udm::Interval& udm::IntervalGraph::operator[](size_t index) const noexcept
     return intervals[index];
 }
 
-udm::IntervalGraph udm::IntervalGraph::intervalsGraph(llvm::Function& f, udm::FuncInfo& funcInfo)
+std::vector<udm::Interval>  udm::IntervalGraph::intervalsGraph(llvm::Function& f, udm::FuncInfo& funcInfo)
 {
     std::vector<udm::Interval> intervals;
     std::vector<llvm::BasicBlock*> headers;
@@ -507,4 +515,59 @@ std::string udm::IntervalGraph::getFollowNode(std::pair<std::string, std::string
         }
     }
     return "";
+}
+
+llvm::BasicBlock* udm::IntervalGraph::findImediateDominator(llvm::BasicBlock* bb)
+{
+    auto node = dt.getNode(bb);
+    return node && node->getIDom() ? node->getIDom()->getBlock() : nullptr;
+}
+
+void udm::IntervalGraph::twoWayConditionalBranch(udm::FuncInfo& funcInfo)
+{
+    std::vector<std::string> unresolved;
+    for(auto intervIter = intervals.rbegin(); intervIter != intervals.rend(); ++intervIter)
+    {   
+        auto interval = *intervIter;
+        for(auto bbIter = interval.rbegin(); bbIter != interval.rend(); ++ bbIter)
+        {
+            auto block = *bbIter;
+            std::string bb = block->getName().str();
+            spdlog::warn("BB: <{}>", bb);
+            size_t bbOuterEdge = getNumSuccessors(bb);
+            bool isHead = false;
+            if(funcInfo.exists(bb))
+            {
+                isHead = funcInfo[bb].getIsHeader();
+            }
+            spdlog::warn("Outer edges: <{}>", bbOuterEdge);
+            if( bbOuterEdge >= 2)
+            {
+                auto imedDom = findImediateDominator(block);
+                
+                spdlog::warn("is imedDom null?: <{}>", imedDom == nullptr);
+                if(!imedDom)
+                {
+                    continue;
+                }
+                std::string imed = imedDom->getName().str();
+                spdlog::warn("BB: <{}> imedDom: <{}>", bb, imed);
+                spdlog::warn("Preds: <{}>", getNumPredecessors(imed));
+
+                if(getNumPredecessors(imed) >= 2)
+                {
+                    funcInfo[bb].setFollowNode(imed);
+                    for(const auto& notVis: unresolved)
+                    {
+                        funcInfo[notVis].setFollowNode(imed);
+                    }
+                }
+                else
+                {
+                    unresolved.push_back(bb);
+                }
+            }
+            
+        }
+    }
 }

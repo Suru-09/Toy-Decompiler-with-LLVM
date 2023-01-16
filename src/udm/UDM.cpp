@@ -49,7 +49,7 @@ void udm::UDM::execute()
     {
         udm::FuncInfo funcInfo{f};
         if(f.getName() == "calc_sum" || f.getName() == "fibo" || f.getName() =="main" || f.getName() == "n_way_conditional_switch"
-            || f.getName() == "while_pre_tested_loop" || f.getName() == "while_post_tested_loop")
+            || f.getName() == "while_pre_tested_loop" || f.getName() == "while_post_tested_loop" || f.getName() == "two_way")
         {
             auto intv = udm::IntervalGraph::intervalsGraph(f, funcInfo);
             spdlog::info("Function name: <{}>(), length of intervals: {}", f.getName(), intv.size());
@@ -62,8 +62,10 @@ void udm::UDM::execute()
                 }
             }
 
-            udm::IntervalGraph ig{intv};
+            llvm::PostDominatorTree dt(f);
+            udm::IntervalGraph ig{intv, dt};
             ig.loopStructure(funcInfo);
+            ig.twoWayConditionalBranch(funcInfo);
             funcInfo.print();
         }
         
