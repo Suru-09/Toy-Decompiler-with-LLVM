@@ -15,11 +15,14 @@ then
     cmake ../ -Darch:String="arm64";
 elif [ "${MACHINE_TYPE}" == "x86_64" ]
 then
-    #cmake ../ -Darch:String="x86" -Dwork:STRING="OFF";
-    cmake ../ -Darch:String="x86" -Dwork:STRING="ON";
+    cmake ../ -Darch:String="x86" -Dwork:STRING="OFF";
+    #cmake ../ -Darch:String="x86" -Dwork:STRING="ON";
 fi
 
-if cmake --build .; then 
+CORES=$(nproc --all)
+echo "Machine has <$CORES> cores."
+
+if cmake --build . -j$CORES; then 
 echo "Build succeded!";
 else 
 echo "Build failed, operation will be aborted!";
