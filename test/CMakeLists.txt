@@ -1,19 +1,22 @@
 cmake_minimum_required(VERSION 3.22)
 
-set(CMAKE_CXX_REQUIRED 17)
-SET(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 17)
 
-set(CXX_FLAGS 
-    -O3
+
+set(TEST_SOURCES
+    udm/UdmTest.cpp
 )
 
-add_subdirectory(utils)
-add_subdirectory(lifter)
-add_subdirectory(udm)
+add_executable(${PROJECT_NAME}-test
+        main.cpp
+        ${TEST_SOURCES}
+)
 
-
-add_executable(${PROJECT_NAME}  
-    main.cpp
+target_include_directories(${PROJECT_NAME}-test
+    PRIVATE
+        ${gtest_SOURCE_DIR}/include 
+        ${gtest_SOURCE_DIR}
+        ${INCL_DIR}
 )
 
 # Selecting which libraries of LLVM are being used
@@ -21,8 +24,11 @@ add_executable(${PROJECT_NAME}
 # so that they can be later linked to the executable
 llvm_map_components_to_libnames(llvm_libs support core irreader object analysis)
 
-target_link_libraries(${PROJECT_NAME} 
-    PUBLIC
+# linking the google library
+target_link_libraries(${PROJECT_NAME}-test
+    PRIVATE
+        gtest
+        gtest_main
         ${PROJECT_NAME}-udm
         ${PROJECT_NAME}-utils
         ${PROJECT_NAME}-lifter
@@ -31,14 +37,4 @@ target_link_libraries(${PROJECT_NAME}
         # -> linking errors in .txt sections of own libs)
         ${llvm_libs}
         spdlog::spdlog
-)
-
-target_include_directories(${PROJECT_NAME}
-    PRIVATE
-        ${INCL_DIR}
-)
-
-target_compile_options(${PROJECT_NAME}
-    PRIVATE
-        ${CXX_FLAGS}
 )

@@ -57,7 +57,7 @@ public:
     */
     std::pair<std::string, std::string> backEdgeToPreviousInterval(Interval interval);
 
-    bool isLowerBB(std::string firstBB, std::string secondBB);
+    bool isLowerOrEqBB(std::string firstBB, std::string secondBB);
     size_t getNumSuccessors(std::string bbName);
     size_t getNumPredecessors(std::string bbName);
     llvm::BasicBlock* getBB(std::string bbName);

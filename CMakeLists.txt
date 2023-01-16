@@ -28,14 +28,14 @@ elseif(${arch} STREQUAL "x86")
     endif()
 endif()
 
-message(STATUS "Found CAPSTONE ${Capstone_INCLUDE}")
+message(STATUS "Found CAPSTONE: <${Capstone_INCLUDE}>")
 # # CAPSTONE DEPENDECIES ----- END --------
 
 # LLVM DEPENDECIES ----- START --------
 find_package(LLVM REQUIRED CONFIG)
 
-message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
-message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
+message(STATUS "Found LLVM: <${LLVM_PACKAGE_VERSION}>")
+message(STATUS "Using LLVMConfig.cmake in: <${LLVM_DIR}>")
 
 include_directories(${LLVM_INCLUDE_DIRS})
 #separate_arguments(LLVM_DEFINITIONS_LIST NATIVE_COMMAND ${LLVM_DEFINITIONS})
@@ -52,10 +52,16 @@ if(${arch} STREQUAL "arm64")
     set(fmt_INCLUDE_DIRS /opt/homebrew/Cellar/fmt/9.1.0/include)
 endif()    
 
-
-message(STATUS "Found SPDLOG lib in: <${spdlog_INCLUDE_DIRS}>")
 message(STATUS "Found SPDLOG in: <${spdlog_INCLUDE_DIRS}>")
-# LLSPDLOGVM DEPENDECIES ----- END --------
+# SPDLOG DEPENDECIES ----- END --------
+
+# GOOGLE TEST DEPENDECIES ----- START --------
+
+find_package(GTest REQUIRED)
+message(STATUS "Found GTEST in: <${GTEST_INCLUDE_DIRS}>")
+
+# GOOGLE TEST DEPENDECIES ----- END --------
+
 
 set(INCL_DIR
     ${CMAKE_BINARY_DIR}
@@ -69,3 +75,4 @@ set(INCL_DIR
 
 
 add_subdirectory(src)
+add_subdirectory(test)

@@ -201,11 +201,14 @@ std::vector<udm::Interval>  udm::IntervalGraph::intervalsGraph(llvm::Function& f
         inter.addBlock(headers.back());
         intervals.emplace_back(inter);
     }
+
+    //add info about headers in function information
     for(auto& h: headers)
     {
-        if(funcInfo.exists(h->getName().str()))
+        auto hName = h->getName().str();
+        if(funcInfo.exists(hName))
         {
-            funcInfo[h->getName().str()].setIsHeader(true);
+            funcInfo[hName].setIsHeader(true);
         }
     }
     return intervals;
@@ -218,7 +221,7 @@ std::pair<std::string, std::string> udm::IntervalGraph::backEdgeToPreviousInterv
         auto predecessors = utils::UdmUtils::getPredecessors(bb);
         for(auto& pred : predecessors)
         {
-            if(isLowerBB(pred, bb->getName().str()))
+            if(isLowerOrEqBB(pred, bb->getName().str()))
             {
                 return std::make_pair(bb->getName().str(), pred);
             }
@@ -228,7 +231,7 @@ std::pair<std::string, std::string> udm::IntervalGraph::backEdgeToPreviousInterv
     return std::make_pair("", "");
 }
 
-bool udm::IntervalGraph::isLowerBB(std::string firstBB, std::string secondBB)
+bool udm::IntervalGraph::isLowerOrEqBB(std::string firstBB, std::string secondBB)
 {
     bool foundFirst = false;
     for(auto& interval : intervals)
@@ -499,12 +502,12 @@ std::string udm::IntervalGraph::getFollowNode(std::pair<std::string, std::string
             }
 
             if(std::find(nodesBetweenLatchAndHeader.begin(), nodesBetweenLatchAndHeader.end(), latchSuccesors.front()) == nodesBetweenLatchAndHeader.end()
-                && isLowerBB(latchSuccesors.front(), follow) && follow != latchSuccesors.front())
+                && isLowerOrEqBB(latchSuccesors.front(), follow) && follow != latchSuccesors.front())
             {
                 follow = latchSuccesors.front();
             }
             else if(std::find(nodesBetweenLatchAndHeader.begin(), nodesBetweenLatchAndHeader.end(), latchSuccesors.back()) == nodesBetweenLatchAndHeader.end()
-                && isLowerBB(latchSuccesors.back(), follow) && follow != latchSuccesors.back())
+                && isLowerOrEqBB(latchSuccesors.back(), follow) && follow != latchSuccesors.back())
             {
                 follow = latchSuccesors.back();
             }
