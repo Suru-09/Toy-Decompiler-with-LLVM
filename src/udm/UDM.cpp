@@ -1,8 +1,8 @@
 #include "udm/UDM.h"
 
-#include "udm/FunctionsAnalysis.h"
 #include "udm/Interval.h"
 #include "udm/IntervalGraph.h"
+#include "logger/LoggerManager.h"
 
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/Module.h"
@@ -29,6 +29,7 @@
 udm::UDM::UDM(const std::string& IRFile)
 : irFile(IRFile)
 {
+    logger = logger::LoggerManager::getInstance()->getLogger("udm");
 }
 
 void udm::UDM::execute()
@@ -39,31 +40,31 @@ void udm::UDM::execute()
     std::unique_ptr<llvm::Module> mod = llvm::parseIRFile(irFile, error, context);
 
     if (!mod) {
-        spdlog::critical("Couldn't open the file with LLVM IR!");
+        logger->critical("Couldn't open the file with LLVM IR!");
         exit(1);
     }
-
-    udm::FunctionsAnalysis fAnalysis;
 
     for(llvm::Function &f: mod->functions())
     {
         udm::FuncInfo funcInfo{f};
+        llvm::PostDominatorTree dt(f);
+        udm::IntervalGraph ig{dt};
+
         if(f.getName() == "calc_sum" || f.getName() == "fibo" || f.getName() =="main" || f.getName() == "n_way_conditional_switch"
             || f.getName() == "while_pre_tested_loop" || f.getName() == "while_post_tested_loop" || f.getName() == "two_way")
         {
-            auto intv = udm::IntervalGraph::intervalsGraph(f, funcInfo);
-            spdlog::info("Function name: <{}>(), length of intervals: {}", f.getName(), intv.size());
+            auto intv = ig.intervalsGraph(f, funcInfo);
+            ig.setIntervals(intv);
+            logger->info("Function name: <{}>(), length of intervals: {}", f.getName(), intv.size());
             for(auto& interval: intv)
             {
-                spdlog::info("Interval size: {}", interval.size());
+                logger->info("Interval size: {}", interval.size());
                 for(auto& bb: interval.getBBlocks())
                 {
-                    spdlog::info("BB in interval: {}", bb->getName());
+                    logger->info("BB in interval: {}", bb->getName());
                 }
             }
 
-            llvm::PostDominatorTree dt(f);
-            udm::IntervalGraph ig{intv, dt};
             ig.loopStructure(funcInfo);
             ig.twoWayConditionalBranch(funcInfo);
             funcInfo.print();

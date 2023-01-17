@@ -1,4 +1,5 @@
 #include "udm/FuncInfo.h"
+#include "logger/LoggerManager.h"
 
 #include <spdlog/spdlog.h>
 
@@ -8,6 +9,7 @@ udm::FuncInfo::FuncInfo(llvm::Function& f)
     {
         addBBInfo(bb.getName().str(), BBInfo());
     }
+    logger = logger::LoggerManager::getInstance()->getLogger("udm");
 }
 
 bool udm::FuncInfo::addBBInfo(const std::string& bbName, const BBInfo& info)
@@ -46,7 +48,7 @@ void udm::FuncInfo::print() const
 {
     for(auto& bb : bbInfo)
     {
-        spdlog::critical("Basic block with label: <{}>:", bb.first);
+        logger->info("Information about BB with label: <{}>:", bb.first);
         bb.second.print();
     }
 }

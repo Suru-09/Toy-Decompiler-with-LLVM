@@ -3,10 +3,13 @@
 
 #include <iostream>
 #include <unordered_map>
+#include <memory>
 
 #include "udm/BBInfo.h"
 
 #include <llvm/IR/Function.h>
+
+#include <spdlog/spdlog.h>
 
 
 namespace udm {
@@ -23,6 +26,8 @@ public:
     BBInfo& operator[](const std::string& bbName);
 private:
     std::unordered_map<std::string, BBInfo> bbInfo;
+    std::shared_ptr<spdlog::logger> logger;
+
 };
 
 }   // namespace udm

@@ -3,10 +3,13 @@
 
 #include <iostream>
 #include <vector>
+#include <memory>
 
 #include <llvm/IR/BasicBlock.h>
+
 #include "FuncInfo.h"
 
+#include <spdlog/spdlog.h>
 
 namespace udm
 {
@@ -18,7 +21,7 @@ namespace udm
 */
 class Interval {
 public:
-    Interval() = default;
+    explicit Interval();
     
     /**
      * @param bb: BasicBlock to be added to the interval.
@@ -112,6 +115,7 @@ public:
 
 private:
     std::vector<llvm::BasicBlock*> bBlocks;
+    std::shared_ptr<spdlog::logger> logger;
 };
 
 } // namespace udm  

@@ -2,11 +2,16 @@
 
 #include "udm/FuncInfo.h"
 #include "utils/UdmUtils.h"
+#include "logger/LoggerManager.h"
 
 #include <llvm/ADT/PostOrderIterator.h>
 #include <llvm/IR/CFG.h>
 
-#include <spdlog/spdlog.h>
+
+udm::Interval::Interval()
+{
+    logger = logger::LoggerManager::getInstance()->getLogger("udm");
+}
 
 bool udm::Interval::containsPredecessors(const std::vector<std::string>& pred) const
 {

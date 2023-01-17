@@ -1,4 +1,5 @@
 #include "udm/BBInfo.h"
+#include "logger/LoggerManager.h"
 
 #include <spdlog/spdlog.h>
 
@@ -7,8 +8,10 @@ isHeader(false),
 isLoop(false),
 isIfStatement(false),
 loopType(LoopType::NONE),
-followNode("Empty")
-{}
+followNode("")
+{
+    logger = logger::LoggerManager::getInstance()->getLogger("udm");
+}
 
 bool udm::BBInfo::getIsHeader() const
 {
@@ -52,11 +55,11 @@ void udm::BBInfo::setLoopType(LoopType loopType)
 
 void udm::BBInfo::print() const
 {
-    spdlog::info("isHeader: {}", isHeader);
-    spdlog::info("isLoop: {}", isLoop);
-    spdlog::info("isIfStatement: {}", isIfStatement);
-    spdlog::info("loopType: {}", getLoopTypeString(static_cast<size_t>(loopType)));
-    spdlog::info("followNode: {}", followNode);
+    logger->info("isHeader: {}", isHeader);
+    logger->info("isLoop: {}", isLoop);
+    logger->info("isIfStatement: {}", isIfStatement);
+    logger->info("loopType: {}", getLoopTypeString(static_cast<size_t>(loopType)));
+    logger->info("followNode: {}", followNode.empty() ? "EMPTY" : followNode);
 }
 
 std::string udm::BBInfo::getLoopTypeString(size_t loopT)

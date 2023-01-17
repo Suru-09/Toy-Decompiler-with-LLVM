@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <vector>
+#include <memory>
 
 #include "udm/Interval.h"
 #include "udm/BBInfo.h"
@@ -11,15 +12,18 @@
 #include <llvm/IR/Dominators.h>
 #include "llvm/Analysis/PostDominators.h"
 
+#include <spdlog/spdlog.h>
+
 namespace udm {
 
 class IntervalGraph {
 public:
-    IntervalGraph() = default;
-    IntervalGraph(const std::vector<Interval>& intervals, llvm::PostDominatorTree& dt);
+    IntervalGraph() = delete;
+    IntervalGraph(llvm::PostDominatorTree& dt);
     
     bool addInterval(Interval interval);
     bool containsInterval(Interval interval) const;
+    void setIntervals(const std::vector<Interval>& intervals);
 
     // Aliases for iterators
     using iterator = std::vector<Interval>::iterator;
@@ -121,10 +125,12 @@ public:
      * Also adds information about each BB in the funcInfo object.
      * @return a IntervalGraph object that represents the intervals of the function.
     */
-    static std::vector<Interval> intervalsGraph(llvm::Function& f, FuncInfo& funcInfo);
+    std::vector<Interval> intervalsGraph(llvm::Function& f, FuncInfo& funcInfo);
 private:
     std::vector<Interval> intervals;
     llvm::PostDominatorTree& dt;
+    std::shared_ptr<spdlog::logger> logger;
+
 };
 
 }  // namespace udm

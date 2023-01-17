@@ -3,7 +3,7 @@
 
 #include "utils/LifterUtils.h"
 #include "udm/UDM.h"
-
+#include "logger/LoggerManager.h"
 
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/basic_file_sink.h" 
@@ -12,8 +12,10 @@
 
 int main(int argc, char** argv) {
    std::string testing_file = "../testing_files/elfC/fibbo_c";
-
    std::shared_ptr<lifter::LifterContext> lifterCtx = utils::getLifterCtx(testing_file);
+
+   //create an instance of logger manager(so that it is already initialized later).
+   logger::LoggerManager* loggerManager = logger::LoggerManager::getInstance();
 
    if(!lifterCtx)
    {
@@ -21,18 +23,6 @@ int main(int argc, char** argv) {
       exit(1);
    }
    
-   // TODO: Modify the way of logging
-   try
-   {
-      auto udmLogger = spdlog::rotating_logger_mt("udm", "../logs/udm.log", 1048576 * 5, 3);
-      auto lifterLogger = spdlog::rotating_logger_mt("lifter", "../logs/lifter.log", 1048576 * 5, 3);
-      auto codeGenLogger = spdlog::rotating_logger_mt("codeGen", "../logs/codeGen.log", 1048576 * 5, 3);
-   }
-   catch(const spdlog::spdlog_ex& ex)
-   {
-      std::cout << "Log init failed: " << ex.what() << std::endl;
-   }
-
    std::unique_ptr<udm::UDM> udm = std::make_unique<udm::UDM>(testing_file + ".ll");
    udm->execute();
    return 0;

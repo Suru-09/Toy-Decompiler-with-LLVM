@@ -2,6 +2,9 @@
 #define __BB_INFO_H__
 
 #include <iostream>
+#include <memory>
+
+#include "spdlog/spdlog.h"
 
 namespace udm {
 
@@ -37,6 +40,8 @@ private:
     bool isHeader;
     bool isLoop;
     bool isIfStatement;
+    std::shared_ptr<spdlog::logger> logger;
+
 };
 
 }   // namespace udm

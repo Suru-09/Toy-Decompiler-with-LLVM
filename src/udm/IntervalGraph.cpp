@@ -1,4 +1,5 @@
 #include "udm/IntervalGraph.h"
+#include "logger/LoggerManager.h"
 
 #include "utils/UdmUtils.h"
 
@@ -12,12 +13,16 @@
 
 #include <spdlog/spdlog.h>
 
-
-udm::IntervalGraph::IntervalGraph(const std::vector<Interval>& intervals, llvm::PostDominatorTree& dt)
-: 
-intervals(intervals),
-dt(dt)
+udm::IntervalGraph::IntervalGraph(llvm::PostDominatorTree& pdt)
+:
+dt(pdt)
 {
+    logger = logger::LoggerManager::getInstance()->getLogger("udm");
+}
+
+void udm::IntervalGraph::setIntervals(const std::vector<Interval>& intervals)
+{
+    this->intervals = intervals;
 }
 
 bool udm::IntervalGraph::addInterval(Interval interval)
@@ -151,7 +156,7 @@ std::vector<udm::Interval>  udm::IntervalGraph::intervalsGraph(llvm::Function& f
        interval.addBlock(bb);
 
         auto predecessors = utils::UdmUtils::getPredecessors(bb);
-        spdlog::debug("Size of predecessors: <{}>", predecessors.size());
+        logger->debug("Size of predecessors: <{}>", predecessors.size());
 
         // If there exists a header after the current interval, the last element of
         // the while loop should become the new header, therefore we need to keep track
@@ -261,7 +266,7 @@ void udm::IntervalGraph::loopStructure(udm::FuncInfo& funcInfo)
     for(auto& interval : intervals)
     { 
         auto backEdge = backEdgeToPreviousInterval(interval);
-        spdlog::critical(
+        logger->critical(
             "Backedge: <{}> -> <{}>",
             backEdge.first,
             backEdge.second );
@@ -279,11 +284,11 @@ void udm::IntervalGraph::loopStructure(udm::FuncInfo& funcInfo)
             if(funcInfo.exists(backEdge.first))
             {
                 auto type = getLoopType(backEdge);
-                spdlog::info("I am setting: <{}> with value: <{}>", backEdge.first, udm::BBInfo::getLoopTypeString(static_cast<size_t>(type)));
+                logger->info("I am setting: <{}> with value: <{}>", backEdge.first, udm::BBInfo::getLoopTypeString(static_cast<size_t>(type)));
                 funcInfo[backEdge.first].setLoopType(type);
 
                 auto follow = getFollowNode(backEdge);
-                spdlog::info("Follow node for backedge: <{}> -> <{}> is: <{}>", backEdge.first, backEdge.second, follow);
+                logger->info("Follow node for backedge: <{}> -> <{}> is: <{}>", backEdge.first, backEdge.second, follow);
                 funcInfo[backEdge.first].setFollowNode(follow);
             }
 
@@ -342,7 +347,7 @@ std::vector<std::string> udm::IntervalGraph::getAllNodesBetweenLatchAndHeader(st
             {
                 // for(auto& tf : nodesBetweenLatchAndHeader)
                 // {
-                //    spdlog::critical("Node between latch and header: <{}>", tf);
+                //    logger->critical("Node between latch and header: <{}>", tf);
                 // }
                 return nodesBetweenLatchAndHeader;
             }
@@ -399,8 +404,8 @@ udm::BBInfo::LoopType udm::IntervalGraph::getLoopType(std::pair<std::string, std
     size_t nodeTypeHeader = getNumSuccessors(backEdge.first); 
     size_t nodeTypeLatch = getNumSuccessors(backEdge.second);
 
-    spdlog::critical("Node header: <{}>", nodeTypeHeader);
-    spdlog::critical("Node latch: <{}>", nodeTypeLatch);
+    logger->critical("Node header: <{}>", nodeTypeHeader);
+    logger->critical("Node latch: <{}>", nodeTypeLatch);
 
     if(nodeTypeHeader >= 2)
     {
@@ -409,7 +414,7 @@ udm::BBInfo::LoopType udm::IntervalGraph::getLoopType(std::pair<std::string, std
             auto bb = getBB(backEdge.second);
             if(!bb)
             {
-                spdlog::critical("BB is null");
+                logger->critical("BB is null");
                 return udm::BBInfo::LoopType::NONE;
             }
             auto predecessors = utils::UdmUtils::getPredecessors(bb);
@@ -461,8 +466,8 @@ std::string udm::IntervalGraph::getFollowNode(std::pair<std::string, std::string
     auto latchSuccesors = utils::UdmUtils::getSuccessors(getBB(backEdge.second));
     auto headerSuccesors = utils::UdmUtils::getSuccessors(getBB(backEdge.first));
 
-    spdlog::critical("Node header follow: <{}>", latchSuccesors.front());
-    spdlog::critical("Node latch follow: <{}>", headerSuccesors.front());
+    logger->critical("Node header follow: <{}>", latchSuccesors.front());
+    logger->critical("Node latch follow: <{}>", headerSuccesors.front());
 
     if(loopType == udm::BBInfo::LoopType::WHILE)
     {
@@ -536,26 +541,26 @@ void udm::IntervalGraph::twoWayConditionalBranch(udm::FuncInfo& funcInfo)
         {
             auto block = *bbIter;
             std::string bb = block->getName().str();
-            spdlog::warn("BB: <{}>", bb);
+            logger->warn("BB: <{}>", bb);
             size_t bbOuterEdge = getNumSuccessors(bb);
             bool isHead = false;
             if(funcInfo.exists(bb))
             {
                 isHead = funcInfo[bb].getIsHeader();
             }
-            spdlog::warn("Outer edges: <{}>", bbOuterEdge);
+            logger->warn("Outer edges: <{}>", bbOuterEdge);
             if( bbOuterEdge >= 2)
             {
                 auto imedDom = findImediateDominator(block);
                 
-                spdlog::warn("is imedDom null?: <{}>", imedDom == nullptr);
+                logger->warn("is imedDom null?: <{}>", imedDom == nullptr);
                 if(!imedDom)
                 {
                     continue;
                 }
                 std::string imed = imedDom->getName().str();
-                spdlog::warn("BB: <{}> imedDom: <{}>", bb, imed);
-                spdlog::warn("Preds: <{}>", getNumPredecessors(imed));
+                logger->warn("BB: <{}> imedDom: <{}>", bb, imed);
+                logger->warn("Preds: <{}>", getNumPredecessors(imed));
 
                 if(getNumPredecessors(imed) >= 2)
                 {

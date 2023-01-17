@@ -10,6 +10,7 @@ set(CXX_FLAGS
 add_subdirectory(utils)
 add_subdirectory(lifter)
 add_subdirectory(udm)
+add_subdirectory(logger)
 
 
 add_executable(${PROJECT_NAME}  
@@ -23,6 +24,7 @@ llvm_map_components_to_libnames(llvm_libs support core irreader object analysis)
 
 target_link_libraries(${PROJECT_NAME} 
     PUBLIC
+        ${PROJECT_NAME}-logger
         ${PROJECT_NAME}-udm
         ${PROJECT_NAME}-utils
         ${PROJECT_NAME}-lifter
