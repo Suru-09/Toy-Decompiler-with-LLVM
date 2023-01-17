@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(TEST_SOURCES
     udm/UdmTest.cpp
     udm/IntervalTest.cpp
+    udm/IntervalGraphTest.cpp
 )
 
 add_executable(${PROJECT_NAME}-test

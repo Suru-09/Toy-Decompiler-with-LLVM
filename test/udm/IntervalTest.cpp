@@ -206,10 +206,3 @@ TEST_F(IntervalTest, EqualOperator)
     ASSERT_TRUE(interval1 == interval3);
     ASSERT_FALSE(interval1 == interval2);
 }
-
-
-
-
-
-
-

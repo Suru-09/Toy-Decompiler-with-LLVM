@@ -260,6 +260,36 @@ bool udm::IntervalGraph::isLowerOrEqBB(std::string firstBB, std::string secondBB
     return false;
 }
 
+void udm::IntervalGraph::setBlocksInLoop(const std::vector<std::string>& blocks, udm::FuncInfo& funcInfo)
+{
+    for(auto& bbName : blocks)
+    {
+        if(funcInfo.exists(bbName))
+        {
+            funcInfo[bbName].setIsLoop(true);
+        }
+    }
+}
+
+void udm::IntervalGraph::setBlockLoopType(const std::pair<std::string, std::string>& backEdge, udm::FuncInfo& funcInfo)
+{
+    if(funcInfo.exists(backEdge.first))
+    {
+        auto type = getLoopType(backEdge);
+        logger->info("I am setting: <{}> with value: <{}>", backEdge.first, udm::BBInfo::getLoopTypeString(static_cast<size_t>(type)));
+        funcInfo[backEdge.first].setLoopType(type);
+    }
+}
+
+void udm::IntervalGraph::setFollowBlock(const std::pair<std::string, std::string>& backEdge, udm::FuncInfo& funcInfo)
+{
+    if(funcInfo.exists(backEdge.first))
+    {
+        auto follow = getFollowNode(backEdge);
+        logger->info("Follow node for backedge: <{}> -> <{}> is: <{}>", backEdge.first, backEdge.second, follow);
+        funcInfo[backEdge.first].setFollowNode(follow);
+    }
+}
 
 void udm::IntervalGraph::loopStructure(udm::FuncInfo& funcInfo)
 {
@@ -271,37 +301,20 @@ void udm::IntervalGraph::loopStructure(udm::FuncInfo& funcInfo)
             backEdge.first,
             backEdge.second );
 
-        if(!backEdge.first.empty())
+        if(backEdge.first.empty())
         {
-            for(auto& bbName: getAllNodesBetweenLatchAndHeader(backEdge))
-            {
-                if( funcInfo.exists(bbName) )
-                {
-                    funcInfo[bbName].setIsLoop(true);
-                }
-            }
-
-            if(funcInfo.exists(backEdge.first))
-            {
-                auto type = getLoopType(backEdge);
-                logger->info("I am setting: <{}> with value: <{}>", backEdge.first, udm::BBInfo::getLoopTypeString(static_cast<size_t>(type)));
-                funcInfo[backEdge.first].setLoopType(type);
-
-                auto follow = getFollowNode(backEdge);
-                logger->info("Follow node for backedge: <{}> -> <{}> is: <{}>", backEdge.first, backEdge.second, follow);
-                funcInfo[backEdge.first].setFollowNode(follow);
-            }
-
-            
+            continue;
         }
+
+        setBlocksInLoop(getAllNodesBetweenLatchAndHeader(backEdge), funcInfo);
+        setBlockLoopType(backEdge, funcInfo);
+        setFollowBlock(backEdge, funcInfo);          
     }
 }
 
 bool udm::IntervalGraph::isBBbeforeInterval(std::string& bbName, udm::Interval interval)
 {
-    int count = 0;
-    bool result = false, startCount = false;
-    for(auto& intv: intervals)
+    for(const auto& intv: intervals)
     {
         if(intv == interval)
         {
@@ -310,17 +323,10 @@ bool udm::IntervalGraph::isBBbeforeInterval(std::string& bbName, udm::Interval i
 
         if(intv.containsBlock(bbName))
         {
-            result = true;
-            startCount = true;
+            return true;
         }
-
-        if(startCount)
-        {
-            count++;
-        }
-        
     }
-    return count > 1 ? false : result;
+    return false;
 }
 
 std::vector<std::string> udm::IntervalGraph::getAllNodesBetweenLatchAndHeader(std::pair<std::string, std::string> backEdge)
@@ -333,7 +339,8 @@ std::vector<std::string> udm::IntervalGraph::getAllNodesBetweenLatchAndHeader(st
     {
         for(auto& bb : interval)
         {
-            if(bb->getName().str() == backEdge.second)
+            const auto& bbName = bb->getName().str();
+            if(bbName == backEdge.second)
             {
                 startAdd = true;
             }
@@ -343,12 +350,8 @@ std::vector<std::string> udm::IntervalGraph::getAllNodesBetweenLatchAndHeader(st
                 nodesBetweenLatchAndHeader.push_back(bb->getName().str());
             }
 
-            if(bb->getName().str() == stop)
+            if(bbName == stop)
             {
-                // for(auto& tf : nodesBetweenLatchAndHeader)
-                // {
-                //    logger->critical("Node between latch and header: <{}>", tf);
-                // }
                 return nodesBetweenLatchAndHeader;
             }
         }
@@ -400,16 +403,16 @@ udm::BBInfo::LoopType udm::IntervalGraph::getLoopType(std::pair<std::string, std
         return udm::BBInfo::LoopType::NONE;
     }
 
-    auto nodesBetweenLatchAndHeader = getAllNodesBetweenLatchAndHeader(backEdge);
-    size_t nodeTypeHeader = getNumSuccessors(backEdge.first); 
-    size_t nodeTypeLatch = getNumSuccessors(backEdge.second);
+    auto nBetweenLatchAndHeader = getAllNodesBetweenLatchAndHeader(backEdge);
+    size_t headerSuccessorsNum = getNumSuccessors(backEdge.first); 
+    size_t latchSuccessorsNum = getNumSuccessors(backEdge.second);
 
-    logger->critical("Node header: <{}>", nodeTypeHeader);
-    logger->critical("Node latch: <{}>", nodeTypeLatch);
+    logger->critical("Node header: <{}>", headerSuccessorsNum);
+    logger->critical("Node latch: <{}>", latchSuccessorsNum);
 
-    if(nodeTypeHeader >= 2)
+    if(headerSuccessorsNum >= 2)
     {
-        if(nodeTypeLatch >= 2)
+        if(latchSuccessorsNum >= 2)
         {   
             auto bb = getBB(backEdge.second);
             if(!bb)
@@ -417,107 +420,104 @@ udm::BBInfo::LoopType udm::IntervalGraph::getLoopType(std::pair<std::string, std
                 logger->critical("BB is null");
                 return udm::BBInfo::LoopType::NONE;
             }
-            auto predecessors = utils::UdmUtils::getPredecessors(bb);
-            for(auto& pred : predecessors)
+
+            auto predVector = utils::UdmUtils::getPredecessors(bb);
+            auto firstPred = predVector.front();
+            if(firstPred == "")
             {
-                if(std::find(nodesBetweenLatchAndHeader.begin(), nodesBetweenLatchAndHeader.end(), pred) != nodesBetweenLatchAndHeader.end())
-                {
-                    return udm::BBInfo::LoopType::DO_WHILE;
-                }
-                else
-                {
-                    return udm::BBInfo::LoopType::WHILE;
-                }
+                logger->critical("First pred is null");
+                return udm::BBInfo::LoopType::NONE;
             }
-        }
-        else
-        {
-            return udm::BBInfo::LoopType::DO_WHILE;
-        }
-    }
-    else
-    {
-        if(nodeTypeLatch >= 2)
-        {
+
+            auto found = std::find(nBetweenLatchAndHeader.begin(), nBetweenLatchAndHeader.end(), firstPred);
+            if(found != nBetweenLatchAndHeader.end())
+            {
+                return udm::BBInfo::LoopType::DO_WHILE;
+            }
+  
             return udm::BBInfo::LoopType::WHILE;
         }
-        else
-        {
-            return udm::BBInfo::LoopType::INFINITE;
-        }
+        return udm::BBInfo::LoopType::DO_WHILE;
     }
-    
 
-    return udm::BBInfo::LoopType::NONE;
+    if(latchSuccessorsNum >= 2)
+    {
+        return udm::BBInfo::LoopType::WHILE;
+    }
+
+    return udm::BBInfo::LoopType::INFINITE;
 }
 
 std::string udm::IntervalGraph::getFollowNode(std::pair<std::string, std::string> backEdge)
-{
-    if(backEdge.first.empty())
+{   
+    std::string header = backEdge.first;
+    std::string latch = backEdge.second;
+
+    if(header.empty())
     {
         return "";
     }
 
-    auto nodesBetweenLatchAndHeader = getAllNodesBetweenLatchAndHeader(backEdge);
-    size_t nodeTypeHeader = getNumSuccessors(backEdge.first); 
-    size_t nodeTypeLatch = getNumSuccessors(backEdge.second);
+    auto nBetweenLatchAndHeader = getAllNodesBetweenLatchAndHeader(backEdge);
+    
+    auto foundNode = [&nBetweenLatchAndHeader](const std::string& node)
+    {
+        auto found = std::find(nBetweenLatchAndHeader.begin(), nBetweenLatchAndHeader.end(), node);
+        return found != nBetweenLatchAndHeader.end();
+    };
 
-    auto loopType = getLoopType(backEdge);
+    auto followNodeFirstSucc = [&](const std::vector<std::string>& successors)
+    {
+        bool foundFirstSucc = foundNode(successors.front()) && successors.front() != header;
+        if(!foundFirstSucc)
+        {
+            return successors.back();
+        }
+        return successors.front();
+    };
+
     auto latchSuccesors = utils::UdmUtils::getSuccessors(getBB(backEdge.second));
-    auto headerSuccesors = utils::UdmUtils::getSuccessors(getBB(backEdge.first));
+    auto headerSuccesors = utils::UdmUtils::getSuccessors(getBB(header));
 
     logger->critical("Node header follow: <{}>", latchSuccesors.front());
     logger->critical("Node latch follow: <{}>", headerSuccesors.front());
 
+    auto loopType = getLoopType(backEdge);
     if(loopType == udm::BBInfo::LoopType::WHILE)
     {
-        auto found = std::find(nodesBetweenLatchAndHeader.begin(), nodesBetweenLatchAndHeader.end(), latchSuccesors.front());
-        bool condition = found == nodesBetweenLatchAndHeader.end() && latchSuccesors.front() != backEdge.first;
-        if(!condition)
-        {
-            return latchSuccesors.back();
-        }
-        else
-        {
-            return latchSuccesors.front();
-        }
+        return followNodeFirstSucc(latchSuccesors);
     }
     else if(loopType == udm::BBInfo::LoopType::DO_WHILE)
     {
-        auto found = std::find(nodesBetweenLatchAndHeader.begin(), nodesBetweenLatchAndHeader.end(), headerSuccesors.front());
-        bool condition = found == nodesBetweenLatchAndHeader.end() && latchSuccesors.front() != backEdge.first;
-        if(!condition)
-        {
-            return headerSuccesors.back();
-        }
-        else
-        {
-            return headerSuccesors.front();
-        }
+        return followNodeFirstSucc(headerSuccesors);
     }
     else if(loopType == udm::BBInfo::LoopType::INFINITE)
     {
-        std::string follow = backEdge.first;
-        for(auto& n: nodesBetweenLatchAndHeader)
+        std::string follow = header;
+        for(auto& n: nBetweenLatchAndHeader)
         {
-            auto foundLatch = std::find(nodesBetweenLatchAndHeader.begin(), nodesBetweenLatchAndHeader.end(), n);
-            if(foundLatch == nodesBetweenLatchAndHeader.end())
+            if(!foundNode(n))
             {
                 continue;
             }
 
-            if(std::find(nodesBetweenLatchAndHeader.begin(), nodesBetweenLatchAndHeader.end(), latchSuccesors.front()) == nodesBetweenLatchAndHeader.end()
-                && isLowerOrEqBB(latchSuccesors.front(), follow) && follow != latchSuccesors.front())
+            auto followSuccInfinite = [&](const std::string& node)
+            {
+                auto found = foundNode(node);
+                return found && follow != node && isLowerOrEqBB(node, follow);
+            };
+
+            if(followSuccInfinite(latchSuccesors.front()))
             {
                 follow = latchSuccesors.front();
             }
-            else if(std::find(nodesBetweenLatchAndHeader.begin(), nodesBetweenLatchAndHeader.end(), latchSuccesors.back()) == nodesBetweenLatchAndHeader.end()
-                && isLowerOrEqBB(latchSuccesors.back(), follow) && follow != latchSuccesors.back())
+            else if(followSuccInfinite(latchSuccesors.back()))
             {
                 follow = latchSuccesors.back();
             }
         }
-        if(follow != backEdge.first)
+        
+        if(follow != header)
         {
             return follow;
         }
@@ -552,7 +552,6 @@ void udm::IntervalGraph::twoWayConditionalBranch(udm::FuncInfo& funcInfo)
             if( bbOuterEdge >= 2)
             {
                 auto imedDom = findImediateDominator(block);
-                
                 logger->warn("is imedDom null?: <{}>", imedDom == nullptr);
                 if(!imedDom)
                 {
@@ -565,9 +564,9 @@ void udm::IntervalGraph::twoWayConditionalBranch(udm::FuncInfo& funcInfo)
                 if(getNumPredecessors(imed) >= 2)
                 {
                     funcInfo[bb].setFollowNode(imed);
-                    for(const auto& notVis: unresolved)
+                    for(const auto& notSolved: unresolved)
                     {
-                        funcInfo[notVis].setFollowNode(imed);
+                        funcInfo[notSolved].setFollowNode(imed);
                     }
                 }
                 else

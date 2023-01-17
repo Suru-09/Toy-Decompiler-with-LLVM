@@ -84,6 +84,9 @@ public:
     */
     void loopStructure(FuncInfo& funcInfo);
 
+    void setBlocksInLoop(const std::vector<std::string>& nodesInLoop, FuncInfo& funcInfo);
+    void setBlockLoopType(const std::pair<std::string, std::string>& backEdge, FuncInfo& funcInfo);
+    void setFollowBlock(const std::pair<std::string, std::string>& backEdge, FuncInfo& funcInfo);
 
     /**
      * @param bb : Basic block to be searched.
