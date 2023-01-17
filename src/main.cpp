@@ -11,7 +11,7 @@
 
 
 int main(int argc, char** argv) {
-   std::string testing_file = "../testing_files/elfC/loops";
+   std::string testing_file = "../testing_files/elfC/test";
    std::shared_ptr<lifter::LifterContext> lifterCtx = utils::getLifterCtx(testing_file);
 
    //create an instance of logger manager(so that it is already initialized later).

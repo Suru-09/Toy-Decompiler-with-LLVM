@@ -166,12 +166,12 @@ llvm::BasicBlock* udm::Interval::operator[](size_t index) const noexcept
     return index > bBlocks.size() ? nullptr : bBlocks[index];
 }
 
-udm::Interval::iterator udm::Interval::begin() noexcept
+udm::Interval::iterator udm::Interval::begin()
 {
     return bBlocks.begin();
 }
 
-udm::Interval::iterator udm::Interval::end() noexcept
+udm::Interval::iterator udm::Interval::end()
 {
     return bBlocks.end();
 }
@@ -192,16 +192,6 @@ udm::Interval::reverse_iterator udm::Interval::rbegin()
 }
 
 udm::Interval::reverse_iterator udm::Interval::rend()
-{
-    return bBlocks.rend();
-}
-
-udm::Interval::const_reverse_iterator udm::Interval::crbegin()
-{
-    return bBlocks.rbegin();
-}
-
-udm::Interval::const_reverse_iterator udm::Interval::crend()
 {
     return bBlocks.rend();
 }

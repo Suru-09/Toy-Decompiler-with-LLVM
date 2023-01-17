@@ -29,21 +29,16 @@ public:
     using iterator = std::vector<Interval>::iterator;
     using reverse_iterator = std::vector<Interval>::reverse_iterator;
     using const_iterator = std::vector<Interval>::const_iterator;
-    using const_reverse_iterator = std::vector<Interval>::const_reverse_iterator;
 
     iterator begin() noexcept;
     const_iterator begin() const noexcept;
     const_iterator cbegin() const noexcept;
     reverse_iterator rbegin() noexcept;
-    const_reverse_iterator rbegin() const noexcept;
-    const_reverse_iterator crbegin() const noexcept;
 
     iterator end() noexcept;
     const_iterator end() const noexcept;
     const_iterator cend() const noexcept;
     reverse_iterator rend() noexcept;
-    const_reverse_iterator rend() const noexcept;
-    const_reverse_iterator crend() const noexcept;
 
     // Interval Graph size methods
     size_t size() const noexcept;
@@ -61,13 +56,32 @@ public:
     */
     std::pair<std::string, std::string> backEdgeToPreviousInterval(Interval interval);
 
+    /**
+     * @param firstBB: First basic block to be compared.
+     * @param secondBB: Second basic block to be compared.
+     * @brief Compares two basic blocks and checks if the first basic block is before or
+     * the same as the second basic block.
+     * @return true if the first basic block is before or the same as the second basic block.
+    */
     bool isLowerOrEqBB(std::string firstBB, std::string secondBB);
     size_t getNumSuccessors(std::string bbName);
     size_t getNumPredecessors(std::string bbName);
+
+    /**
+     * @param bbName: Name of the basic block.
+     * @brief Gets the basic block with the given name.
+     * @return llvm::BasicBlock* if the basic block is found, nullptr otherwise.
+    */
     llvm::BasicBlock* getBB(std::string bbName);
 
-
-    std::string getFollowNode(std::pair<std::string, std::string> backEdge);
+    
+    /**
+     * @param backEdge: pair<string, string> where first string is the header and the second string 
+     * is the latch of the previous interval.
+     * @brief Calculates the follow block of the loop/condition.
+     * @return string with the name of the follow block.
+    */
+    std::string getFollowBlock(const std::pair<std::string, std::string>& backEdge);
 
     /**
      * @param backEdge: pair<string, string> where first string is the header and the second string 
@@ -84,9 +98,36 @@ public:
     */
     void loopStructure(FuncInfo& funcInfo);
 
-    void setBlocksInLoop(const std::vector<std::string>& nodesInLoop, FuncInfo& funcInfo);
+    /**
+     * @param blocksInLoop: vector of strings that contains the names of the block in the loop.
+     * @param funcInfo: FuncInfo object that contains the information about the function.
+     * @brief Calculates the control flow structures of the function and completes information
+     * about the function such as follow node and loop type.
+    */
+    void setBlocksInLoop(const std::vector<std::string>& blocksInLoop, FuncInfo& funcInfo);
+
+
+    /**
+     * @param backEdge: pair<string, string> where first string is the header and the second string
+     * @param funcInfo: FuncInfo object that contains the information about the function.
+     * @brief Calculate the loop type of the back edge and sets it in funcInfo.
+    */
     void setBlockLoopType(const std::pair<std::string, std::string>& backEdge, FuncInfo& funcInfo);
+
+    /**
+     * @param backEdge: pair<string, string> where first string is the header and the second string 
+     * is the latch of the previous interval.
+     * @param funcInfo: FuncInfo object that contains the information about the function.
+     * @brief Calculates the follow block of the loop/condition and sets it in funcInfo.
+    */
     void setFollowBlock(const std::pair<std::string, std::string>& backEdge, FuncInfo& funcInfo);
+
+    /**
+     * @param headers: vector of intervals that contains the headers of the intervals.
+     * @param funcInfo: FuncInfo object that contains the information about the function.
+     * @brief Sets the headers of the intervals in funcInfo.
+    */
+    void setHeadersOfIntervals(udm::Interval& headers, FuncInfo& funcInfo);
 
     /**
      * @param bb : Basic block to be searched.
@@ -110,7 +151,7 @@ public:
      * @brief Calculates the nodes between the latch and the header of the back edge.
      * @return a vector of strings that contains the names of the nodes between the latch and the header.
     */
-    std::vector<std::string> getAllNodesBetweenLatchAndHeader(std::pair<std::string, std::string> backEdge);
+    std::vector<std::string> getBlocksBetweenLatchAndHeader(std::pair<std::string, std::string> backEdge);
 
 
     /**
@@ -119,7 +160,7 @@ public:
      * @brief Checks if the basic block is before the interval.
      * @return true if the basic block is before the interval, false otherwise.
     */
-    bool isBBbeforeInterval(std::string& bbName, Interval interval);
+    bool isBBlockbeforeInterval(std::string& bbName, Interval interval);
 
     /**
      * @param f: Function to be analyzed.

@@ -101,10 +101,8 @@ public:
     // Iterators
     reverse_iterator rbegin();
     reverse_iterator rend();
-    const_reverse_iterator crbegin();
-    const_reverse_iterator crend();
-    iterator begin() noexcept;
-    iterator end() noexcept;
+    iterator begin();
+    iterator end();
     const_iterator cbegin() const noexcept;
     const_iterator cend() const noexcept;
 

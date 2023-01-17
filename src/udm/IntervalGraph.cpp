@@ -74,16 +74,6 @@ udm::IntervalGraph::reverse_iterator udm::IntervalGraph::rbegin() noexcept
     return intervals.rbegin();
 }
 
-udm::IntervalGraph::const_reverse_iterator udm::IntervalGraph::rbegin() const noexcept
-{
-    return intervals.rbegin();
-}
-
-udm::IntervalGraph::const_reverse_iterator udm::IntervalGraph::crbegin() const noexcept
-{
-    return intervals.crbegin();
-}
-
 udm::IntervalGraph::iterator udm::IntervalGraph::end() noexcept
 {
     return intervals.end();
@@ -102,16 +92,6 @@ udm::IntervalGraph::const_iterator udm::IntervalGraph::cend() const noexcept
 udm::IntervalGraph::reverse_iterator udm::IntervalGraph::rend() noexcept
 {
     return intervals.rend();
-}
-
-udm::IntervalGraph::const_reverse_iterator udm::IntervalGraph::rend() const noexcept
-{
-    return intervals.rend();
-}
-
-udm::IntervalGraph::const_reverse_iterator udm::IntervalGraph::crend() const noexcept
-{
-    return intervals.crend();
 }
 
 size_t udm::IntervalGraph::size() const noexcept
@@ -134,88 +114,50 @@ const udm::Interval& udm::IntervalGraph::operator[](size_t index) const noexcept
     return intervals[index];
 }
 
-std::vector<udm::Interval>  udm::IntervalGraph::intervalsGraph(llvm::Function& f, udm::FuncInfo& funcInfo)
+void udm::IntervalGraph::setHeadersOfIntervals(udm::Interval& headers, FuncInfo& funcInfo)
 {
-    std::vector<udm::Interval> intervals;
-    std::vector<llvm::BasicBlock*> headers;
-    llvm::ReversePostOrderTraversal<llvm::Function*> rpot(&f);
-    auto ri = rpot.begin();
-
-    while(ri != rpot.end())
+    for(const auto& h: headers)
     {
-       llvm::BasicBlock* bb = (*ri);
-       udm::Interval interval;
+        if(funcInfo.exists(h->getName().str()))
+        {
+            funcInfo[h->getName().str()].setIsHeader(true);
+        }
+    }
+}
 
-       // the first basic block in a function is always a header
-       if(headers.empty())
-       {
-            headers.push_back(bb);
-       }
-       // also a header is also contained in the interval
-       interval.addBlock(headers.back());
-       interval.addBlock(bb);
+std::vector<udm::Interval> udm::IntervalGraph::intervalsGraph(llvm::Function& f, udm::FuncInfo& funcInfo)
+{
+    llvm::ReversePostOrderTraversal<llvm::Function*> rpot(&f);
+    udm::Interval headers;
+    udm::Interval interval;
+    std::vector<udm::Interval> intervals;
+
+    for(auto& bb : rpot)
+    {
+        // the first basic block in a function is always a header
+        if(headers.isEmpty())
+        {
+            headers.addBlock(bb);
+        }
+        interval.addBlock(bb);
 
         auto predecessors = utils::UdmUtils::getPredecessors(bb);
         logger->debug("Size of predecessors: <{}>", predecessors.size());
-
-        // If there exists a header after the current interval, the last element of
-        // the while loop should become the new header, therefore we need to keep track
-        // if the final element was processed or not
-        bool lastElementWasInInterval = false;
-        while(interval.containsBlocks(predecessors))
+        if(interval.containsBlocks(predecessors))
         {
-            ++ri;
-            if(ri == rpot.end())
-            {
-                break;
-            }
-            bb = (*ri);
-            predecessors = utils::UdmUtils::getPredecessors(bb);
-            if(!interval.containsBlocks(predecessors))
-            {
-                lastElementWasInInterval = true;
-                break;
-            }
-            interval.addBlock(bb);
+           interval.addBlock(bb);
+           continue; 
         }
 
-        // if there any more basic blocks, add the next one as a header
-        if(ri != rpot.end())
-        {
-            if(!lastElementWasInInterval)
-            {
-                ++ri;
-            }
-            
-            
-            if(ri != rpot.end())
-            {
-                llvm::BasicBlock* next = (*ri);
-                headers.push_back(next);
-                ++ri;
-            }
-        }
-       intervals.emplace_back(interval);
+        headers.addBlock(bb);
+        intervals.emplace_back(interval);
+        interval.clear();
     }
-
-    // if the last interval does not contain the last header, add it
-    // special case when the last basic block is an entire interval
-    if(!intervals.back().containsBlock(headers.back()))
-    {   
-        Interval inter;
-        inter.addBlock(headers.back());
-        intervals.emplace_back(inter);
-    }
-
+    intervals.emplace_back(interval);
+    
     //add info about headers in function information
-    for(auto& h: headers)
-    {
-        auto hName = h->getName().str();
-        if(funcInfo.exists(hName))
-        {
-            funcInfo[hName].setIsHeader(true);
-        }
-    }
+    setHeadersOfIntervals(headers, funcInfo);
+
     return intervals;
 }
 
@@ -232,7 +174,6 @@ std::pair<std::string, std::string> udm::IntervalGraph::backEdgeToPreviousInterv
             }
         }
     }
-    
     return std::make_pair("", "");
 }
 
@@ -285,7 +226,7 @@ void udm::IntervalGraph::setFollowBlock(const std::pair<std::string, std::string
 {
     if(funcInfo.exists(backEdge.first))
     {
-        auto follow = getFollowNode(backEdge);
+        auto follow = getFollowBlock(backEdge);
         logger->info("Follow node for backedge: <{}> -> <{}> is: <{}>", backEdge.first, backEdge.second, follow);
         funcInfo[backEdge.first].setFollowNode(follow);
     }
@@ -306,13 +247,13 @@ void udm::IntervalGraph::loopStructure(udm::FuncInfo& funcInfo)
             continue;
         }
 
-        setBlocksInLoop(getAllNodesBetweenLatchAndHeader(backEdge), funcInfo);
+        setBlocksInLoop(getBlocksBetweenLatchAndHeader(backEdge), funcInfo);
         setBlockLoopType(backEdge, funcInfo);
         setFollowBlock(backEdge, funcInfo);          
     }
 }
 
-bool udm::IntervalGraph::isBBbeforeInterval(std::string& bbName, udm::Interval interval)
+bool udm::IntervalGraph::isBBlockbeforeInterval(std::string& bbName, udm::Interval interval)
 {
     for(const auto& intv: intervals)
     {
@@ -329,7 +270,7 @@ bool udm::IntervalGraph::isBBbeforeInterval(std::string& bbName, udm::Interval i
     return false;
 }
 
-std::vector<std::string> udm::IntervalGraph::getAllNodesBetweenLatchAndHeader(std::pair<std::string, std::string> backEdge)
+std::vector<std::string> udm::IntervalGraph::getBlocksBetweenLatchAndHeader(std::pair<std::string, std::string> backEdge)
 {
     bool startAdd = false;
     std::string stop = backEdge.first;
@@ -403,7 +344,7 @@ udm::BBInfo::LoopType udm::IntervalGraph::getLoopType(std::pair<std::string, std
         return udm::BBInfo::LoopType::NONE;
     }
 
-    auto nBetweenLatchAndHeader = getAllNodesBetweenLatchAndHeader(backEdge);
+    auto nBetweenLatchAndHeader = getBlocksBetweenLatchAndHeader(backEdge);
     size_t headerSuccessorsNum = getNumSuccessors(backEdge.first); 
     size_t latchSuccessorsNum = getNumSuccessors(backEdge.second);
 
@@ -448,7 +389,7 @@ udm::BBInfo::LoopType udm::IntervalGraph::getLoopType(std::pair<std::string, std
     return udm::BBInfo::LoopType::INFINITE;
 }
 
-std::string udm::IntervalGraph::getFollowNode(std::pair<std::string, std::string> backEdge)
+std::string udm::IntervalGraph::getFollowBlock(const std::pair<std::string, std::string>& backEdge)
 {   
     std::string header = backEdge.first;
     std::string latch = backEdge.second;
@@ -458,7 +399,7 @@ std::string udm::IntervalGraph::getFollowNode(std::pair<std::string, std::string
         return "";
     }
 
-    auto nBetweenLatchAndHeader = getAllNodesBetweenLatchAndHeader(backEdge);
+    auto nBetweenLatchAndHeader = getBlocksBetweenLatchAndHeader(backEdge);
     
     auto foundNode = [&nBetweenLatchAndHeader](const std::string& node)
     {
