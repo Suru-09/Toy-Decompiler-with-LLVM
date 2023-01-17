@@ -5,18 +5,12 @@ set(CMAKE_CXX_STANDARD 17)
 
 set(TEST_SOURCES
     udm/UdmTest.cpp
+    udm/IntervalTest.cpp
 )
 
 add_executable(${PROJECT_NAME}-test
-        main.cpp
         ${TEST_SOURCES}
-)
-
-target_include_directories(${PROJECT_NAME}-test
-    PRIVATE
-        ${gtest_SOURCE_DIR}/include 
-        ${gtest_SOURCE_DIR}
-        ${INCL_DIR}
+        main.cpp
 )
 
 # Selecting which libraries of LLVM are being used
@@ -27,9 +21,8 @@ llvm_map_components_to_libnames(llvm_libs support core irreader object analysis)
 # linking the google library
 target_link_libraries(${PROJECT_NAME}-test
     PRIVATE
-        gtest
-        gtest_main
         ${PROJECT_NAME}-udm
+        ${PROJECT_NAME}-logger
         ${PROJECT_NAME}-utils
         ${PROJECT_NAME}-lifter
         ${Capstone_LIB}/libcapstone.a
@@ -37,4 +30,18 @@ target_link_libraries(${PROJECT_NAME}-test
         # -> linking errors in .txt sections of own libs)
         ${llvm_libs}
         spdlog::spdlog
+        gtest
+        gtest_main
+)
+
+target_include_directories(${PROJECT_NAME}-test
+    PRIVATE
+        ${gtest_SOURCE_DIR}/include 
+        ${gtest_SOURCE_DIR}
+        ${INCL_DIR}
+)
+
+target_compile_options(${PROJECT_NAME}
+    PRIVATE
+        ${CXX_FLAGS}
 )

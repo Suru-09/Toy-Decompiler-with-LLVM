@@ -162,7 +162,7 @@ std::vector<udm::Interval>  udm::IntervalGraph::intervalsGraph(llvm::Function& f
         // the while loop should become the new header, therefore we need to keep track
         // if the final element was processed or not
         bool lastElementWasInInterval = false;
-        while(interval.containsPredecessors(predecessors))
+        while(interval.containsBlocks(predecessors))
         {
             ++ri;
             if(ri == rpot.end())
@@ -171,7 +171,7 @@ std::vector<udm::Interval>  udm::IntervalGraph::intervalsGraph(llvm::Function& f
             }
             bb = (*ri);
             predecessors = utils::UdmUtils::getPredecessors(bb);
-            if(!interval.containsPredecessors(predecessors))
+            if(!interval.containsBlocks(predecessors))
             {
                 lastElementWasInInterval = true;
                 break;

@@ -13,7 +13,7 @@ udm::Interval::Interval()
     logger = logger::LoggerManager::getInstance()->getLogger("udm");
 }
 
-bool udm::Interval::containsPredecessors(const std::vector<std::string>& pred) const
+bool udm::Interval::containsBlocks(const std::vector<std::string>& pred) const
 {
     for(auto& bbName: pred)
     {

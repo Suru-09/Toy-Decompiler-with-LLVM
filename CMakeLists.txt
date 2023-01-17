@@ -73,6 +73,9 @@ set(INCL_DIR
     $<$<STREQUAL:"${arch}","arm64">:${fmt_INCLUDE_DIRS}>
 )
 
+set(CXX_FLAGS 
+    -O3
+)
 
 add_subdirectory(src)
 add_subdirectory(test)

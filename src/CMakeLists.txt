@@ -3,14 +3,11 @@ cmake_minimum_required(VERSION 3.22)
 set(CMAKE_CXX_REQUIRED 17)
 SET(CMAKE_CXX_STANDARD 17)
 
-set(CXX_FLAGS 
-    -O3
-)
 
+add_subdirectory(logger)
 add_subdirectory(utils)
 add_subdirectory(lifter)
 add_subdirectory(udm)
-add_subdirectory(logger)
 
 
 add_executable(${PROJECT_NAME}  
@@ -23,9 +20,9 @@ add_executable(${PROJECT_NAME}
 llvm_map_components_to_libnames(llvm_libs support core irreader object analysis)
 
 target_link_libraries(${PROJECT_NAME} 
-    PUBLIC
-        ${PROJECT_NAME}-logger
+    PRIVATE
         ${PROJECT_NAME}-udm
+        ${PROJECT_NAME}-logger
         ${PROJECT_NAME}-utils
         ${PROJECT_NAME}-lifter
         ${Capstone_LIB}/libcapstone.a

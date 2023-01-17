@@ -52,7 +52,7 @@ public:
      * @brief Checks if all the predecessors are in the interval.
      * @return true  if all the predecessors are in the interval, false otherwise.
     */
-    bool containsPredecessors(const std::vector<std::string>& pred) const;
+    bool containsBlocks(const std::vector<std::string>& pred) const;
 
     /**
      * @param bb: BasicBlock to be checked.
