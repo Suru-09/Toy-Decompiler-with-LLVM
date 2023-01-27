@@ -8,6 +8,7 @@ add_subdirectory(logger)
 add_subdirectory(utils)
 add_subdirectory(lifter)
 add_subdirectory(udm)
+#add_subdirectory(codeGen)
 
 
 add_executable(${PROJECT_NAME}  
@@ -25,6 +26,7 @@ target_link_libraries(${PROJECT_NAME}
         ${PROJECT_NAME}-logger
         ${PROJECT_NAME}-utils
         ${PROJECT_NAME}-lifter
+        #${PROJECT_NAME}-codeGen
         ${Capstone_LIB}/libcapstone.a
         # DO NOT MOVE LLVM UPPER(it will try to link it wrongly 
         # -> linking errors in .txt sections of own libs)

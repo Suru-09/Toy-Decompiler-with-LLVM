@@ -67,6 +67,7 @@ set(INCL_DIR
     ${CMAKE_BINARY_DIR}
     ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/test
+    ${CMAKE_SOURCE_DIR}/testing_files
     ${Capstone_INCLUDE}
     ${LLVM_INCLUDE_DIRS}
     ${spdlog_INCLUDE_DIRS}

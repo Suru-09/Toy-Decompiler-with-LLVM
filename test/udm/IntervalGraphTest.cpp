@@ -64,7 +64,7 @@ public:
         return {};
     }
 
-    const std::string& test_fibo = "test.ll";
+    const std::string& test_fibo = "elfC/test.ll";
     const std::string& test = "../../testing_files/elfC/test.ll";
     const std::string& test_loops = "../../testing_files/elfC/loops.ll";
 private:
