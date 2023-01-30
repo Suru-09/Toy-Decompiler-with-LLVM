@@ -8,7 +8,7 @@ add_subdirectory(logger)
 add_subdirectory(utils)
 add_subdirectory(lifter)
 add_subdirectory(udm)
-#add_subdirectory(codeGen)
+add_subdirectory(codeGen)
 
 
 add_executable(${PROJECT_NAME}  

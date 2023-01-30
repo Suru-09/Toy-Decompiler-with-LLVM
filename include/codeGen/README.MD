@@ -1,8 +1,7 @@
 # **Code Generation**
-
 ## **Scope**
 --------------
-        In the preceding stages of decompilation, we have meticulously collected and analyzed information about the binary file. At this juncture, we have successfully assimilated this data into the FuncInfo class. We have a clear understanding of the location and structure of loops and conditional statements, including the headers, branching conditions and subsequent nodes. It is now time to commence the process of generating code, utilizing the information we have gathered.
+In the preceding stages of decompilation, we have meticulously collected and analyzed information about the binary file. At this juncture, we have successfully assimilated this data into the FuncInfo class. We have a clear understanding of the location and structure of loops and conditional statements, including the headers, branching conditions and subsequent nodes. It is now time to commence the process of generating code, utilizing the information we have gathered.
 
 ## **How we will generate**
 ---------------
