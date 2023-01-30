@@ -70,14 +70,13 @@ void udm::UDM::execute()
             funcInfo.print();
             // add the function information to the map to be
             // used later in code generation
-            funcInfoMap.insert({f.getName().str(), funcInfo});
+            funcInfoMap.emplace(f.getName().str(), funcInfo);
         }
         
-    }   
-
+    }
 }
 
-std::unordered_map<std::string, udm::FuncInfo>& udm::UDM::getFuncInfoMap()
+std::unordered_map<std::string, udm::FuncInfo> udm::UDM::getFuncInfoMap()
 {
     return funcInfoMap;
 }

@@ -62,6 +62,17 @@ void udm::BBInfo::print() const
     logger->info("followNode: {}", followNode.empty() ? "EMPTY" : followNode);
 }
 
+std::string udm::BBInfo::toString() const
+{
+    std::string str = "";
+    str += "isHeader: " + std::to_string(isHeader) + "\n";
+    str += "isLoop: " + std::to_string(isLoop) + "\n";
+    str += "isIfStatement: " + std::to_string(isIfStatement) + "\n";
+    str += "loopType: " + getLoopTypeString(static_cast<size_t>(loopType)) + "\n";
+    str += "followNode: " + (followNode.empty() ? "EMPTY" : followNode) + "\n";
+    return str;
+}
+
 std::string udm::BBInfo::getLoopTypeString(size_t loopT)
 {
     switch (loopT)

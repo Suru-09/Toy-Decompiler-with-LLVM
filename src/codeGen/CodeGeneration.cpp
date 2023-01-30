@@ -33,14 +33,29 @@ void codeGen::CodeGeneration::generate() {
         exit(1);
     }
 
+    auto isFnInInfoMap = [&](const std::string& fnName) {
+        if(!funcInfoMap.empty())
+        {
+            return funcInfoMap.find(fnName) != funcInfoMap.end();
+        }
+        return false;
+    };
+
     for(llvm::Function &f: mod->functions())
     {
+        auto fName = f.getName().str();
+        auto funcInfo = funcInfoMap[fName];
+        std::string decompiledFn = "";
         if(f.getName() == "calc_sum" || f.getName() == "fibo" || f.getName() =="main" || f.getName() == "n_way_conditional_switch"
             || f.getName() == "while_pre_tested_loop" || f.getName() == "while_post_tested_loop" || f.getName() == "two_way")
         {
             llvm::ReversePostOrderTraversal<llvm::Function*> rpot(&f);
             for(auto& bb: rpot)
             {
+                auto bbName = bb->getName().str();
+                auto bbInfo = funcInfo.getBBInfo(bbName);
+                logger->error("BB Info: {}", bbInfo.toString());
+                
                 logger->info("Basic block: {}", bb->getName());
                 for(auto& inst: *bb)
                 {
@@ -57,9 +72,9 @@ void codeGen::CodeGeneration::generate() {
     }
 }
 
-codeGen::CodeGeneration::CodeGeneration(const std::string& irFile, std::unordered_map<std::string, udm::FuncInfo>& funcInfoMap) 
+codeGen::CodeGeneration::CodeGeneration(const std::string& irFile, std::unordered_map<std::string, udm::FuncInfo> fnInfoMap) 
 : irFile(irFile), 
-funcInfoMap(funcInfoMap) 
+funcInfoMap(fnInfoMap) 
 {
     logger = logger::LoggerManager::getInstance()->getLogger("codeGen");
 }

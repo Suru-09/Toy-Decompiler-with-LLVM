@@ -52,3 +52,14 @@ void udm::FuncInfo::print() const
         bb.second.print();
     }
 }
+
+std::string udm::FuncInfo::toString() const
+{
+    std::string str = "";
+    for(auto& bb : bbInfo)
+    {
+        str += "Information about BB with label: <" + bb.first + ">:";
+        str += bb.second.toString();
+    }
+    return str;
+}

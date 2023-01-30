@@ -29,8 +29,10 @@ int main(int argc, char** argv) {
    std::unique_ptr<udm::UDM> udm = std::make_unique<udm::UDM>(irFile);
    udm->execute();
 
+   auto funcInfoMap = udm->getFuncInfoMap();
+   
    std::unique_ptr<codeGen::CodeGeneration> codeGen = 
-      std::make_unique<codeGen::CodeGeneration>(irFile, udm->getFuncInfoMap());
+      std::make_unique<codeGen::CodeGeneration>(irFile, funcInfoMap);
    codeGen->generate();
    return 0;
 }

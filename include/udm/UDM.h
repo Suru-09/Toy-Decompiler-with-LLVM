@@ -20,7 +20,7 @@ public:
     UDM(const std::string& IRFile);
     void execute();
     void printLoops(llvm::Function& f);
-    std::unordered_map<std::string, udm::FuncInfo>& getFuncInfoMap();
+    std::unordered_map<std::string, udm::FuncInfo> getFuncInfoMap();
 private:
     std::string irFile;
     std::unordered_map<std::string, udm::FuncInfo> funcInfoMap;

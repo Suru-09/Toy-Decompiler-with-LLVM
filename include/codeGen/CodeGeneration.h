@@ -13,13 +13,13 @@ namespace codeGen {
 
 class CodeGeneration {
 public:
-    CodeGeneration(const std::string& irFile, std::unordered_map<std::string, udm::FuncInfo>& funcInfoMap);
+    CodeGeneration(const std::string& irFile, std::unordered_map<std::string, udm::FuncInfo> fnInfoMap);
     ~CodeGeneration() = default;
 
     void generate();
 private:
     std::string irFile;
-    std::unordered_map<std::string, udm::FuncInfo>& funcInfoMap;
+    std::unordered_map<std::string, udm::FuncInfo> funcInfoMap;
     std::shared_ptr<spdlog::logger> logger;
 };
 

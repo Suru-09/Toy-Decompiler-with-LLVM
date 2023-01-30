@@ -34,6 +34,7 @@ public:
 
     static std::string getLoopTypeString(size_t loopT);
     void print() const;
+    std::string toString() const;
 private:
     LoopType loopType;
     std::string followNode;
