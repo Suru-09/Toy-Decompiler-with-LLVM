@@ -6,8 +6,11 @@
 namespace codeGen {
 
 class BitwiseBinaryInstruction : public codeGen::Instruction {
+public:
+    BitwiseBinaryInstruction(llvm::Instruction& inst);
+    ~BitwiseBinaryInstruction() = default;
 
-
+    std::string toString() override;
 };
 
 }   // namespace codeGen

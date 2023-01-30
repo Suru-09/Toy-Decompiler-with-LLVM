@@ -68,10 +68,18 @@ void udm::UDM::execute()
             ig.loopStructure(funcInfo);
             ig.twoWayConditionalBranch(funcInfo);
             funcInfo.print();
+            // add the function information to the map to be
+            // used later in code generation
+            funcInfoMap.insert({f.getName().str(), funcInfo});
         }
         
     }   
 
+}
+
+std::unordered_map<std::string, udm::FuncInfo>& udm::UDM::getFuncInfoMap()
+{
+    return funcInfoMap;
 }
 
 void udm::UDM::printLoops(llvm::Function &F) {

@@ -6,6 +6,11 @@
 namespace codeGen {
 
 class TerminatorInstruction : public codeGen::Instruction {
+public:
+    TerminatorInstruction(llvm::Instruction& inst);
+    ~TerminatorInstruction() = default;
+
+    std::string toString() override;
 
 };
 

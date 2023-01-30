@@ -6,7 +6,11 @@
 namespace codeGen{
 
 class UnaryInstruction : public codeGen::Instruction {
+public:
+    UnaryInstruction(llvm::Instruction& inst);
+    ~UnaryInstruction() = default;
 
+    std::string toString() override;
 };
 
 }   // namespace codeGen
