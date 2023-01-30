@@ -33,42 +33,43 @@ void codeGen::CodeGeneration::generate() {
         exit(1);
     }
 
-    auto isFnInInfoMap = [&](const std::string& fnName) {
-        if(!funcInfoMap.empty())
-        {
-            return funcInfoMap.find(fnName) != funcInfoMap.end();
-        }
-        return false;
-    };
-
     for(llvm::Function &f: mod->functions())
     {
         auto fName = f.getName().str();
         auto funcInfo = funcInfoMap[fName];
-        std::string decompiledFn = "";
-        if(f.getName() == "calc_sum" || f.getName() == "fibo" || f.getName() =="main" || f.getName() == "n_way_conditional_switch"
-            || f.getName() == "while_pre_tested_loop" || f.getName() == "while_post_tested_loop" || f.getName() == "two_way")
+        processFunction(f, funcInfo);
+    }
+}
+
+void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::FuncInfo& funcInfo)
+{
+    std::vector<std::string> functionNames = {"calc_sum", 
+    "fibo", "main", "n_way_conditional_switch", "while_pre_tested_loop",
+    "while_post_tested_loop", "two_way"
+    };
+    
+    if(std::find(functionNames.begin(), functionNames.end(), f.getName().str()) == functionNames.end())
+    {
+        return;
+    }
+
+    llvm::ReversePostOrderTraversal<llvm::Function*> rpot(&f);
+    for(auto& bb: rpot)
+    {
+        auto bbName = bb->getName().str();
+        auto bbInfo = funcInfo.getBBInfo(bbName);
+        logger->info("Basic block: {}", bb->getName());
+        logger->error("BB Info: {}", bbInfo.toString());
+        
+        for(auto& inst: *bb)
         {
-            llvm::ReversePostOrderTraversal<llvm::Function*> rpot(&f);
-            for(auto& bb: rpot)
+            logger->info("Instruction: {}", inst.getOpcodeName());
+            auto instruction = codeGen::Instruction::getInstruction(inst);
+            if(instruction)
             {
-                auto bbName = bb->getName().str();
-                auto bbInfo = funcInfo.getBBInfo(bbName);
-                logger->error("BB Info: {}", bbInfo.toString());
-                
-                logger->info("Basic block: {}", bb->getName());
-                for(auto& inst: *bb)
-                {
-                    logger->info("Instruction: {}", inst.getOpcodeName());
-                    auto instruction = codeGen::Instruction::getInstruction(inst);
-                    if(instruction)
-                    {
-                        auto str = instruction->toString();
-                    }
-                }
+                auto str = instruction->toString();
             }
         }
-        
     }
 }
 

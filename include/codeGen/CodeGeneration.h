@@ -15,11 +15,13 @@ class CodeGeneration {
 public:
     CodeGeneration(const std::string& irFile, std::unordered_map<std::string, udm::FuncInfo> fnInfoMap);
     ~CodeGeneration() = default;
-
     void generate();
 private:
+    void processFunction(llvm::Function& f, const udm::FuncInfo& funcInfo);
+
     std::string irFile;
     std::unordered_map<std::string, udm::FuncInfo> funcInfoMap;
+    std::unordered_map<std::string, std::string> decompiledFunctions;
     std::shared_ptr<spdlog::logger> logger;
 };
 

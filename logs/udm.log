@@ -1,116 +1,78 @@
-[2023-01-30 13:28:12.025] [udm] [info] Function name: <calc_sum>(), length of intervals: 6
-[2023-01-30 13:28:12.025] [udm] [info] Interval size: 3
-[2023-01-30 13:28:12.025] [udm] [info] BB in interval: dec_label_pc_1149
-[2023-01-30 13:28:12.025] [udm] [info] BB in interval: dec_label_pc_1188.preheader.lr.ph
-[2023-01-30 13:28:12.025] [udm] [info] BB in interval: dec_label_pc_1188.preheader
-[2023-01-30 13:28:12.025] [udm] [info] Interval size: 1
-[2023-01-30 13:28:12.025] [udm] [info] BB in interval: dec_label_pc_116d.lr.ph
-[2023-01-30 13:28:12.025] [udm] [info] Interval size: 1
-[2023-01-30 13:28:12.025] [udm] [info] BB in interval: dec_label_pc_116d
-[2023-01-30 13:28:12.025] [udm] [info] Interval size: 1
-[2023-01-30 13:28:12.025] [udm] [info] BB in interval: dec_label_pc_1199
-[2023-01-30 13:28:12.025] [udm] [info] Interval size: 1
-[2023-01-30 13:28:12.025] [udm] [info] BB in interval: dec_label_pc_11a5
-[2023-01-30 13:28:12.025] [udm] [info] Interval size: 0
-[2023-01-30 13:28:12.025] [udm] [critical] Backedge: <dec_label_pc_1188.preheader> -> <dec_label_pc_1199>
-[2023-01-30 13:28:12.025] [udm] [critical] Node header: <2>
-[2023-01-30 13:28:12.025] [udm] [critical] Node latch: <2>
-[2023-01-30 13:28:12.025] [udm] [info] I am setting: <dec_label_pc_1188.preheader> with value: <WHILE>
-[2023-01-30 13:28:12.025] [udm] [critical] Node header follow: <dec_label_pc_11a5>
-[2023-01-30 13:28:12.025] [udm] [critical] Node latch follow: <dec_label_pc_1199>
-[2023-01-30 13:28:12.025] [udm] [critical] Node header: <2>
-[2023-01-30 13:28:12.025] [udm] [critical] Node latch: <2>
-[2023-01-30 13:28:12.025] [udm] [info] Follow node for backedge: <dec_label_pc_1188.preheader> -> <dec_label_pc_1199> is: <dec_label_pc_1188.preheader>
-[2023-01-30 13:28:12.025] [udm] [critical] Backedge: <> -> <>
-[2023-01-30 13:28:12.025] [udm] [critical] Backedge: <dec_label_pc_116d> -> <dec_label_pc_116d>
-[2023-01-30 13:28:12.025] [udm] [critical] Node header: <2>
-[2023-01-30 13:28:12.025] [udm] [critical] Node latch: <2>
-[2023-01-30 13:28:12.025] [udm] [info] I am setting: <dec_label_pc_116d> with value: <WHILE>
-[2023-01-30 13:28:12.025] [udm] [critical] Node header follow: <dec_label_pc_116d>
-[2023-01-30 13:28:12.025] [udm] [critical] Node latch follow: <dec_label_pc_116d>
-[2023-01-30 13:28:12.025] [udm] [critical] Node header: <2>
-[2023-01-30 13:28:12.025] [udm] [critical] Node latch: <2>
-[2023-01-30 13:28:12.025] [udm] [info] Follow node for backedge: <dec_label_pc_116d> -> <dec_label_pc_116d> is: <dec_label_pc_1199>
-[2023-01-30 13:28:12.025] [udm] [critical] Backedge: <> -> <>
-[2023-01-30 13:28:12.025] [udm] [critical] Backedge: <> -> <>
-[2023-01-30 13:28:12.025] [udm] [critical] Backedge: <> -> <>
-[2023-01-30 13:28:12.025] [udm] [warning] BB: <dec_label_pc_11a5>
-[2023-01-30 13:28:12.025] [udm] [warning] Outer edges: <0>
-[2023-01-30 13:28:12.025] [udm] [warning] BB: <dec_label_pc_1199>
-[2023-01-30 13:28:12.025] [udm] [warning] Outer edges: <2>
-[2023-01-30 13:28:12.025] [udm] [warning] is imedDom null?: <false>
-[2023-01-30 13:28:12.025] [udm] [warning] BB: <dec_label_pc_1199> imedDom: <dec_label_pc_11a5>
-[2023-01-30 13:28:12.025] [udm] [warning] Preds: <2>
-[2023-01-30 13:28:12.025] [udm] [warning] BB: <dec_label_pc_116d>
-[2023-01-30 13:28:12.025] [udm] [warning] Outer edges: <2>
-[2023-01-30 13:28:12.025] [udm] [warning] is imedDom null?: <false>
-[2023-01-30 13:28:12.025] [udm] [warning] BB: <dec_label_pc_116d> imedDom: <dec_label_pc_1199>
-[2023-01-30 13:28:12.025] [udm] [warning] Preds: <2>
-[2023-01-30 13:28:12.025] [udm] [warning] BB: <dec_label_pc_116d.lr.ph>
-[2023-01-30 13:28:12.025] [udm] [warning] Outer edges: <1>
-[2023-01-30 13:28:12.025] [udm] [warning] BB: <dec_label_pc_1188.preheader>
-[2023-01-30 13:28:12.025] [udm] [warning] Outer edges: <2>
-[2023-01-30 13:28:12.025] [udm] [warning] is imedDom null?: <false>
-[2023-01-30 13:28:12.025] [udm] [warning] BB: <dec_label_pc_1188.preheader> imedDom: <dec_label_pc_1199>
-[2023-01-30 13:28:12.025] [udm] [warning] Preds: <2>
-[2023-01-30 13:28:12.025] [udm] [warning] BB: <dec_label_pc_1188.preheader.lr.ph>
-[2023-01-30 13:28:12.025] [udm] [warning] Outer edges: <1>
-[2023-01-30 13:28:12.025] [udm] [warning] BB: <dec_label_pc_1149>
-[2023-01-30 13:28:12.025] [udm] [warning] Outer edges: <2>
-[2023-01-30 13:28:12.025] [udm] [warning] is imedDom null?: <false>
-[2023-01-30 13:28:12.025] [udm] [warning] BB: <dec_label_pc_1149> imedDom: <dec_label_pc_11a5>
-[2023-01-30 13:28:12.025] [udm] [warning] Preds: <2>
-[2023-01-30 13:28:12.025] [udm] [info] Information about BB with label: <dec_label_pc_1188.preheader>:
-[2023-01-30 13:28:12.025] [udm] [info] isHeader: true
-[2023-01-30 13:28:12.025] [udm] [info] isLoop: false
-[2023-01-30 13:28:12.025] [udm] [info] isIfStatement: false
-[2023-01-30 13:28:12.025] [udm] [info] loopType: WHILE
-[2023-01-30 13:28:12.025] [udm] [info] followNode: dec_label_pc_1199
-[2023-01-30 13:28:12.025] [udm] [info] Information about BB with label: <dec_label_pc_11a5>:
-[2023-01-30 13:28:12.025] [udm] [info] isHeader: true
-[2023-01-30 13:28:12.025] [udm] [info] isLoop: false
-[2023-01-30 13:28:12.025] [udm] [info] isIfStatement: false
-[2023-01-30 13:28:12.025] [udm] [info] loopType: NONE
-[2023-01-30 13:28:12.025] [udm] [info] followNode: EMPTY
-[2023-01-30 13:28:12.025] [udm] [info] Information about BB with label: <dec_label_pc_1199>:
-[2023-01-30 13:28:12.025] [udm] [info] isHeader: true
-[2023-01-30 13:28:12.025] [udm] [info] isLoop: false
-[2023-01-30 13:28:12.025] [udm] [info] isIfStatement: false
-[2023-01-30 13:28:12.025] [udm] [info] loopType: NONE
-[2023-01-30 13:28:12.025] [udm] [info] followNode: dec_label_pc_11a5
-[2023-01-30 13:28:12.025] [udm] [info] Information about BB with label: <dec_label_pc_116d.lr.ph>:
-[2023-01-30 13:28:12.025] [udm] [info] isHeader: true
-[2023-01-30 13:28:12.025] [udm] [info] isLoop: false
-[2023-01-30 13:28:12.025] [udm] [info] isIfStatement: false
-[2023-01-30 13:28:12.025] [udm] [info] loopType: NONE
-[2023-01-30 13:28:12.025] [udm] [info] followNode: EMPTY
-[2023-01-30 13:28:12.025] [udm] [info] Information about BB with label: <dec_label_pc_1188.preheader.lr.ph>:
-[2023-01-30 13:28:12.025] [udm] [info] isHeader: false
-[2023-01-30 13:28:12.025] [udm] [info] isLoop: false
-[2023-01-30 13:28:12.025] [udm] [info] isIfStatement: false
-[2023-01-30 13:28:12.025] [udm] [info] loopType: NONE
-[2023-01-30 13:28:12.025] [udm] [info] followNode: EMPTY
-[2023-01-30 13:28:12.025] [udm] [info] Information about BB with label: <dec_label_pc_116d>:
-[2023-01-30 13:28:12.025] [udm] [info] isHeader: true
-[2023-01-30 13:28:12.025] [udm] [info] isLoop: true
-[2023-01-30 13:28:12.025] [udm] [info] isIfStatement: false
-[2023-01-30 13:28:12.025] [udm] [info] loopType: WHILE
-[2023-01-30 13:28:12.025] [udm] [info] followNode: dec_label_pc_1199
-[2023-01-30 13:28:12.025] [udm] [info] Information about BB with label: <dec_label_pc_1149>:
-[2023-01-30 13:28:12.025] [udm] [info] isHeader: true
-[2023-01-30 13:28:12.025] [udm] [info] isLoop: false
-[2023-01-30 13:28:12.025] [udm] [info] isIfStatement: false
-[2023-01-30 13:28:12.025] [udm] [info] loopType: NONE
-[2023-01-30 13:28:12.025] [udm] [info] followNode: dec_label_pc_11a5
-[2023-01-30 13:28:12.025] [udm] [info] Function name: <main>(), length of intervals: 1
-[2023-01-30 13:28:12.025] [udm] [info] Interval size: 1
-[2023-01-30 13:28:12.026] [udm] [info] BB in interval: dec_label_pc_11aa
-[2023-01-30 13:28:12.026] [udm] [critical] Backedge: <> -> <>
-[2023-01-30 13:28:12.026] [udm] [warning] BB: <dec_label_pc_11aa>
-[2023-01-30 13:28:12.026] [udm] [warning] Outer edges: <0>
-[2023-01-30 13:28:12.026] [udm] [info] Information about BB with label: <dec_label_pc_11aa>:
-[2023-01-30 13:28:12.026] [udm] [info] isHeader: true
-[2023-01-30 13:28:12.026] [udm] [info] isLoop: false
-[2023-01-30 13:28:12.026] [udm] [info] isIfStatement: false
-[2023-01-30 13:28:12.026] [udm] [info] loopType: NONE
-[2023-01-30 13:28:12.026] [udm] [info] followNode: EMPTY
+[2023-01-30 15:40:52.990] [udm] [info] Function name: <two_way>(), length of intervals: 1
+[2023-01-30 15:40:52.990] [udm] [info] Interval size: 6
+[2023-01-30 15:40:52.990] [udm] [info] BB in interval: dec_label_pc_1149
+[2023-01-30 15:40:52.990] [udm] [info] BB in interval: dec_label_pc_115a
+[2023-01-30 15:40:52.990] [udm] [info] BB in interval: dec_label_pc_116e
+[2023-01-30 15:40:52.990] [udm] [info] BB in interval: dec_label_pc_1174
+[2023-01-30 15:40:52.990] [udm] [info] BB in interval: dec_label_pc_1181
+[2023-01-30 15:40:52.990] [udm] [info] BB in interval: dec_label_pc_119a
+[2023-01-30 15:40:52.990] [udm] [critical] Backedge: <> -> <>
+[2023-01-30 15:40:52.990] [udm] [warning] BB: <dec_label_pc_119a>
+[2023-01-30 15:40:52.990] [udm] [warning] Outer edges: <0>
+[2023-01-30 15:40:52.990] [udm] [warning] BB: <dec_label_pc_1181>
+[2023-01-30 15:40:52.990] [udm] [warning] Outer edges: <1>
+[2023-01-30 15:40:52.990] [udm] [warning] BB: <dec_label_pc_1174>
+[2023-01-30 15:40:52.990] [udm] [warning] Outer edges: <2>
+[2023-01-30 15:40:52.990] [udm] [warning] is imedDom null?: <false>
+[2023-01-30 15:40:52.990] [udm] [warning] BB: <dec_label_pc_1174> imedDom: <dec_label_pc_119a>
+[2023-01-30 15:40:52.990] [udm] [warning] Preds: <4>
+[2023-01-30 15:40:52.990] [udm] [warning] BB: <dec_label_pc_116e>
+[2023-01-30 15:40:52.990] [udm] [warning] Outer edges: <2>
+[2023-01-30 15:40:52.990] [udm] [warning] is imedDom null?: <false>
+[2023-01-30 15:40:52.990] [udm] [warning] BB: <dec_label_pc_116e> imedDom: <dec_label_pc_119a>
+[2023-01-30 15:40:52.990] [udm] [warning] Preds: <4>
+[2023-01-30 15:40:52.990] [udm] [warning] BB: <dec_label_pc_115a>
+[2023-01-30 15:40:52.990] [udm] [warning] Outer edges: <1>
+[2023-01-30 15:40:52.990] [udm] [warning] BB: <dec_label_pc_1149>
+[2023-01-30 15:40:52.990] [udm] [warning] Outer edges: <2>
+[2023-01-30 15:40:52.990] [udm] [warning] is imedDom null?: <false>
+[2023-01-30 15:40:52.990] [udm] [warning] BB: <dec_label_pc_1149> imedDom: <dec_label_pc_119a>
+[2023-01-30 15:40:52.990] [udm] [warning] Preds: <4>
+[2023-01-30 15:40:52.990] [udm] [info] Information about BB with label: <dec_label_pc_119a>:
+[2023-01-30 15:40:52.990] [udm] [info] isHeader: false
+[2023-01-30 15:40:52.990] [udm] [info] isLoop: false
+[2023-01-30 15:40:52.990] [udm] [info] isIfStatement: false
+[2023-01-30 15:40:52.990] [udm] [info] loopType: NONE
+[2023-01-30 15:40:52.990] [udm] [info] followNode: EMPTY
+[2023-01-30 15:40:52.990] [udm] [info] Information about BB with label: <dec_label_pc_1181>:
+[2023-01-30 15:40:52.990] [udm] [info] isHeader: false
+[2023-01-30 15:40:52.990] [udm] [info] isLoop: false
+[2023-01-30 15:40:52.990] [udm] [info] isIfStatement: false
+[2023-01-30 15:40:52.990] [udm] [info] loopType: NONE
+[2023-01-30 15:40:52.990] [udm] [info] followNode: EMPTY
+[2023-01-30 15:40:52.990] [udm] [info] Information about BB with label: <dec_label_pc_1174>:
+[2023-01-30 15:40:52.990] [udm] [info] isHeader: false
+[2023-01-30 15:40:52.990] [udm] [info] isLoop: false
+[2023-01-30 15:40:52.990] [udm] [info] isIfStatement: false
+[2023-01-30 15:40:52.990] [udm] [info] loopType: NONE
+[2023-01-30 15:40:52.990] [udm] [info] followNode: dec_label_pc_119a
+[2023-01-30 15:40:52.990] [udm] [info] Information about BB with label: <dec_label_pc_116e>:
+[2023-01-30 15:40:52.990] [udm] [info] isHeader: false
+[2023-01-30 15:40:52.990] [udm] [info] isLoop: false
+[2023-01-30 15:40:52.990] [udm] [info] isIfStatement: false
+[2023-01-30 15:40:52.990] [udm] [info] loopType: NONE
+[2023-01-30 15:40:52.990] [udm] [info] followNode: dec_label_pc_119a
+[2023-01-30 15:40:52.990] [udm] [info] Information about BB with label: <dec_label_pc_115a>:
+[2023-01-30 15:40:52.990] [udm] [info] isHeader: false
+[2023-01-30 15:40:52.990] [udm] [info] isLoop: false
+[2023-01-30 15:40:52.990] [udm] [info] isIfStatement: false
+[2023-01-30 15:40:52.990] [udm] [info] loopType: NONE
+[2023-01-30 15:40:52.990] [udm] [info] followNode: EMPTY
+[2023-01-30 15:40:52.990] [udm] [info] Information about BB with label: <dec_label_pc_1149>:
+[2023-01-30 15:40:52.990] [udm] [info] isHeader: true
+[2023-01-30 15:40:52.990] [udm] [info] isLoop: false
+[2023-01-30 15:40:52.990] [udm] [info] isIfStatement: false
+[2023-01-30 15:40:52.990] [udm] [info] loopType: NONE
+[2023-01-30 15:40:52.990] [udm] [info] followNode: dec_label_pc_119a
+[2023-01-30 15:40:52.991] [udm] [info] Function name: <main>(), length of intervals: 1
+[2023-01-30 15:40:52.991] [udm] [info] Interval size: 1
+[2023-01-30 15:40:52.991] [udm] [info] BB in interval: dec_label_pc_119c
+[2023-01-30 15:40:52.991] [udm] [critical] Backedge: <> -> <>
+[2023-01-30 15:40:52.991] [udm] [warning] BB: <dec_label_pc_119c>
+[2023-01-30 15:40:52.991] [udm] [warning] Outer edges: <0>
+[2023-01-30 15:40:52.991] [udm] [info] Information about BB with label: <dec_label_pc_119c>:
+[2023-01-30 15:40:52.991] [udm] [info] isHeader: true
+[2023-01-30 15:40:52.991] [udm] [info] isLoop: false
+[2023-01-30 15:40:52.991] [udm] [info] isIfStatement: false
+[2023-01-30 15:40:52.991] [udm] [info] loopType: NONE
+[2023-01-30 15:40:52.991] [udm] [info] followNode: EMPTY

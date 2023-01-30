@@ -1,204 +1,131 @@
-[2023-01-30 13:28:12.026] [codeGen] [info] Generating code for IR file: ../testing_files/elfC/test.ll
-[2023-01-30 13:28:12.026] [codeGen] [error] BB Info: isHeader: 1
+[2023-01-30 15:40:52.991] [codeGen] [info] Generating code for IR file: ../testing_files/elfC/conditionals.ll
+[2023-01-30 15:40:52.991] [codeGen] [error] BB Info: isHeader: 1
 isLoop: 0
 isIfStatement: 0
 loopType: NONE
-followNode: dec_label_pc_11a5
+followNode: dec_label_pc_119a
 
-[2023-01-30 13:28:12.026] [codeGen] [info] Basic block: dec_label_pc_1149
-[2023-01-30 13:28:12.026] [codeGen] [info] Instruction: alloca
-[2023-01-30 13:28:12.026] [codeGen] [info] OtherInstruction::OtherInstruction
-[2023-01-30 13:28:12.026] [codeGen] [info] OtherInstruction::toString
-[2023-01-30 13:28:12.026] [codeGen] [info] Instruction: alloca
-[2023-01-30 13:28:12.026] [codeGen] [info] OtherInstruction::OtherInstruction
-[2023-01-30 13:28:12.026] [codeGen] [info] OtherInstruction::toString
-[2023-01-30 13:28:12.026] [codeGen] [info] Instruction: alloca
-[2023-01-30 13:28:12.026] [codeGen] [info] OtherInstruction::OtherInstruction
-[2023-01-30 13:28:12.026] [codeGen] [info] OtherInstruction::toString
-[2023-01-30 13:28:12.026] [codeGen] [info] Instruction: alloca
-[2023-01-30 13:28:12.026] [codeGen] [info] OtherInstruction::OtherInstruction
-[2023-01-30 13:28:12.026] [codeGen] [info] OtherInstruction::toString
-[2023-01-30 13:28:12.026] [codeGen] [info] Instruction: alloca
-[2023-01-30 13:28:12.026] [codeGen] [info] OtherInstruction::OtherInstruction
-[2023-01-30 13:28:12.026] [codeGen] [info] OtherInstruction::toString
-[2023-01-30 13:28:12.026] [codeGen] [info] Instruction: alloca
-[2023-01-30 13:28:12.026] [codeGen] [info] OtherInstruction::OtherInstruction
-[2023-01-30 13:28:12.026] [codeGen] [info] OtherInstruction::toString
-[2023-01-30 13:28:12.026] [codeGen] [info] Instruction: icmp
-[2023-01-30 13:28:12.026] [codeGen] [info] OtherInstruction::OtherInstruction
-[2023-01-30 13:28:12.026] [codeGen] [info] OtherInstruction::toString
-[2023-01-30 13:28:12.026] [codeGen] [info] Instruction: store
-[2023-01-30 13:28:12.026] [codeGen] [info] OtherInstruction::OtherInstruction
-[2023-01-30 13:28:12.026] [codeGen] [info] OtherInstruction::toString
-[2023-01-30 13:28:12.026] [codeGen] [info] Instruction: br
-[2023-01-30 13:28:12.026] [codeGen] [info] TerminatorInstruction::TerminatorInstruction
-[2023-01-30 13:28:12.026] [codeGen] [info] TerminatorInstruction::toString
-[2023-01-30 13:28:12.026] [codeGen] [error] BB Info: isHeader: 0
+[2023-01-30 15:40:52.991] [codeGen] [info] Basic block: dec_label_pc_1149
+[2023-01-30 15:40:52.991] [codeGen] [info] Instruction: alloca
+[2023-01-30 15:40:52.992] [codeGen] [info] OtherInstruction::OtherInstruction
+[2023-01-30 15:40:52.992] [codeGen] [info] OtherInstruction::toString
+[2023-01-30 15:40:52.992] [codeGen] [info] Instruction: icmp
+[2023-01-30 15:40:52.992] [codeGen] [info] OtherInstruction::OtherInstruction
+[2023-01-30 15:40:52.992] [codeGen] [info] OtherInstruction::toString
+[2023-01-30 15:40:52.992] [codeGen] [info] Instruction: br
+[2023-01-30 15:40:52.992] [codeGen] [info] TerminatorInstruction::TerminatorInstruction
+[2023-01-30 15:40:52.992] [codeGen] [info] TerminatorInstruction::toString
+[2023-01-30 15:40:52.992] [codeGen] [error] BB Info: isHeader: 0
 isLoop: 0
 isIfStatement: 0
 loopType: NONE
 followNode: EMPTY
 
-[2023-01-30 13:28:12.026] [codeGen] [info] Basic block: dec_label_pc_1188.preheader.lr.ph
-[2023-01-30 13:28:12.026] [codeGen] [info] Instruction: ashr
-[2023-01-30 13:28:12.026] [codeGen] [info] BinaryInstruction::BinaryInstruction
-[2023-01-30 13:28:12.026] [codeGen] [info] BinaryInstruction::toString
-[2023-01-30 13:28:12.026] [codeGen] [info] Instruction: zext
-[2023-01-30 13:28:12.026] [codeGen] [info] ConversionInstruction::ConversionInstruction
-[2023-01-30 13:28:12.026] [codeGen] [info] ConversionInstruction::toString
-[2023-01-30 13:28:12.026] [codeGen] [info] Instruction: icmp
-[2023-01-30 13:28:12.026] [codeGen] [info] OtherInstruction::OtherInstruction
-[2023-01-30 13:28:12.026] [codeGen] [info] OtherInstruction::toString
-[2023-01-30 13:28:12.027] [codeGen] [info] Instruction: store
-[2023-01-30 13:28:12.027] [codeGen] [info] OtherInstruction::OtherInstruction
-[2023-01-30 13:28:12.027] [codeGen] [info] OtherInstruction::toString
-[2023-01-30 13:28:12.027] [codeGen] [info] Instruction: store
-[2023-01-30 13:28:12.027] [codeGen] [info] OtherInstruction::OtherInstruction
-[2023-01-30 13:28:12.027] [codeGen] [info] OtherInstruction::toString
-[2023-01-30 13:28:12.027] [codeGen] [info] Instruction: br
-[2023-01-30 13:28:12.027] [codeGen] [info] TerminatorInstruction::TerminatorInstruction
-[2023-01-30 13:28:12.027] [codeGen] [info] TerminatorInstruction::toString
-[2023-01-30 13:28:12.027] [codeGen] [error] BB Info: isHeader: 1
+[2023-01-30 15:40:52.992] [codeGen] [info] Basic block: dec_label_pc_115a
+[2023-01-30 15:40:52.992] [codeGen] [info] Instruction: icmp
+[2023-01-30 15:40:52.992] [codeGen] [info] OtherInstruction::OtherInstruction
+[2023-01-30 15:40:52.992] [codeGen] [info] OtherInstruction::toString
+[2023-01-30 15:40:52.992] [codeGen] [info] Instruction: icmp
+[2023-01-30 15:40:52.992] [codeGen] [info] OtherInstruction::OtherInstruction
+[2023-01-30 15:40:52.992] [codeGen] [info] OtherInstruction::toString
+[2023-01-30 15:40:52.992] [codeGen] [info] Instruction: icmp
+[2023-01-30 15:40:52.992] [codeGen] [info] OtherInstruction::OtherInstruction
+[2023-01-30 15:40:52.992] [codeGen] [info] OtherInstruction::toString
+[2023-01-30 15:40:52.992] [codeGen] [info] Instruction: icmp
+[2023-01-30 15:40:52.992] [codeGen] [info] OtherInstruction::OtherInstruction
+[2023-01-30 15:40:52.992] [codeGen] [info] OtherInstruction::toString
+[2023-01-30 15:40:52.992] [codeGen] [info] Instruction: icmp
+[2023-01-30 15:40:52.992] [codeGen] [info] OtherInstruction::OtherInstruction
+[2023-01-30 15:40:52.992] [codeGen] [info] OtherInstruction::toString
+[2023-01-30 15:40:52.992] [codeGen] [info] Instruction: select
+[2023-01-30 15:40:52.992] [codeGen] [info] OtherInstruction::OtherInstruction
+[2023-01-30 15:40:52.992] [codeGen] [info] OtherInstruction::toString
+[2023-01-30 15:40:52.992] [codeGen] [info] Instruction: store
+[2023-01-30 15:40:52.992] [codeGen] [info] OtherInstruction::OtherInstruction
+[2023-01-30 15:40:52.992] [codeGen] [info] OtherInstruction::toString
+[2023-01-30 15:40:52.992] [codeGen] [info] Instruction: br
+[2023-01-30 15:40:52.992] [codeGen] [info] TerminatorInstruction::TerminatorInstruction
+[2023-01-30 15:40:52.992] [codeGen] [info] TerminatorInstruction::toString
+[2023-01-30 15:40:52.992] [codeGen] [error] BB Info: isHeader: 0
 isLoop: 0
 isIfStatement: 0
-loopType: WHILE
-followNode: dec_label_pc_1199
+loopType: NONE
+followNode: dec_label_pc_119a
 
-[2023-01-30 13:28:12.027] [codeGen] [info] Basic block: dec_label_pc_1188.preheader
-[2023-01-30 13:28:12.027] [codeGen] [info] Instruction: load
-[2023-01-30 13:28:12.027] [codeGen] [info] OtherInstruction::OtherInstruction
-[2023-01-30 13:28:12.027] [codeGen] [info] OtherInstruction::toString
-[2023-01-30 13:28:12.027] [codeGen] [info] Instruction: load
-[2023-01-30 13:28:12.027] [codeGen] [info] OtherInstruction::OtherInstruction
-[2023-01-30 13:28:12.027] [codeGen] [info] OtherInstruction::toString
-[2023-01-30 13:28:12.027] [codeGen] [info] Instruction: store
-[2023-01-30 13:28:12.027] [codeGen] [info] OtherInstruction::OtherInstruction
-[2023-01-30 13:28:12.027] [codeGen] [info] OtherInstruction::toString
-[2023-01-30 13:28:12.027] [codeGen] [info] Instruction: br
-[2023-01-30 13:28:12.027] [codeGen] [info] TerminatorInstruction::TerminatorInstruction
-[2023-01-30 13:28:12.027] [codeGen] [info] TerminatorInstruction::toString
-[2023-01-30 13:28:12.027] [codeGen] [error] BB Info: isHeader: 1
+[2023-01-30 15:40:52.992] [codeGen] [info] Basic block: dec_label_pc_116e
+[2023-01-30 15:40:52.992] [codeGen] [info] Instruction: icmp
+[2023-01-30 15:40:52.992] [codeGen] [info] OtherInstruction::OtherInstruction
+[2023-01-30 15:40:52.992] [codeGen] [info] OtherInstruction::toString
+[2023-01-30 15:40:52.992] [codeGen] [info] Instruction: store
+[2023-01-30 15:40:52.992] [codeGen] [info] OtherInstruction::OtherInstruction
+[2023-01-30 15:40:52.992] [codeGen] [info] OtherInstruction::toString
+[2023-01-30 15:40:52.992] [codeGen] [info] Instruction: br
+[2023-01-30 15:40:52.992] [codeGen] [info] TerminatorInstruction::TerminatorInstruction
+[2023-01-30 15:40:52.992] [codeGen] [info] TerminatorInstruction::toString
+[2023-01-30 15:40:52.992] [codeGen] [error] BB Info: isHeader: 0
+isLoop: 0
+isIfStatement: 0
+loopType: NONE
+followNode: dec_label_pc_119a
+
+[2023-01-30 15:40:52.992] [codeGen] [info] Basic block: dec_label_pc_1174
+[2023-01-30 15:40:52.992] [codeGen] [info] Instruction: icmp
+[2023-01-30 15:40:52.992] [codeGen] [info] OtherInstruction::OtherInstruction
+[2023-01-30 15:40:52.992] [codeGen] [info] OtherInstruction::toString
+[2023-01-30 15:40:52.992] [codeGen] [info] Instruction: store
+[2023-01-30 15:40:52.992] [codeGen] [info] OtherInstruction::OtherInstruction
+[2023-01-30 15:40:52.992] [codeGen] [info] OtherInstruction::toString
+[2023-01-30 15:40:52.992] [codeGen] [info] Instruction: br
+[2023-01-30 15:40:52.992] [codeGen] [info] TerminatorInstruction::TerminatorInstruction
+[2023-01-30 15:40:52.992] [codeGen] [info] TerminatorInstruction::toString
+[2023-01-30 15:40:52.992] [codeGen] [error] BB Info: isHeader: 0
 isLoop: 0
 isIfStatement: 0
 loopType: NONE
 followNode: EMPTY
 
-[2023-01-30 13:28:12.027] [codeGen] [info] Basic block: dec_label_pc_116d.lr.ph
-[2023-01-30 13:28:12.027] [codeGen] [info] Instruction: icmp
-[2023-01-30 13:28:12.027] [codeGen] [info] OtherInstruction::OtherInstruction
-[2023-01-30 13:28:12.027] [codeGen] [info] OtherInstruction::toString
-[2023-01-30 13:28:12.027] [codeGen] [info] Instruction: mul
-[2023-01-30 13:28:12.027] [codeGen] [info] BinaryInstruction::BinaryInstruction
-[2023-01-30 13:28:12.027] [codeGen] [info] BinaryInstruction::toString
-[2023-01-30 13:28:12.027] [codeGen] [info] Instruction: store
-[2023-01-30 13:28:12.027] [codeGen] [info] OtherInstruction::OtherInstruction
-[2023-01-30 13:28:12.027] [codeGen] [info] OtherInstruction::toString
-[2023-01-30 13:28:12.027] [codeGen] [info] Instruction: store
-[2023-01-30 13:28:12.027] [codeGen] [info] OtherInstruction::OtherInstruction
-[2023-01-30 13:28:12.027] [codeGen] [info] OtherInstruction::toString
-[2023-01-30 13:28:12.027] [codeGen] [info] Instruction: br
-[2023-01-30 13:28:12.027] [codeGen] [info] TerminatorInstruction::TerminatorInstruction
-[2023-01-30 13:28:12.027] [codeGen] [info] TerminatorInstruction::toString
-[2023-01-30 13:28:12.027] [codeGen] [error] BB Info: isHeader: 1
-isLoop: 1
-isIfStatement: 0
-loopType: WHILE
-followNode: dec_label_pc_1199
-
-[2023-01-30 13:28:12.027] [codeGen] [info] Basic block: dec_label_pc_116d
-[2023-01-30 13:28:12.027] [codeGen] [info] Instruction: load
-[2023-01-30 13:28:12.027] [codeGen] [info] OtherInstruction::OtherInstruction
-[2023-01-30 13:28:12.027] [codeGen] [info] OtherInstruction::toString
-[2023-01-30 13:28:12.027] [codeGen] [info] Instruction: load
-[2023-01-30 13:28:12.027] [codeGen] [info] OtherInstruction::OtherInstruction
-[2023-01-30 13:28:12.027] [codeGen] [info] OtherInstruction::toString
-[2023-01-30 13:28:12.027] [codeGen] [info] Instruction: add
-[2023-01-30 13:28:12.027] [codeGen] [info] BinaryInstruction::BinaryInstruction
-[2023-01-30 13:28:12.027] [codeGen] [info] BinaryInstruction::toString
-[2023-01-30 13:28:12.027] [codeGen] [info] Instruction: select
-[2023-01-30 13:28:12.027] [codeGen] [info] OtherInstruction::OtherInstruction
-[2023-01-30 13:28:12.027] [codeGen] [info] OtherInstruction::toString
-[2023-01-30 13:28:12.027] [codeGen] [info] Instruction: add
-[2023-01-30 13:28:12.027] [codeGen] [info] BinaryInstruction::BinaryInstruction
-[2023-01-30 13:28:12.027] [codeGen] [info] BinaryInstruction::toString
-[2023-01-30 13:28:12.027] [codeGen] [info] Instruction: add
-[2023-01-30 13:28:12.027] [codeGen] [info] BinaryInstruction::BinaryInstruction
-[2023-01-30 13:28:12.027] [codeGen] [info] BinaryInstruction::toString
-[2023-01-30 13:28:12.027] [codeGen] [info] Instruction: sext
-[2023-01-30 13:28:12.027] [codeGen] [info] ConversionInstruction::ConversionInstruction
-[2023-01-30 13:28:12.027] [codeGen] [info] ConversionInstruction::toString
-[2023-01-30 13:28:12.027] [codeGen] [info] Instruction: icmp
-[2023-01-30 13:28:12.027] [codeGen] [info] OtherInstruction::OtherInstruction
-[2023-01-30 13:28:12.027] [codeGen] [info] OtherInstruction::toString
-[2023-01-30 13:28:12.027] [codeGen] [info] Instruction: store
-[2023-01-30 13:28:12.027] [codeGen] [info] OtherInstruction::OtherInstruction
-[2023-01-30 13:28:12.027] [codeGen] [info] OtherInstruction::toString
-[2023-01-30 13:28:12.027] [codeGen] [info] Instruction: store
-[2023-01-30 13:28:12.027] [codeGen] [info] OtherInstruction::OtherInstruction
-[2023-01-30 13:28:12.027] [codeGen] [info] OtherInstruction::toString
-[2023-01-30 13:28:12.027] [codeGen] [info] Instruction: store
-[2023-01-30 13:28:12.027] [codeGen] [info] OtherInstruction::OtherInstruction
-[2023-01-30 13:28:12.027] [codeGen] [info] OtherInstruction::toString
-[2023-01-30 13:28:12.027] [codeGen] [info] Instruction: br
-[2023-01-30 13:28:12.027] [codeGen] [info] TerminatorInstruction::TerminatorInstruction
-[2023-01-30 13:28:12.027] [codeGen] [info] TerminatorInstruction::toString
-[2023-01-30 13:28:12.027] [codeGen] [error] BB Info: isHeader: 1
-isLoop: 0
-isIfStatement: 0
-loopType: NONE
-followNode: dec_label_pc_11a5
-
-[2023-01-30 13:28:12.027] [codeGen] [info] Basic block: dec_label_pc_1199
-[2023-01-30 13:28:12.027] [codeGen] [info] Instruction: load
-[2023-01-30 13:28:12.027] [codeGen] [info] OtherInstruction::OtherInstruction
-[2023-01-30 13:28:12.027] [codeGen] [info] OtherInstruction::toString
-[2023-01-30 13:28:12.027] [codeGen] [info] Instruction: add
-[2023-01-30 13:28:12.027] [codeGen] [info] BinaryInstruction::BinaryInstruction
-[2023-01-30 13:28:12.027] [codeGen] [info] BinaryInstruction::toString
-[2023-01-30 13:28:12.027] [codeGen] [info] Instruction: icmp
-[2023-01-30 13:28:12.027] [codeGen] [info] OtherInstruction::OtherInstruction
-[2023-01-30 13:28:12.027] [codeGen] [info] OtherInstruction::toString
-[2023-01-30 13:28:12.027] [codeGen] [info] Instruction: store
-[2023-01-30 13:28:12.027] [codeGen] [info] OtherInstruction::OtherInstruction
-[2023-01-30 13:28:12.027] [codeGen] [info] OtherInstruction::toString
-[2023-01-30 13:28:12.027] [codeGen] [info] Instruction: store
-[2023-01-30 13:28:12.027] [codeGen] [info] OtherInstruction::OtherInstruction
-[2023-01-30 13:28:12.027] [codeGen] [info] OtherInstruction::toString
-[2023-01-30 13:28:12.027] [codeGen] [info] Instruction: store
-[2023-01-30 13:28:12.027] [codeGen] [info] OtherInstruction::OtherInstruction
-[2023-01-30 13:28:12.027] [codeGen] [info] OtherInstruction::toString
-[2023-01-30 13:28:12.027] [codeGen] [info] Instruction: br
-[2023-01-30 13:28:12.027] [codeGen] [info] TerminatorInstruction::TerminatorInstruction
-[2023-01-30 13:28:12.027] [codeGen] [info] TerminatorInstruction::toString
-[2023-01-30 13:28:12.027] [codeGen] [error] BB Info: isHeader: 1
+[2023-01-30 15:40:52.992] [codeGen] [info] Basic block: dec_label_pc_1181
+[2023-01-30 15:40:52.992] [codeGen] [info] Instruction: icmp
+[2023-01-30 15:40:52.992] [codeGen] [info] OtherInstruction::OtherInstruction
+[2023-01-30 15:40:52.992] [codeGen] [info] OtherInstruction::toString
+[2023-01-30 15:40:52.992] [codeGen] [info] Instruction: select
+[2023-01-30 15:40:52.992] [codeGen] [info] OtherInstruction::OtherInstruction
+[2023-01-30 15:40:52.992] [codeGen] [info] OtherInstruction::toString
+[2023-01-30 15:40:52.992] [codeGen] [info] Instruction: store
+[2023-01-30 15:40:52.992] [codeGen] [info] OtherInstruction::OtherInstruction
+[2023-01-30 15:40:52.992] [codeGen] [info] OtherInstruction::toString
+[2023-01-30 15:40:52.992] [codeGen] [info] Instruction: br
+[2023-01-30 15:40:52.992] [codeGen] [info] TerminatorInstruction::TerminatorInstruction
+[2023-01-30 15:40:52.992] [codeGen] [info] TerminatorInstruction::toString
+[2023-01-30 15:40:52.992] [codeGen] [error] BB Info: isHeader: 0
 isLoop: 0
 isIfStatement: 0
 loopType: NONE
 followNode: EMPTY
 
-[2023-01-30 13:28:12.027] [codeGen] [info] Basic block: dec_label_pc_11a5
-[2023-01-30 13:28:12.027] [codeGen] [info] Instruction: load
-[2023-01-30 13:28:12.027] [codeGen] [info] OtherInstruction::OtherInstruction
-[2023-01-30 13:28:12.027] [codeGen] [info] OtherInstruction::toString
-[2023-01-30 13:28:12.027] [codeGen] [info] Instruction: ret
-[2023-01-30 13:28:12.027] [codeGen] [info] TerminatorInstruction::TerminatorInstruction
-[2023-01-30 13:28:12.027] [codeGen] [info] TerminatorInstruction::toString
-[2023-01-30 13:28:12.027] [codeGen] [error] BB Info: isHeader: 1
+[2023-01-30 15:40:52.992] [codeGen] [info] Basic block: dec_label_pc_119a
+[2023-01-30 15:40:52.992] [codeGen] [info] Instruction: load
+[2023-01-30 15:40:52.992] [codeGen] [info] OtherInstruction::OtherInstruction
+[2023-01-30 15:40:52.992] [codeGen] [info] OtherInstruction::toString
+[2023-01-30 15:40:52.992] [codeGen] [info] Instruction: ret
+[2023-01-30 15:40:52.992] [codeGen] [info] TerminatorInstruction::TerminatorInstruction
+[2023-01-30 15:40:52.992] [codeGen] [info] TerminatorInstruction::toString
+[2023-01-30 15:40:52.992] [codeGen] [error] BB Info: isHeader: 1
 isLoop: 0
 isIfStatement: 0
 loopType: NONE
 followNode: EMPTY
 
-[2023-01-30 13:28:12.027] [codeGen] [info] Basic block: dec_label_pc_11aa
-[2023-01-30 13:28:12.027] [codeGen] [info] Instruction: call
-[2023-01-30 13:28:12.027] [codeGen] [info] OtherInstruction::OtherInstruction
-[2023-01-30 13:28:12.027] [codeGen] [info] OtherInstruction::toString
-[2023-01-30 13:28:12.027] [codeGen] [info] Instruction: zext
-[2023-01-30 13:28:12.027] [codeGen] [info] ConversionInstruction::ConversionInstruction
-[2023-01-30 13:28:12.027] [codeGen] [info] ConversionInstruction::toString
-[2023-01-30 13:28:12.027] [codeGen] [info] Instruction: call
-[2023-01-30 13:28:12.027] [codeGen] [info] OtherInstruction::OtherInstruction
-[2023-01-30 13:28:12.027] [codeGen] [info] OtherInstruction::toString
-[2023-01-30 13:28:12.027] [codeGen] [info] Instruction: ret
-[2023-01-30 13:28:12.027] [codeGen] [info] TerminatorInstruction::TerminatorInstruction
-[2023-01-30 13:28:12.027] [codeGen] [info] TerminatorInstruction::toString
+[2023-01-30 15:40:52.992] [codeGen] [info] Basic block: dec_label_pc_119c
+[2023-01-30 15:40:52.992] [codeGen] [info] Instruction: call
+[2023-01-30 15:40:52.992] [codeGen] [info] OtherInstruction::OtherInstruction
+[2023-01-30 15:40:52.992] [codeGen] [info] OtherInstruction::toString
+[2023-01-30 15:40:52.992] [codeGen] [info] Instruction: zext
+[2023-01-30 15:40:52.992] [codeGen] [info] ConversionInstruction::ConversionInstruction
+[2023-01-30 15:40:52.992] [codeGen] [info] ConversionInstruction::toString
+[2023-01-30 15:40:52.992] [codeGen] [info] Instruction: call
+[2023-01-30 15:40:52.992] [codeGen] [info] OtherInstruction::OtherInstruction
+[2023-01-30 15:40:52.992] [codeGen] [info] OtherInstruction::toString
+[2023-01-30 15:40:52.992] [codeGen] [info] Instruction: ret
+[2023-01-30 15:40:52.992] [codeGen] [info] TerminatorInstruction::TerminatorInstruction
+[2023-01-30 15:40:52.992] [codeGen] [info] TerminatorInstruction::toString
