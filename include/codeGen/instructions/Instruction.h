@@ -20,6 +20,7 @@ public:
     virtual std::string toString() = 0;
     static std::shared_ptr<Instruction> getInstruction(llvm::Instruction& inst);
 protected:
+    std::string instructionString;
     std::shared_ptr<spdlog::logger> logger;
 };
 

@@ -13,7 +13,7 @@ public:
     BranchConditionalGen() = default;
     ~BranchConditionalGen() = default;
     
-    static std::string generateConditional(std::shared_ptr<Instruction> instr, bool isElseIf = false);
+    static std::string generateConditional(std::shared_ptr<Instruction> instr, int numSpaces, bool isElseIf = false);
 };
 
 }   // namespace codeGen

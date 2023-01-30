@@ -37,5 +37,6 @@ std::shared_ptr<codeGen::Instruction> codeGen::Instruction::getInstruction(llvm:
 }
 
 codeGen::Instruction::Instruction() {
+    instructionString = "";
     logger = logger::LoggerManager::getInstance()->getLogger("codeGen");
 }

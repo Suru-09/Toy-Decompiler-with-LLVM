@@ -1,6 +1,7 @@
 #include "codeGen/CodeGeneration.h"
 #include "logger/LoggerManager.h"
 #include "codeGen/instructions/Instruction.h"
+#include "utils/CodeGenUtils.h"
 
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/Module.h"
@@ -53,6 +54,7 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
         return;
     }
 
+    std::string decompiledFunction = generateFnHeader(f);
     llvm::ReversePostOrderTraversal<llvm::Function*> rpot(&f);
     for(auto& bb: rpot)
     {
@@ -67,10 +69,36 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
             auto instruction = codeGen::Instruction::getInstruction(inst);
             if(instruction)
             {
-                auto str = instruction->toString();
+                decompiledFunction += instruction->toString();
             }
         }
     }
+
+    logger->error("Decompiled function: {}", decompiledFunction);
+}
+
+std::string codeGen::CodeGeneration::generateFnHeader(llvm::Function& f)
+{
+    std::string result = "";
+    std::string returnType = utils::CodeGenUtils::typeToString(f.getReturnType()->getTypeID());
+    result += returnType + " " + f.getName().str() + "(";
+    
+    bool isCommaNeeded = true;
+    uint64_t argCount = f.arg_size(), argIndex = 0;
+    for(auto& arg: f.args())
+    {
+        std::string argType = utils::CodeGenUtils::typeToString(arg.getType()->getTypeID());
+        result += arg.getName().str() + ": " + argType;
+        if(argIndex < argCount - 1)
+        {
+            result += ", ";
+        }
+        argIndex++;
+    }
+    result += ")\n{\n";
+
+    logger->info("Function header: {}", result);
+    return result;
 }
 
 codeGen::CodeGeneration::CodeGeneration(const std::string& irFile, std::unordered_map<std::string, udm::FuncInfo> fnInfoMap) 

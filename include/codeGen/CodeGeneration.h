@@ -9,6 +9,8 @@
 
 #include "spdlog/spdlog.h"
 
+#include "llvm/IR/Function.h"
+
 namespace codeGen {
 
 class CodeGeneration {
@@ -18,6 +20,7 @@ public:
     void generate();
 private:
     void processFunction(llvm::Function& f, const udm::FuncInfo& funcInfo);
+    std::string generateFnHeader(llvm::Function& f);
 
     std::string irFile;
     std::unordered_map<std::string, udm::FuncInfo> funcInfoMap;

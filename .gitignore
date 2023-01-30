@@ -32,3 +32,7 @@ cmake-build-debug/
 *.dot
 *.dsm
 *.bc
+
+# Ignore logs
+logs/*
+*.log
