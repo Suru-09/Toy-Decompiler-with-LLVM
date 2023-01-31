@@ -8,7 +8,7 @@ namespace codeGen {
 
 class ConversionInstruction : public codeGen::Instruction {
 public:
-    ConversionInstruction(llvm::Instruction& inst);
+    ConversionInstruction(llvm::Instruction& inst, int numSpaces);
     ~ConversionInstruction() = default;
 
     std::string toString() override;

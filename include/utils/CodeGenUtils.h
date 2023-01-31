@@ -11,7 +11,7 @@ namespace utils
 class CodeGenUtils
 {
 public:
-    static std::string generateSpaces(int numSpaces);
+    static std::string getSpaces(int numSpaces);
     static std::string typeToString(llvm::Type::TypeID typeID);
 };
 

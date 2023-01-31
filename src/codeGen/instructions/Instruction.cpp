@@ -9,14 +9,14 @@
 
 #include "logger/LoggerManager.h"
 
-std::shared_ptr<codeGen::Instruction> codeGen::Instruction::getInstruction(llvm::Instruction& inst) {
+std::shared_ptr<codeGen::Instruction> codeGen::Instruction::getInstruction(llvm::Instruction& inst, int numSpaces) {
     if(inst.isTerminator()) 
     {
         return std::make_shared<codeGen::TerminatorInstruction>(inst);
     }
     else if(inst.isBinaryOp()) 
     {
-        return std::make_shared<codeGen::BinaryInstruction>(inst);
+        return std::make_shared<codeGen::BinaryInstruction>(inst, numSpaces);
     }
     else if(inst.isUnaryOp()) 
     {
@@ -24,11 +24,11 @@ std::shared_ptr<codeGen::Instruction> codeGen::Instruction::getInstruction(llvm:
     }
     else if(inst.isCast()) 
     {
-        return std::make_shared<codeGen::ConversionInstruction>(inst);
+        return std::make_shared<codeGen::ConversionInstruction>(inst, numSpaces);
     }
     else if(inst.isBitwiseLogicOp()) 
     {
-        return std::make_shared<codeGen::BitwiseBinaryInstruction>(inst);
+        return std::make_shared<codeGen::BitwiseBinaryInstruction>(inst, numSpaces);
     }
     else 
     {

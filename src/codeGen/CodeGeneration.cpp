@@ -1,7 +1,10 @@
 #include "codeGen/CodeGeneration.h"
-#include "logger/LoggerManager.h"
+#include "codeGen/BranchConditionalGen.h"
+#include "codeGen/LoopGen.h"
 #include "codeGen/instructions/Instruction.h"
+#include "logger/LoggerManager.h"
 #include "utils/CodeGenUtils.h"
+
 
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/Module.h"
@@ -19,6 +22,8 @@
 #include "llvm/IR/LegacyPassManager.h"
 #include "llvm/Analysis/LoopPass.h"
 #include <llvm/ADT/PostOrderIterator.h>
+
+#include <stack>
 
 
 void codeGen::CodeGeneration::generate() {
@@ -54,7 +59,10 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
         return;
     }
 
-    std::string decompiledFunction = generateFnHeader(f);
+    std::string decompiledFunction = "\n" + generateFnHeader(f);
+    uint64_t numSpaces = 4, numSpacesForBlock = 4;
+    std::stack<std::string> bbStack;
+
     llvm::ReversePostOrderTraversal<llvm::Function*> rpot(&f);
     for(auto& bb: rpot)
     {
@@ -66,7 +74,7 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
         for(auto& inst: *bb)
         {
             logger->info("Instruction: {}", inst.getOpcodeName());
-            auto instruction = codeGen::Instruction::getInstruction(inst);
+            auto instruction = codeGen::Instruction::getInstruction(inst, numSpaces);
             if(instruction)
             {
                 decompiledFunction += instruction->toString();
@@ -74,6 +82,7 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
         }
     }
 
+    decompiledFunction += "}\n";
     logger->error("Decompiled function: {}", decompiledFunction);
 }
 

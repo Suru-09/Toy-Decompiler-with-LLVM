@@ -3,7 +3,7 @@
 
 std::string codeGen::BranchConditionalGen::generateConditional(std::shared_ptr<Instruction> instr, int numSpaces, bool isElseIf)
 {
-   std::string result = utils::CodeGenUtils::generateSpaces(numSpaces);
+   std::string result = utils::CodeGenUtils::getSpaces(numSpaces);
    std::string condition = instr->toString();
    
    if(isElseIf)

@@ -1,34 +1,51 @@
 #include "codeGen/instructions/BinaryInstruction.h"
+#include "utils/CodeGenUtils.h"
 
 #include <llvm/IR/Function.h>
 #include <llvm/IR/Instruction.h>
 #include "llvm/IR/InstrTypes.h"
 
-codeGen::BinaryInstruction::BinaryInstruction(llvm::Instruction& inst) {
+codeGen::BinaryInstruction::BinaryInstruction(llvm::Instruction& inst, int numSpaces) {
     logger->info("BinaryInstruction::BinaryInstruction");
+
+    instructionString = utils::CodeGenUtils::getSpaces(numSpaces);
+    instructionString += inst.getName().str() + " = ";
+
     if(llvm::BinaryOperator* binOp = llvm::dyn_cast<llvm::BinaryOperator>(&inst))
     {
-        // auto operatorOne = binOp->getOperand(0);
-        // auto operatorTwo = binOp->getOperand(1);
-        // auto operatorThree = binOp->getOperand(1);
-
-        // auto operatorOneType = operatorOne->getType();
-        // auto operatorTwoType = operatorTwo->getType();
-        // auto operatorThreeType = operatorThree->getType();
-
-        // instructionString = operatorOne->getName().str() + " " + binOp->getOpcodeName() + " " 
-        //     + operatorTwo->getName().str() + " " + operatorThree->getName().str() + "\n";
+        bool first = true;
         for (auto& operand : binOp->operands()) {
             std::string name = operand->getName().str();
-            instructionString += name;
-            if(name == "")
+            instructionString += name + " ";
+            
+            if(name.empty())
             {
-                instructionString += operand->getType()->getPrimitiveSizeInBits();
+                if(llvm::ConstantInt* constInt = llvm::dyn_cast<llvm::ConstantInt>(operand))
+                {
+                    instructionString += std::to_string(constInt->getSExtValue());
+                }
+                else if(llvm::ConstantFP* constFP = llvm::dyn_cast<llvm::ConstantFP>(operand))
+                {
+                    instructionString += std::to_string(constFP->getValueAPF().convertToDouble());
+                }
+                else
+                {
+                    logger->error("Unknown operand type");
+                }
             }
-            instructionString += "\n";
-        }
+            
+            if(!first)
+            {
+                continue;
+            }
 
+            instructionString += binOp->getOpcodeName();
+            instructionString += " ";
+            first = false;
+        }
     }
+
+    instructionString += "\n";
 }
 
 std::string codeGen::BinaryInstruction::toString() {

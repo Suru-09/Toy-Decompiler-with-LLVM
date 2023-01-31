@@ -1,7 +1,7 @@
 #include "utils/CodeGenUtils.h"
 
 
-std::string utils::CodeGenUtils::generateSpaces(int numSpaces)
+std::string utils::CodeGenUtils::getSpaces(int numSpaces)
 {
    std::string result = "";
    for(int i = 0; i < numSpaces; i++)

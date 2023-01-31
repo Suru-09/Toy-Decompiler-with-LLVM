@@ -18,7 +18,7 @@ public:
     ~Instruction() = default;
 
     virtual std::string toString() = 0;
-    static std::shared_ptr<Instruction> getInstruction(llvm::Instruction& inst);
+    static std::shared_ptr<Instruction> getInstruction(llvm::Instruction& inst, int numSpaces);
 protected:
     std::string instructionString;
     std::shared_ptr<spdlog::logger> logger;

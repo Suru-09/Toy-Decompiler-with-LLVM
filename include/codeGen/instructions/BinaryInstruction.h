@@ -9,7 +9,7 @@ namespace codeGen {
 
 class BinaryInstruction : public codeGen::Instruction {
 public:
-    BinaryInstruction(llvm::Instruction& inst);
+    BinaryInstruction(llvm::Instruction& inst, int numSpaces);
     ~BinaryInstruction() = default;
 
     std::string toString() override;
