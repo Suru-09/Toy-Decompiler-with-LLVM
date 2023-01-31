@@ -31,8 +31,9 @@ int main(int argc, char** argv) {
 
    auto funcInfoMap = udm->getFuncInfoMap();
    
+   std::string optimizedIRFile = irFile.size() > 2 ? irFile.substr(0, irFile.size() - 3) + "_optimized.ll" : irFile;
    std::unique_ptr<codeGen::CodeGeneration> codeGen = 
-      std::make_unique<codeGen::CodeGeneration>(irFile, funcInfoMap);
+      std::make_unique<codeGen::CodeGeneration>(optimizedIRFile, funcInfoMap);
    codeGen->generate();
    return 0;
 }

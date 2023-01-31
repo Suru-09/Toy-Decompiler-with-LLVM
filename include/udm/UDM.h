@@ -6,6 +6,7 @@
 #include <unordered_map>
 
 #include <llvm/IR/Function.h>
+#include <llvm/IR/Module.h>
 
 #include <spdlog/spdlog.h>
 
@@ -19,9 +20,12 @@ public:
     UDM() = delete;
     UDM(const std::string& IRFile);
     void execute();
-    void printLoops(llvm::Function& f);
     std::unordered_map<std::string, udm::FuncInfo> getFuncInfoMap();
 private:
+    void cfgAnalysis(std::unique_ptr<llvm::Module> module);
+    void dataFlowAnalysis();
+
+
     std::string irFile;
     std::unordered_map<std::string, udm::FuncInfo> funcInfoMap;
     std::shared_ptr<spdlog::logger> logger;
