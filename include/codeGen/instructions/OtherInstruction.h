@@ -23,6 +23,7 @@ private:
 
     std::string handlePhiNode(llvm::PHINode* phiNode);
     std::string handleSelectInst(llvm::SelectInst* selectInst);
+    std::string handleCallInst(llvm::CallInst* callInst);
 };
 
 }   // namespace codeGen

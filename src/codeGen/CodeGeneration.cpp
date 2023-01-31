@@ -68,6 +68,11 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
     llvm::ReversePostOrderTraversal<llvm::Function*> rpot(&f);
     for(auto& bb: rpot)
     {
+        for(auto& inst: *bb)
+        {
+            inst.setName(var + std::to_string(counter++));
+        }
+
         auto bbName = bb->getName().str();
         auto bbInfo = funcInfo.getBBInfo(bbName);
         logger->info("Basic block: {}", bb->getName());
@@ -86,9 +91,9 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
             else
             {
                 branchString = codeGen::BranchConditionalGen::generateConditional(instr, numSpaces, false);
-                bbStack.push(bbInfo.getFollowNode());
             }
             
+             bbStack.push(bbInfo.getFollowNode());
             decompiledFunction += branchString;
             numSpaces += numSpacesForBlock;  
         }
@@ -103,8 +108,9 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
             bbStack.push(bbInfo.getFollowNode());
         }
 
-        if(!bbStack.empty() && bbName == bbStack.top())
+        while(!bbStack.empty() && bbName == bbStack.top())
         {
+            logger->error("Equality: {} == {} -> [{}]", bbName, bbStack.top(), bbName == bbStack.top());
             numSpaces -= numSpacesForBlock;
             decompiledFunction += utils::CodeGenUtils::getSpaces(numSpaces) + "}\n";
             bbStack.pop();
@@ -112,9 +118,15 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
         
         for(auto& inst: *bb)
         {
-            inst.setName(var + std::to_string(counter++));
             logger->info("Instruction: {}", inst.getOpcodeName());
             auto instruction = codeGen::Instruction::getInstruction(inst, numSpaces);
+
+            // skip the Jump instruction
+            if(&inst == &bb->back() && inst.getOpcode() == llvm::Instruction::Br)
+            {
+                continue;
+            }
+
             if(instruction)
             {
                 decompiledFunction += instruction->toString();

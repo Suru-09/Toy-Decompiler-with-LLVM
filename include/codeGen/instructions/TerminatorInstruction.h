@@ -3,11 +3,14 @@
 
 #include "codeGen/instructions/Instruction.h"
 
+#include <llvm/IR/InstrTypes.h>
+#include <llvm/IR/Instructions.h>
+
 namespace codeGen {
 
 class TerminatorInstruction : public codeGen::Instruction {
 public:
-    TerminatorInstruction(llvm::Instruction& inst);
+    TerminatorInstruction(llvm::Instruction& inst, int numSpaces);
     ~TerminatorInstruction() = default;
 
     std::string toString() override;

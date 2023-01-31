@@ -12,7 +12,7 @@
 std::shared_ptr<codeGen::Instruction> codeGen::Instruction::getInstruction(llvm::Instruction& inst, int numSpaces) {
     if(inst.isTerminator()) 
     {
-        return std::make_shared<codeGen::TerminatorInstruction>(inst);
+        return std::make_shared<codeGen::TerminatorInstruction>(inst, numSpaces);
     }
     else if(inst.isBinaryOp()) 
     {
