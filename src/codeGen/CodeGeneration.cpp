@@ -70,6 +70,33 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
         auto bbInfo = funcInfo.getBBInfo(bbName);
         logger->info("Basic block: {}", bb->getName());
         logger->error("BB Info: {}", bbInfo.toString());
+
+        // generate conditional branch
+        if(bbInfo.getLoopType() == udm::BBInfo::LoopType::NONE && !bbInfo.getFollowNode().empty())
+        {
+            auto instr = codeGen::Instruction::getInstruction(bb->back(), numSpaces);
+            std::string branchString = codeGen::BranchConditionalGen::generateConditional(instr, numSpaces);
+            decompiledFunction += branchString;
+            numSpaces += numSpacesForBlock;
+            bbStack.push(bbInfo.getFollowNode());
+        }
+
+        // generate loop
+        if(bbInfo.getLoopType() != udm::BBInfo::LoopType::NONE)
+        {
+            auto instr = codeGen::Instruction::getInstruction(bb->back(), numSpaces);
+            std::string loopString = codeGen::LoopGen::generateLoop(instr, numSpaces, bbInfo.getLoopType());
+            decompiledFunction += loopString;
+            numSpaces += numSpacesForBlock;
+            bbStack.push(bbInfo.getFollowNode());
+        }
+
+        if(!bbStack.empty() && bbName == bbStack.top())
+        {
+            numSpaces -= numSpacesForBlock;
+            decompiledFunction += utils::CodeGenUtils::getSpaces(numSpaces) + "}\n";
+            bbStack.pop();
+        }
         
         for(auto& inst: *bb)
         {
@@ -80,6 +107,13 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
                 decompiledFunction += instruction->toString();
             }
         }
+    }
+
+    while(!bbStack.empty())
+    {
+        numSpaces -= numSpacesForBlock;
+        decompiledFunction += utils::CodeGenUtils::getSpaces(numSpaces) + "}\n";
+        bbStack.pop();
     }
 
     decompiledFunction += "}\n";

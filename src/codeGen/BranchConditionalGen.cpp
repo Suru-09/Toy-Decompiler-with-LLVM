@@ -14,6 +14,7 @@ std::string codeGen::BranchConditionalGen::generateConditional(std::shared_ptr<I
    {
       result += "if(" + condition + ")\n";
    }
+   result += utils::CodeGenUtils::getSpaces(numSpaces) + "{\n";
 
    return result;
 }
