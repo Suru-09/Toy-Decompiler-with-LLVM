@@ -32,7 +32,7 @@ std::shared_ptr<codeGen::Instruction> codeGen::Instruction::getInstruction(llvm:
     }
     else 
     {
-        return std::make_shared<codeGen::OtherInstruction>(inst);
+        return std::make_shared<codeGen::OtherInstruction>(inst, numSpaces);
     }
 }
 

@@ -61,6 +61,8 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
 
     std::string decompiledFunction = "\n" + generateFnHeader(f);
     uint64_t numSpaces = 4, numSpacesForBlock = 4;
+    uint64_t counter = 0;
+    const std::string var = "var";
     std::stack<std::string> bbStack;
 
     llvm::ReversePostOrderTraversal<llvm::Function*> rpot(&f);
@@ -75,10 +77,20 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
         if(bbInfo.getLoopType() == udm::BBInfo::LoopType::NONE && !bbInfo.getFollowNode().empty())
         {
             auto instr = codeGen::Instruction::getInstruction(bb->back(), numSpaces);
-            std::string branchString = codeGen::BranchConditionalGen::generateConditional(instr, numSpaces);
+            std::string branchString = "";
+            if(!bbStack.empty() && bbName == bbStack.top())
+            {
+                branchString = codeGen::BranchConditionalGen::generateConditional(instr, numSpaces, true);
+                
+            }
+            else
+            {
+                branchString = codeGen::BranchConditionalGen::generateConditional(instr, numSpaces, false);
+                bbStack.push(bbInfo.getFollowNode());
+            }
+            
             decompiledFunction += branchString;
-            numSpaces += numSpacesForBlock;
-            bbStack.push(bbInfo.getFollowNode());
+            numSpaces += numSpacesForBlock;  
         }
 
         // generate loop
@@ -100,6 +112,7 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
         
         for(auto& inst: *bb)
         {
+            inst.setName(var + std::to_string(counter++));
             logger->info("Instruction: {}", inst.getOpcodeName());
             auto instruction = codeGen::Instruction::getInstruction(inst, numSpaces);
             if(instruction)
@@ -123,8 +136,7 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
 std::string codeGen::CodeGeneration::generateFnHeader(llvm::Function& f)
 {
     std::string result = "";
-    std::string returnType = utils::CodeGenUtils::typeToString(f.getReturnType()->getTypeID());
-    result += returnType + " " + f.getName().str() + "(";
+    result += "Fn " + f.getName().str() + "(";
     
     bool isCommaNeeded = true;
     uint64_t argCount = f.arg_size(), argIndex = 0;
@@ -138,7 +150,9 @@ std::string codeGen::CodeGeneration::generateFnHeader(llvm::Function& f)
         }
         argIndex++;
     }
-    result += ")\n{\n";
+
+    std::string returnType = utils::CodeGenUtils::typeToString(f.getReturnType()->getTypeID());
+    result += ") -> " + returnType + "\n{\n";
 
     logger->info("Function header: {}", result);
     return result;
