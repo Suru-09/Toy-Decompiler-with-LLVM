@@ -9,37 +9,25 @@
 
 
 codeGen::OtherInstruction::OtherInstruction(llvm::Instruction& inst, int numSpaces) {
-    auto printLHS = [&](){
-        instructionString = utils::CodeGenUtils::getSpaces(numSpaces);
-        instructionString += inst.getName();
-        instructionString += " = ";
-    };
-
     if(llvm::CmpInst* cmpOp = llvm::dyn_cast<llvm::CmpInst>(&inst))
     {
-        printLHS();
         instructionString += handleCmpInst(cmpOp, numSpaces);
     }
 
     if(llvm::PHINode* phiNode = llvm::dyn_cast<llvm::PHINode>(&inst))
     {
-       printLHS();
         instructionString += handlePhiNode(phiNode);
     }
 
     if(llvm::SelectInst* selectInst = llvm::dyn_cast<llvm::SelectInst>(&inst))
     {
-        printLHS();
         instructionString += handleSelectInst(selectInst);
     }
 
     if(llvm::CallInst* callInst = llvm::dyn_cast<llvm::CallInst>(&inst))
     {
-        printLHS();
         instructionString += handleCallInst(callInst);
     }
-
-    instructionString += "\n";
 }
 
 std::string codeGen::OtherInstruction::toString() {

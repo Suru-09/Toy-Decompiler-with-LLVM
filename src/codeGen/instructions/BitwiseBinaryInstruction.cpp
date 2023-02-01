@@ -6,8 +6,6 @@
 #include "llvm/IR/InstrTypes.h"
 
 codeGen::BitwiseBinaryInstruction::BitwiseBinaryInstruction(llvm::Instruction& inst, int numSpaces) {
-    instructionString = utils::CodeGenUtils::getSpaces(numSpaces);
-    instructionString += inst.getName().str() + " = ";
 
     if(llvm::BinaryOperator* bitwiseOp = llvm::dyn_cast<llvm::BinaryOperator>(&inst))
     {
@@ -42,8 +40,6 @@ codeGen::BitwiseBinaryInstruction::BitwiseBinaryInstruction(llvm::Instruction& i
             first = false;
         }
     }
-
-    instructionString += "\n";
 }
 
 std::string codeGen::BitwiseBinaryInstruction::toString() {

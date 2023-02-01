@@ -61,9 +61,21 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
 
     std::string decompiledFunction = "\n" + generateFnHeader(f);
     uint64_t numSpaces = 4, numSpacesForBlock = 4;
+
+    auto appendInstrToDecompFN = [&](llvm::Instruction& inst, uint64_t numSpaces)
+    {
+        auto instr = codeGen::Instruction::getInstruction(inst, numSpaces);
+        if(instr)
+        {
+            decompiledFunction += instr->toString();
+        }
+    };
+
     uint64_t counter = 0;
     const std::string var = "var";
     std::stack<std::string> bbStack;
+
+    bool printFirstInst = true, printLastInst = true;
 
     llvm::ReversePostOrderTraversal<llvm::Function*> rpot(&f);
     for(auto& bb: rpot)
@@ -81,7 +93,8 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
         // generate conditional branch
         if(bbInfo.getLoopType() == udm::BBInfo::LoopType::NONE && !bbInfo.getFollowNode().empty())
         {
-            auto instr = codeGen::Instruction::getInstruction(bb->back(), numSpaces);
+            auto instr = codeGen::Instruction::getInstruction(bb->front(), numSpaces);
+            
             std::string branchString = "";
             if(!bbStack.empty() && bbName == bbStack.top())
             {
@@ -93,19 +106,22 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
                 branchString = codeGen::BranchConditionalGen::generateConditional(instr, numSpaces, false);
             }
             
-             bbStack.push(bbInfo.getFollowNode());
+            bbStack.push(bbInfo.getFollowNode());
             decompiledFunction += branchString;
-            numSpaces += numSpacesForBlock;  
+            numSpaces += numSpacesForBlock;
+            printFirstInst = false;
         }
 
         // generate loop
         if(bbInfo.getLoopType() != udm::BBInfo::LoopType::NONE)
         {
             auto instr = codeGen::Instruction::getInstruction(bb->back(), numSpaces);
+
             std::string loopString = codeGen::LoopGen::generateLoop(instr, numSpaces, bbInfo.getLoopType());
             decompiledFunction += loopString;
             numSpaces += numSpacesForBlock;
             bbStack.push(bbInfo.getFollowNode());
+            printFirstInst = false;
         }
 
         while(!bbStack.empty() && bbName == bbStack.top())
@@ -127,11 +143,18 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
                 continue;
             }
 
-            if(instruction)
+            if(!printFirstInst || !printLastInst)
             {
-                decompiledFunction += instruction->toString();
+                continue;
             }
+
+            decompiledFunction += utils::CodeGenUtils::getSpaces(numSpaces);
+            appendInstrToDecompFN(inst, numSpaces);
+            decompiledFunction += "\n";
         }
+
+        printFirstInst = true;
+        printLastInst = true;
     }
 
     while(!bbStack.empty())

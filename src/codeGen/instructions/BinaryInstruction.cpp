@@ -7,10 +7,6 @@
 
 codeGen::BinaryInstruction::BinaryInstruction(llvm::Instruction& inst, int numSpaces) {
     logger->info("BinaryInstruction::BinaryInstruction");
-
-    instructionString = utils::CodeGenUtils::getSpaces(numSpaces);
-    instructionString += inst.getName().str() + " = ";
-
     if(llvm::BinaryOperator* binOp = llvm::dyn_cast<llvm::BinaryOperator>(&inst))
     {
         bool first = true;
@@ -44,8 +40,6 @@ codeGen::BinaryInstruction::BinaryInstruction(llvm::Instruction& inst, int numSp
             first = false;
         }
     }
-
-    instructionString += "\n";
 }
 
 std::string codeGen::BinaryInstruction::toString() {

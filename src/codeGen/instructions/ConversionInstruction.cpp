@@ -6,23 +6,20 @@
 #include "llvm/IR/InstrTypes.h"
 
 codeGen::ConversionInstruction::ConversionInstruction(llvm::Instruction& inst, int numSpaces) {
-    instructionString = utils::CodeGenUtils::getSpaces(numSpaces);
-    
     if(llvm::CastInst* castOp = llvm::dyn_cast<llvm::CastInst>(&inst))
     {
-        auto sourceType = castOp->getSrcTy();
-        instructionString += utils::CodeGenUtils::typeToString(sourceType->getTypeID()) + " ";
-        instructionString += inst.getName().str() + " = (";
+        // auto sourceType = castOp->getSrcTy();
+        // instructionString += utils::CodeGenUtils::typeToString(sourceType->getTypeID()) + " ";
+        // instructionString += inst.getName().str() + " = (";
 
+        instructionString += " ( ";
         auto destType = castOp->getDestTy();
         instructionString += utils::CodeGenUtils::typeToString(destType->getTypeID()) + ") ";
         
-        auto operand = castOp->getOperand(0);
-        std::string name = operand->getName().str();
-        instructionString += name + " ";
+        // auto operand = castOp->getOperand(0);
+        // std::string name = operand->getName().str();
+        // instructionString += name + " ";
     }
-
-    instructionString += "\n";
 }
 
 std::string codeGen::ConversionInstruction::toString() {
