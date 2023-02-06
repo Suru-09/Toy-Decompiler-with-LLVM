@@ -4,6 +4,7 @@
 #include <iostream>
 #include <unordered_map>
 #include <memory>
+#include <map>
 
 #include "udm/FuncInfo.h"
 
@@ -30,7 +31,7 @@ private:
     std::string irFile;
     std::unordered_map<std::string, udm::FuncInfo> funcInfoMap;
     std::unordered_map<std::string, std::string> decompiledFunctions;
-    std::unordered_map<std::string, std::string> instructionMap;
+    std::map<std::string, std::string> instructionMap;
     std::shared_ptr<spdlog::logger> logger;
 };
 

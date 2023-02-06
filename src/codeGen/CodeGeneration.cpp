@@ -83,10 +83,10 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
     llvm::ReversePostOrderTraversal<llvm::Function*> rpot(&f);
     for(auto& bb: rpot)
     {
-        for(auto& inst: *bb)
-        {
-            inst.setName(var + std::to_string(counter++));
-        }
+        // for(auto& inst: *bb)
+        // {
+        //     inst.setName(var + std::to_string(counter++));
+        // }
 
         auto bbName = bb->getName().str();
         auto bbInfo = funcInfo.getBBInfo(bbName);
@@ -101,8 +101,7 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
             std::string branchString = "";
             if(!bbStack.empty() && bbName == bbStack.top())
             {
-                branchString = codeGen::BranchConditionalGen::generateConditional(instr, numSpaces, true);
-                
+                branchString = codeGen::BranchConditionalGen::generateConditional(instr, numSpaces, false);
             }
             else
             {
@@ -147,26 +146,30 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
                 continue;
             }
 
-            if(!printFirstInst || !printLastInst)
+          
+            if(!printFirstInst)
             {
+                printFirstInst = true;
                 continue;
             }
-
+            
             if(instruction)
             {
                 auto expandedInstr = expandInstruction(&inst, numSpaces);
+                logger->error("Expanded instruction: {}", expandedInstr);
                 if(!expandedInstr.empty())
                 {
                     instructionMap.insert_or_assign(inst.getName().str(), expandedInstr);
                 }
+                
             }
         }
 
         for(auto& [key, value]: instructionMap)
         {
-            decompiledFunction += utils::CodeGenUtils::getSpaces(numSpaces);
             if(!isValueSubstring(value) && std::find(visited.begin(), visited.end(), key) == visited.end())
             {
+                decompiledFunction += utils::CodeGenUtils::getSpaces(numSpaces);
                 decompiledFunction += key + " = " + value;
                 visited.push_back(key);
                 decompiledFunction += "\n";
@@ -193,20 +196,19 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
 
     decompiledFunction += "}\n";
     logger->error("Decompiled function: {}", decompiledFunction);
+    instructionMap.clear();
 }
 
 bool codeGen::CodeGeneration::isValueSubstring(const std::string& value)
 {
-    bool isSubstring = false;
     for(auto& [key, value]: instructionMap)
     {
         if(value.find(key) != std::string::npos)
         {
-            isSubstring = true;
-            break;
+            return true;
         }
     }
-    return isSubstring;
+    return false;
 }
 
 std::string codeGen::CodeGeneration::generateFnHeader(llvm::Function& f)
@@ -248,6 +250,11 @@ std::string codeGen::CodeGeneration::expandInstruction(llvm::Instruction* instr,
     {
         currentInstrString = instrObj->toString();
     }
+    else
+    {
+        logger->error("[expandInstruction] Instruction: {} not found", instr->getOpcodeName());
+        return "";
+    }
 
     for(auto& op: instr->operands())
     {
@@ -272,6 +279,10 @@ std::string codeGen::CodeGeneration::expandInstruction(llvm::Instruction* instr,
         }    
     }
 
+    if(currentInstrString.empty())
+    {
+        logger->error("ExpandINstruction returned empty string");
+    }
     return currentInstrString;
 }
 

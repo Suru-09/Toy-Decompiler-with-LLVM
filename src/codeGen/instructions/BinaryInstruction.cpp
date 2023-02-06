@@ -10,7 +10,9 @@ codeGen::BinaryInstruction::BinaryInstruction(llvm::Instruction& inst, int numSp
     if(llvm::BinaryOperator* binOp = llvm::dyn_cast<llvm::BinaryOperator>(&inst))
     {
         bool first = true;
+        logger->error("Number of operands: {}", binOp->getNumOperands());
         for (auto& operand : binOp->operands()) {
+            logger->error("Operand: {}", operand->getName().str());
             std::string name = operand->getName().str();
             instructionString += name + " ";
             
@@ -39,6 +41,19 @@ codeGen::BinaryInstruction::BinaryInstruction(llvm::Instruction& inst, int numSp
             instructionString += " ";
             first = false;
         }
+    }
+    else
+    {
+        logger->error("Cast to BinaryOperator failed");
+    }
+
+    if(instructionString.empty())
+    {
+        logger->error("Instruction string is empty");
+    }
+    else
+    {
+        logger->error("Instruction string: {}", instructionString);
     }
 }
 
