@@ -10,6 +10,9 @@
 #include "spdlog/spdlog.h"
 
 #include "llvm/IR/Function.h"
+#include "llvm/IR/Instruction.h"
+
+#include "codeGen/instructions/Instruction.h"
 
 namespace codeGen {
 
@@ -21,10 +24,12 @@ public:
 private:
     void processFunction(llvm::Function& f, const udm::FuncInfo& funcInfo);
     std::string generateFnHeader(llvm::Function& f);
+    std::string expandInstructionRecursive(llvm::Instruction& instr, int numSpaces, std::shared_ptr<codeGen::Instruction> instrObj);
 
     std::string irFile;
     std::unordered_map<std::string, udm::FuncInfo> funcInfoMap;
     std::unordered_map<std::string, std::string> decompiledFunctions;
+    std::unordered_map<std::string, std::string> instructionMap;
     std::shared_ptr<spdlog::logger> logger;
 };
 
