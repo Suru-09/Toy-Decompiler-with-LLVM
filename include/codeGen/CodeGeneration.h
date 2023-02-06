@@ -24,7 +24,8 @@ public:
 private:
     void processFunction(llvm::Function& f, const udm::FuncInfo& funcInfo);
     std::string generateFnHeader(llvm::Function& f);
-    std::string expandInstructionRecursive(llvm::Instruction& instr, int numSpaces, std::shared_ptr<codeGen::Instruction> instrObj);
+    std::string expandInstruction(llvm::Instruction* instr, int numSpaces);
+    bool isValueSubstring(const std::string& value);
 
     std::string irFile;
     std::unordered_map<std::string, udm::FuncInfo> funcInfoMap;

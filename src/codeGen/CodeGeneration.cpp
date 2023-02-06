@@ -25,6 +25,7 @@
 
 #include <stack>
 #include <map>
+#include <vector>
 
 
 void codeGen::CodeGeneration::generate() {
@@ -75,6 +76,7 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
     uint64_t counter = 0;
     const std::string var = "var";
     std::stack<std::string> bbStack;
+    std::vector<std::string> visited;
 
     bool printFirstInst = true, printLastInst = true;
 
@@ -139,11 +141,6 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
             logger->info("Instruction: {}", inst.getOpcodeName());
             auto instruction = codeGen::Instruction::getInstruction(inst, numSpaces);
 
-            if(instruction)
-            {
-                instructionMap.insert_or_assign(inst.getName().str(), expandInstructionRecursive(inst, numSpaces, instruction));
-            }
-
             // skip the Jump instruction
             if(&inst == &bb->back() && inst.getOpcode() == llvm::Instruction::Br)
             {
@@ -155,9 +152,25 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
                 continue;
             }
 
+            if(instruction)
+            {
+                auto expandedInstr = expandInstruction(&inst, numSpaces);
+                if(!expandedInstr.empty())
+                {
+                    instructionMap.insert_or_assign(inst.getName().str(), expandedInstr);
+                }
+            }
+        }
+
+        for(auto& [key, value]: instructionMap)
+        {
             decompiledFunction += utils::CodeGenUtils::getSpaces(numSpaces);
-            appendInstrToDecompFN(inst, numSpaces);
-            decompiledFunction += "\n";
+            if(!isValueSubstring(value) && std::find(visited.begin(), visited.end(), key) == visited.end())
+            {
+                decompiledFunction += key + " = " + value;
+                visited.push_back(key);
+                decompiledFunction += "\n";
+            }    
         }
 
         printFirstInst = true;
@@ -171,15 +184,29 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
         logger->error("Key: {}, Value: {}", key, value);
     }
 
-    // while(!bbStack.empty())
-    // {
-    //     numSpaces -= numSpacesForBlock;
-    //     decompiledFunction += utils::CodeGenUtils::getSpaces(numSpaces) + "}\n";
-    //     bbStack.pop();
-    // }
+    while(!bbStack.empty())
+    {
+        numSpaces -= numSpacesForBlock;
+        decompiledFunction += utils::CodeGenUtils::getSpaces(numSpaces) + "}\n";
+        bbStack.pop();
+    }
 
     decompiledFunction += "}\n";
     logger->error("Decompiled function: {}", decompiledFunction);
+}
+
+bool codeGen::CodeGeneration::isValueSubstring(const std::string& value)
+{
+    bool isSubstring = false;
+    for(auto& [key, value]: instructionMap)
+    {
+        if(value.find(key) != std::string::npos)
+        {
+            isSubstring = true;
+            break;
+        }
+    }
+    return isSubstring;
 }
 
 std::string codeGen::CodeGeneration::generateFnHeader(llvm::Function& f)
@@ -207,7 +234,7 @@ std::string codeGen::CodeGeneration::generateFnHeader(llvm::Function& f)
     return result;
 }
 
-std::string codeGen::CodeGeneration::expandInstructionRecursive(llvm::Instruction& instr, int numSpaces, std::shared_ptr<codeGen::Instruction> instrObj)
+std::string codeGen::CodeGeneration::expandInstruction(llvm::Instruction* instr, int numSpaces)
 {
     std::string instrName = instr->getName().str();
     if(instructionMap.find(instrName) != instructionMap.end())
@@ -216,32 +243,33 @@ std::string codeGen::CodeGeneration::expandInstructionRecursive(llvm::Instructio
     }
 
     std::string currentInstrString = "";
+    auto instrObj = codeGen::Instruction::getInstruction(*instr, 0);
     if(instrObj)
     {
         currentInstrString = instrObj->toString();
     }
 
-    // parse all instruction operands and replace them in the currentInstrString with their expanded version
-    // from the instructionMap
-    for(uint64_t i = 0; i < instr->getNumOperands(); i++)
+    for(auto& op: instr->operands())
     {
-        auto operand = instr->getOperand(i);
-        if(llvm::isa<llvm::Instruction>(operand))
+        logger->error("Instruction string: {}", currentInstrString);
+        if(op->hasName())
         {
-            auto operandInstr = llvm::dyn_cast<llvm::Instruction>(operand);
-            std::string operandInstrName = operandInstr->getName().str();
-            if(instructionMap.find(operandInstrName) != instructionMap.end())
+            auto opName = op->getName().str();
+            if(instructionMap.find(opName) != instructionMap.end())
             {
-                std::string operandInstrExpanded = instructionMap[operandInstrName];
-                std::string operandInstrString = operandInstr->getName().str();
-                std::string operandInstrStringExpanded = expandInstructionRecursive(operandInstr, numSpaces, instrObj);
-                std::size_t found = currentInstrString.find(operandInstrString);
-                if(found != std::string::npos)
+                auto opValue = instructionMap[opName];
+                opValue = "(" + opValue + ")";
+                // replaceAll not defined use another functions from standard library
+                if(currentInstrString.find(opName) != std::string::npos)
                 {
-                    currentInstrString.replace(found, operandInstrString.length(), operandInstrStringExpanded);
+                    currentInstrString.replace(currentInstrString.find(opName), opName.length(), opValue);
                 }
             }
         }
+        else
+        {
+            logger->error("[expandInstructionRecursive] Instruction: doesn't have a name");
+        }    
     }
 
     return currentInstrString;
