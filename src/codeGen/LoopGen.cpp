@@ -4,10 +4,9 @@
 #include <iostream>
 #include <memory>
 
-std::string codeGen::LoopGen::generateLoop(std::shared_ptr<Instruction> instr, int numSpaces, udm::BBInfo::LoopType loopType)
+std::string codeGen::LoopGen::generateLoop(const std::string& condition, int numSpaces, udm::BBInfo::LoopType loopType)
 {
    std::string result = utils::CodeGenUtils::getSpaces(numSpaces);
-   std::string condition = instr->toString();
    
     if(loopType == udm::BBInfo::LoopType::WHILE)
     {

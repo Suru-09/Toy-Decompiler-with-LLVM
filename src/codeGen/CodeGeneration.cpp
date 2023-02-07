@@ -63,51 +63,25 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
 
     std::string decompiledFunction = "\n" + generateFnHeader(f);
     uint64_t numSpaces = 4, numSpacesForBlock = 4;
-
-    auto appendInstrToDecompFN = [&](llvm::Instruction& inst, uint64_t numSpaces)
-    {
-        auto instr = codeGen::Instruction::getInstruction(inst, numSpaces);
-        if(instr)
-        {
-            decompiledFunction += instr->toString();
-        }
-    };
-
-    uint64_t counter = 0;
-    const std::string var = "var";
     std::stack<std::string> bbStack;
     std::vector<std::string> visited;
 
     bool printFirstInst = true, printLastInst = true;
 
     llvm::ReversePostOrderTraversal<llvm::Function*> rpot(&f);
+    auto uses = noOfUses(f);
     for(auto& bb: rpot)
     {
-        // for(auto& inst: *bb)
-        // {
-        //     inst.setName(var + std::to_string(counter++));
-        // }
-
         auto bbName = bb->getName().str();
         auto bbInfo = funcInfo.getBBInfo(bbName);
         logger->info("Basic block: {}", bb->getName());
         logger->error("BB Info: {}", bbInfo.toString());
 
+
         // generate conditional branch
-        if(bbInfo.getLoopType() == udm::BBInfo::LoopType::NONE && !bbInfo.getFollowNode().empty())
+        std::string branchString = generateConditionalBranch(bb, numSpaces, funcInfo);
+        if(!branchString.empty())
         {
-            auto instr = codeGen::Instruction::getInstruction(bb->front(), numSpaces);
-            
-            std::string branchString = "";
-            if(!bbStack.empty() && bbName == bbStack.top())
-            {
-                branchString = codeGen::BranchConditionalGen::generateConditional(instr, numSpaces, false);
-            }
-            else
-            {
-                branchString = codeGen::BranchConditionalGen::generateConditional(instr, numSpaces, false);
-            }
-            
             bbStack.push(bbInfo.getFollowNode());
             decompiledFunction += branchString;
             numSpaces += numSpacesForBlock;
@@ -115,17 +89,14 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
         }
 
         // generate loop
-        if(bbInfo.getLoopType() != udm::BBInfo::LoopType::NONE)
+        std::string loopString = generateLoop(bb, numSpaces, funcInfo);
+        if(!loopString.empty())
         {
-            auto instr = codeGen::Instruction::getInstruction(bb->back(), numSpaces);
-
-            std::string loopString = codeGen::LoopGen::generateLoop(instr, numSpaces, bbInfo.getLoopType());
             decompiledFunction += loopString;
             numSpaces += numSpacesForBlock;
             bbStack.push(bbInfo.getFollowNode());
             printFirstInst = false;
         }
-
 
         while(!bbStack.empty() && bbName == bbStack.top())
         {
@@ -147,11 +118,11 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
             }
 
           
-            if(!printFirstInst)
-            {
-                printFirstInst = true;
-                continue;
-            }
+            // if(!printFirstInst)
+            // {
+            //     printFirstInst = true;
+            //     continue;
+            // }
             
             if(instruction)
             {
@@ -167,7 +138,7 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
 
         for(auto& [key, value]: instructionMap)
         {
-            if(!isValueSubstring(value) && std::find(visited.begin(), visited.end(), key) == visited.end())
+            if(!isValueSubstring(value) && std::find(visited.begin(), visited.end(), key) == visited.end() && uses[key] > 1)
             {
                 decompiledFunction += utils::CodeGenUtils::getSpaces(numSpaces);
                 decompiledFunction += key + " = " + value;
@@ -211,6 +182,41 @@ bool codeGen::CodeGeneration::isValueSubstring(const std::string& value)
     return false;
 }
 
+std::string codeGen::CodeGeneration::generateConditionalBranch(llvm::BasicBlock* bb, int numSpaces, const udm::FuncInfo& funcInfo)
+{
+    std::string result = "";
+    auto bbInfo = funcInfo.getBBInfo(bb->getName().str());
+
+    if(bbInfo.getLoopType() == udm::BBInfo::LoopType::NONE && !bbInfo.getFollowNode().empty())
+    {
+        auto instr = codeGen::Instruction::getInstruction(bb->front(), numSpaces);
+        if(instr)
+        {
+            result += codeGen::BranchConditionalGen::generateConditional(instr, numSpaces, false);
+        }
+    }
+    return result;
+}
+
+std::string codeGen::CodeGeneration::generateLoop(llvm::BasicBlock* bb, int numSpaces, const udm::FuncInfo& funcInfo)
+{
+    std::string result = "";
+    auto loopType = funcInfo.getBBInfo(bb->getName().str()).getLoopType();
+    if(loopType == udm::BBInfo::LoopType::NONE)
+    {
+        return result;
+    }
+
+    auto expandedInstr = expandInstruction(&bb->back(), 0);
+    if(expandedInstr.empty())
+    {
+        return result;
+    }
+
+    result += codeGen::LoopGen::generateLoop(expandedInstr, numSpaces, loopType);
+    return result;
+}
+
 std::string codeGen::CodeGeneration::generateFnHeader(llvm::Function& f)
 {
     std::string result = "";
@@ -233,6 +239,34 @@ std::string codeGen::CodeGeneration::generateFnHeader(llvm::Function& f)
     result += ") -> " + returnType + "\n{\n";
 
     logger->info("Function header: {}", result);
+    return result;
+}
+
+std::unordered_map<std::string, uint64_t> codeGen::CodeGeneration::noOfUses(llvm::Function& f)
+{
+    std::unordered_map<std::string, uint64_t> result;
+    auto rpot = llvm::ReversePostOrderTraversal<llvm::Function*>(&f);
+    for(auto& bb: rpot)
+    {
+        for(auto& inst: *bb)
+        {
+            for(auto& op: inst.operands())
+            {
+                if(op->hasName())
+                {
+                    auto opName = op->getName().str();
+                    if(result.find(opName) == result.end())
+                    {
+                        result.insert_or_assign(opName, 1);
+                    }
+                    else
+                    {
+                        result[opName]++;
+                    }
+                }
+            }
+        }
+    }
     return result;
 }
 

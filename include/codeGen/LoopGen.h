@@ -13,7 +13,7 @@ public:
     LoopGen() = default;
     ~LoopGen() = default;
 
-    static std::string generateLoop(std::shared_ptr<Instruction> instr, int numSpaces, udm::BBInfo::LoopType loopType);
+    static std::string generateLoop(const std::string& condition, int numSpaces, udm::BBInfo::LoopType loopType);
 };
 
 }   // namespace codeGen
