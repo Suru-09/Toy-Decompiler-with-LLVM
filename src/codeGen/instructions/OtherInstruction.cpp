@@ -28,6 +28,11 @@ codeGen::OtherInstruction::OtherInstruction(llvm::Instruction& inst, int numSpac
     {
         instructionString += handleCallInst(callInst);
     }
+
+    if(llvm::AllocaInst* allocaInst = llvm::dyn_cast<llvm::AllocaInst>(&inst))
+    {
+        instructionString += handleAllocaInst(allocaInst);
+    }
 }
 
 std::string codeGen::OtherInstruction::toString() {
@@ -154,4 +159,11 @@ std::string codeGen::OtherInstruction::handleCallInst(llvm::CallInst* callInst) 
         first = false;
     }
     return callString;
+}
+
+std::string codeGen::OtherInstruction::handleAllocaInst(llvm::AllocaInst* allocaInst) {
+    std::string allocaString = "";
+    auto type = utils::CodeGenUtils::typeToString(allocaInst->getAllocatedType()->getTypeID());
+    allocaString += type + " " + allocaInst->getName().str();
+    return allocaString;
 }

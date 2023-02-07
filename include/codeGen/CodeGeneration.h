@@ -29,6 +29,8 @@ private:
     std::string expandInstruction(llvm::Instruction* instr, int numSpaces);
     bool isValueSubstring(const std::string& value);
 
+    void fillInstructionMap(llvm::BasicBlock* bb, int numSpaces);
+
     std::unordered_map<std::string, uint64_t> noOfUses(llvm::Function& f);
     std::string generateConditionalBranch(llvm::BasicBlock* bb, int numSpaces, const udm::FuncInfo& funcInfo);
     std::string generateLoop(llvm::BasicBlock* bb, int numSpaces, const udm::FuncInfo& funcInfo);

@@ -66,8 +66,6 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
     std::stack<std::string> bbStack;
     std::vector<std::string> visited;
 
-    bool printFirstInst = true, printLastInst = true;
-
     llvm::ReversePostOrderTraversal<llvm::Function*> rpot(&f);
     auto uses = noOfUses(f);
     for(auto& bb: rpot)
@@ -77,7 +75,6 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
         logger->info("Basic block: {}", bb->getName());
         logger->error("BB Info: {}", bbInfo.toString());
 
-
         // generate conditional branch
         std::string branchString = generateConditionalBranch(bb, numSpaces, funcInfo);
         if(!branchString.empty())
@@ -85,7 +82,6 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
             bbStack.push(bbInfo.getFollowNode());
             decompiledFunction += branchString;
             numSpaces += numSpacesForBlock;
-            printFirstInst = false;
         }
 
         // generate loop
@@ -95,7 +91,6 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
             decompiledFunction += loopString;
             numSpaces += numSpacesForBlock;
             bbStack.push(bbInfo.getFollowNode());
-            printFirstInst = false;
         }
 
         while(!bbStack.empty() && bbName == bbStack.top())
@@ -105,40 +100,13 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
             decompiledFunction += utils::CodeGenUtils::getSpaces(numSpaces) + "}\n";
             bbStack.pop();
         }
+
+        fillInstructionMap(bb, numSpaces);
         
-        for(auto& inst: *bb)
-        {
-            logger->info("Instruction: {}", inst.getOpcodeName());
-            auto instruction = codeGen::Instruction::getInstruction(inst, numSpaces);
-
-            // skip the Jump instruction
-            if(&inst == &bb->back() && inst.getOpcode() == llvm::Instruction::Br)
-            {
-                continue;
-            }
-
-          
-            // if(!printFirstInst)
-            // {
-            //     printFirstInst = true;
-            //     continue;
-            // }
-            
-            if(instruction)
-            {
-                auto expandedInstr = expandInstruction(&inst, numSpaces);
-                logger->error("Expanded instruction: {}", expandedInstr);
-                if(!expandedInstr.empty())
-                {
-                    instructionMap.insert_or_assign(inst.getName().str(), expandedInstr);
-                }
-                
-            }
-        }
-
         for(auto& [key, value]: instructionMap)
         {
-            if(!isValueSubstring(value) && std::find(visited.begin(), visited.end(), key) == visited.end() && uses[key] > 1)
+            if(!isValueSubstring(value) && std::find(visited.begin(), visited.end(), key) == visited.end() 
+                && (uses[key] > 1 || value.find("?") != std::string::npos || value.find("Integer") != std::string::npos))
             {
                 decompiledFunction += utils::CodeGenUtils::getSpaces(numSpaces);
                 decompiledFunction += key + " = " + value;
@@ -146,9 +114,6 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
                 decompiledFunction += "\n";
             }    
         }
-
-        printFirstInst = true;
-        printLastInst = true;
     }
 
     // print instructionMap
@@ -189,7 +154,7 @@ std::string codeGen::CodeGeneration::generateConditionalBranch(llvm::BasicBlock*
 
     if(bbInfo.getLoopType() == udm::BBInfo::LoopType::NONE && !bbInfo.getFollowNode().empty())
     {
-        auto instr = codeGen::Instruction::getInstruction(bb->front(), numSpaces);
+        auto instr = codeGen::Instruction::getInstruction(bb->back(), numSpaces);
         if(instr)
         {
             result += codeGen::BranchConditionalGen::generateConditional(instr, numSpaces, false);
@@ -318,6 +283,31 @@ std::string codeGen::CodeGeneration::expandInstruction(llvm::Instruction* instr,
         logger->error("ExpandINstruction returned empty string");
     }
     return currentInstrString;
+}
+
+void codeGen::CodeGeneration::fillInstructionMap(llvm::BasicBlock* bb, int numSpaces)
+{
+    for(auto& inst: *bb)
+    {
+        logger->info("Instruction: {}", inst.getOpcodeName());
+        auto instruction = codeGen::Instruction::getInstruction(inst, numSpaces);
+
+        // skip the Jump instruction
+        if(&inst == &bb->back() && inst.getOpcode() == llvm::Instruction::Br)
+        {
+            continue;
+        }
+
+        if(instruction)
+        {
+            auto expandedInstr = expandInstruction(&inst, numSpaces);
+            logger->error("Expanded instruction: {}", expandedInstr);
+            if(!expandedInstr.empty())
+            {
+                instructionMap.insert_or_assign(inst.getName().str(), expandedInstr);
+            }
+        }
+    }
 }
 
 codeGen::CodeGeneration::CodeGeneration(const std::string& irFile, std::unordered_map<std::string, udm::FuncInfo> fnInfoMap) 
