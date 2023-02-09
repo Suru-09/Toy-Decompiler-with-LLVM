@@ -21,6 +21,9 @@ namespace codeGen {
 enum class GeneratedInstrType {
     ALLOCA,
     BINARY_OP,
+    RETURN,
+    STORE,
+    LOAD,
     BRANCH,
     CALL,
     CAST,
@@ -47,7 +50,7 @@ private:
     std::string expandInstruction(llvm::Instruction* instr, int numSpaces);
     codeGen::GeneratedInstrType getInstrTypeToGenerate(llvm::Instruction* instr);
     std::string generateInstruction(const std::string& key, const std::pair<std::string, GeneratedInstrType>& instrPair,
-        const std::vector<std::string>& visited, const std::unordered_map<std::string, uint64_t>& noOfUses
+        const std::unordered_map<std::string, uint64_t>& noOfUses
     );
 
     // received in c-tor

@@ -1,10 +1,9 @@
 #include "codeGen/BranchConditionalGen.h"
 #include "utils/CodeGenUtils.h"
 
-std::string codeGen::BranchConditionalGen::generateConditional(std::shared_ptr<Instruction> instr, int numSpaces, bool isElseIf)
+std::string codeGen::BranchConditionalGen::generateConditional(const std::string& condition, int numSpaces, bool isElseIf)
 {
    std::string result = utils::CodeGenUtils::getSpaces(numSpaces);
-   std::string condition = instr->toString();
    
    if(isElseIf)
    {

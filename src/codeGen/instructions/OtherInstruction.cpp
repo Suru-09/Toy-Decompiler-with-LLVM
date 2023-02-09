@@ -33,6 +33,16 @@ codeGen::OtherInstruction::OtherInstruction(llvm::Instruction& inst, int numSpac
     {
         instructionString += handleAllocaInst(allocaInst);
     }
+
+    if(llvm::StoreInst* storeInst = llvm::dyn_cast<llvm::StoreInst>(&inst))
+    {
+        instructionString += handleStoreInst(storeInst);
+    }
+
+    if(llvm::LoadInst* loadInst = llvm::dyn_cast<llvm::LoadInst>(&inst))
+    {
+        instructionString += handleLoadInst(loadInst);
+    }
 }
 
 std::string codeGen::OtherInstruction::toString() {
@@ -166,4 +176,20 @@ std::string codeGen::OtherInstruction::handleAllocaInst(llvm::AllocaInst* alloca
     auto type = utils::CodeGenUtils::typeToString(allocaInst->getAllocatedType());
     allocaString += type + " " + allocaInst->getName().str();
     return allocaString;
+}
+
+std::string codeGen::OtherInstruction::handleStoreInst(llvm::StoreInst* storeInst)
+{
+    std::string storeString = "";
+    auto type = utils::CodeGenUtils::typeToString(storeInst->getValueOperand()->getType());
+    storeString += storeInst->getPointerOperand()->getName().str();
+    return storeString;
+}
+
+std::string codeGen::OtherInstruction::handleLoadInst(llvm::LoadInst* loadInst)
+{
+    std::string loadString = "";
+    auto type = utils::CodeGenUtils::typeToString(loadInst->getType());
+    loadString += loadInst->getPointerOperand()->getName().str();
+    return loadString;
 }

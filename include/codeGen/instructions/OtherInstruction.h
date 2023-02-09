@@ -22,6 +22,8 @@ private:
     std::string handleFPCmpInst(llvm::CmpInst* cmpInst);
 
     std::string handleAllocaInst(llvm::AllocaInst* allocaInst);
+    std::string handleStoreInst(llvm::StoreInst* storeInst);
+    std::string handleLoadInst(llvm::LoadInst* loadInst);
     std::string handlePhiNode(llvm::PHINode* phiNode);
     std::string handleSelectInst(llvm::SelectInst* selectInst);
     std::string handleCallInst(llvm::CallInst* callInst);
