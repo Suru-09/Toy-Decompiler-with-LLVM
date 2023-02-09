@@ -67,7 +67,8 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
     std::vector<std::string> visited;
 
     llvm::ReversePostOrderTraversal<llvm::Function*> rpot(&f);
-    auto uses = noOfUses(f);
+    std::unordered_map<std::string, uint64_t> uses = noOfUses(f);
+
     for(auto& bb: rpot)
     {
         auto bbName = bb->getName().str();
@@ -102,14 +103,18 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
         }
 
         fillInstructionMap(bb, numSpaces);
+
+        auto isKeyVisited = [&](const std::string& key) {
+            return std::find(visited.begin(), visited.end(), key) != visited.end();
+        };
         
         for(auto& [key, value]: instructionMap)
         {
-            if(!isValueSubstring(value) && std::find(visited.begin(), visited.end(), key) == visited.end() 
-                && (uses[key] > 1 || value.find("?") != std::string::npos || value.find("Integer") != std::string::npos))
+            auto expanded = value.first;
+            if(isValueSubstring(expanded) && !isKeyVisited(key))
             {
                 decompiledFunction += utils::CodeGenUtils::getSpaces(numSpaces);
-                decompiledFunction += key + " = " + value;
+                decompiledFunction += generateInstruction(key, value, visited, uses);
                 visited.push_back(key);
                 decompiledFunction += "\n";
             }    
@@ -120,7 +125,7 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
     logger->error("Printing instructionMap");
     for(auto& [key, value]: instructionMap)
     {
-        logger->error("Key: {}, Value: {}", key, value);
+        logger->error("Key: {}, Value: {}", key, value.first);
     }
 
     while(!bbStack.empty())
@@ -135,11 +140,33 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
     instructionMap.clear();
 }
 
+std::string codeGen::CodeGeneration::generateInstruction(const std::string& key, const std::pair<std::string,
+    codeGen::GeneratedInstrType>& instrPair,
+    const std::vector<std::string>& visited, const std::unordered_map<std::string, uint64_t>& noOfUses    
+)
+{
+    std::string generateInstr = "";
+    auto instrType = instrPair.second;
+
+    if(instrType == codeGen::GeneratedInstrType::ALLOCA)
+    {
+        return instrPair.first + ";";
+    }
+
+    if(instrType == codeGen::GeneratedInstrType::NONE)
+    {
+        logger->error("Instruction type has not been set for instruction: {}", instrPair.first);
+    }
+
+    generateInstr += key + " = " + instrPair.first + ";";
+    return generateInstr;
+}
+
 bool codeGen::CodeGeneration::isValueSubstring(const std::string& value)
 {
     for(auto& [key, value]: instructionMap)
     {
-        if(value.find(key) != std::string::npos)
+        if(value.first.find(key) != std::string::npos)
         {
             return true;
         }
@@ -240,7 +267,7 @@ std::string codeGen::CodeGeneration::expandInstruction(llvm::Instruction* instr,
     std::string instrName = instr->getName().str();
     if(instructionMap.find(instrName) != instructionMap.end())
     {
-        return instructionMap[instrName];
+        return instructionMap[instrName].first;
     }
 
     std::string currentInstrString = "";
@@ -263,7 +290,7 @@ std::string codeGen::CodeGeneration::expandInstruction(llvm::Instruction* instr,
             auto opName = op->getName().str();
             if(instructionMap.find(opName) != instructionMap.end())
             {
-                auto opValue = instructionMap[opName];
+                auto opValue = instructionMap[opName].first;
                 opValue = "(" + opValue + ")";
                 // replaceAll not defined use another functions from standard library
                 if(currentInstrString.find(opName) != std::string::npos)
@@ -301,13 +328,31 @@ void codeGen::CodeGeneration::fillInstructionMap(llvm::BasicBlock* bb, int numSp
         if(instruction)
         {
             auto expandedInstr = expandInstruction(&inst, numSpaces);
-            logger->error("Expanded instruction: {}", expandedInstr);
-            if(!expandedInstr.empty())
+            if(expandedInstr.empty())
             {
-                instructionMap.insert_or_assign(inst.getName().str(), expandedInstr);
+                logger->error("Expanded instruction is empty");
+                continue;
             }
+            logger->error("Expanded instruction: {}", expandedInstr);
+            instructionMap.insert_or_assign(inst.getName().str(), 
+                std::make_pair<std::string, codeGen::GeneratedInstrType>(std::move(expandedInstr), getInstrTypeToGenerate(&inst)));
         }
     }
+}
+
+codeGen::GeneratedInstrType codeGen::CodeGeneration::getInstrTypeToGenerate(llvm::Instruction* instr)
+{
+    if(instr->getOpcode() == llvm::Instruction::Alloca)
+    {
+        return codeGen::GeneratedInstrType::ALLOCA;
+    }
+
+    if(instr->isBinaryOp())
+    {
+        return codeGen::GeneratedInstrType::BINARY_OP;
+    }
+    
+    return codeGen::GeneratedInstrType::NONE;
 }
 
 codeGen::CodeGeneration::CodeGeneration(const std::string& irFile, std::unordered_map<std::string, udm::FuncInfo> fnInfoMap) 
