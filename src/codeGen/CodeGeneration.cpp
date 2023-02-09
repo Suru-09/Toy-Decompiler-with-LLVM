@@ -191,7 +191,7 @@ std::string codeGen::CodeGeneration::generateFnHeader(llvm::Function& f)
     uint64_t argCount = f.arg_size(), argIndex = 0;
     for(auto& arg: f.args())
     {
-        std::string argType = utils::CodeGenUtils::typeToString(arg.getType()->getTypeID());
+        std::string argType = utils::CodeGenUtils::typeToString(arg.getType());
         result += arg.getName().str() + ": " + argType;
         if(argIndex < argCount - 1)
         {
@@ -200,7 +200,7 @@ std::string codeGen::CodeGeneration::generateFnHeader(llvm::Function& f)
         argIndex++;
     }
 
-    std::string returnType = utils::CodeGenUtils::typeToString(f.getReturnType()->getTypeID());
+    std::string returnType = utils::CodeGenUtils::typeToString(f.getReturnType());
     result += ") -> " + returnType + "\n{\n";
 
     logger->info("Function header: {}", result);

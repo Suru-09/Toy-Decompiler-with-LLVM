@@ -163,7 +163,7 @@ std::string codeGen::OtherInstruction::handleCallInst(llvm::CallInst* callInst) 
 
 std::string codeGen::OtherInstruction::handleAllocaInst(llvm::AllocaInst* allocaInst) {
     std::string allocaString = "";
-    auto type = utils::CodeGenUtils::typeToString(allocaInst->getAllocatedType()->getTypeID());
+    auto type = utils::CodeGenUtils::typeToString(allocaInst->getAllocatedType());
     allocaString += type + " " + allocaInst->getName().str();
     return allocaString;
 }

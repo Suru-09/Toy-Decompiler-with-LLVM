@@ -12,7 +12,7 @@ class CodeGenUtils
 {
 public:
     static std::string getSpaces(int numSpaces);
-    static std::string typeToString(llvm::Type::TypeID typeID);
+    static std::string typeToString(llvm::Type* type);
 };
 
 }   // namespace utils

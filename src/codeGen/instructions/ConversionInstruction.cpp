@@ -14,7 +14,7 @@ codeGen::ConversionInstruction::ConversionInstruction(llvm::Instruction& inst, i
 
         instructionString += " ( ";
         auto destType = castOp->getDestTy();
-        instructionString += utils::CodeGenUtils::typeToString(destType->getTypeID()) + ") ";
+        instructionString += utils::CodeGenUtils::typeToString(destType) + ") ";
         
         // auto operand = castOp->getOperand(0);
         // std::string name = operand->getName().str();

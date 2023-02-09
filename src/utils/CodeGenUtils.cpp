@@ -1,6 +1,10 @@
 #include "utils/CodeGenUtils.h"
 
 
+#include "llvm/IR/Type.h"
+#include "llvm/IR/DerivedTypes.h"
+
+
 std::string utils::CodeGenUtils::getSpaces(int numSpaces)
 {
    std::string result = "";
@@ -42,42 +46,78 @@ enum TypeID {
    };
 */
 
-std::string utils::CodeGenUtils::typeToString(llvm::Type::TypeID typeID)
+std::string utils::CodeGenUtils::typeToString(llvm::Type* type)
 {
-    switch(typeID)
+    if(type->isVoidTy())
+        return "void";
+    
+    if(type->isIntegerTy())
     {
-        case llvm::Type::TypeID::HalfTyID:
-            return "HalfTyID";
-        case llvm::Type::TypeID::BFloatTyID:
-            return "BFloatTyID";
-        case llvm::Type::TypeID::FloatTyID:
-            return "FloatTyID";
-        case llvm::Type::TypeID::DoubleTyID:
-            return "DoubleTyID";
-        case llvm::Type::TypeID::X86_FP80TyID:
-            return "X86_FP80TyID";
-        case llvm::Type::TypeID::FP128TyID:
-            return "FP128TyID";
-        case llvm::Type::TypeID::PPC_FP128TyID:
-            return "PPC_FP128TyID";
-        case llvm::Type::TypeID::VoidTyID:
-            return "VoidTyID";
-        case llvm::Type::TypeID::LabelTyID:
-            return "LabelTyID";
-        case llvm::Type::TypeID::MetadataTyID:
-            return "MetadataTyID";
-        case llvm::Type::TypeID::X86_MMXTyID:
-            return "X86_MMXTyID";
-        case llvm::Type::TypeID::X86_AMXTyID:
-            return "X86_AMXTyID";
-        case llvm::Type::TypeID::TokenTyID:
-            return "TokenTyID";
-        case llvm::Type::TypeID::IntegerTyID:
-            return "IntegerTyID";
-        case llvm::Type::TypeID::PointerTyID:
-            return "PointerTyID";
-        default:
-            return "Unknown Type";
+        llvm::IntegerType* intType = llvm::dyn_cast<llvm::IntegerType>(type);
+        return "i" + std::to_string(intType->getBitWidth());
+    }
+
+    if(type->isBFloatTy())
+        return "bfloat";
+
+    if(type->isHalfTy() && type->isFloatTy())
+        return "half_float";
+
+    if(type->isFloatTy())
+        return "f32";
+    
+    if(type->isDoubleTy())
+        return "f64";
+    
+    if(type->isX86_FP80Ty())
+        return "f80";
+    
+    if(type->isFP128Ty())
+        return "f128";
+    
+    if(type->isPPC_FP128Ty())
+        return "ppc_f128";
+    
+    if(type->isArrayTy())
+    {
+        llvm::ArrayType* arrayType = llvm::dyn_cast<llvm::ArrayType>(type);
+        return "array::" + typeToString(arrayType->getElementType()) + "[" + std::to_string(arrayType->getNumElements()) + "]";
+    }
+
+    if(type->isStructTy())
+    {
+        llvm::StructType* structType = llvm::dyn_cast<llvm::StructType>(type);
+        std::string result = "struct::";
+        result += type->getStructName().str() + "(";
+        for(int i = 0; i < structType->getNumElements(); i++)
+        {
+            result += typeToString(structType->getElementType(i));
+            if(i != structType->getNumElements() - 1)
+                result += ", ";
+        }
+        result += ")";
+        return result;
+    }
+
+    if(type->isPointerTy())
+    {
+        llvm::PointerType* pointerType = llvm::dyn_cast<llvm::PointerType>(type);
+        return "ptr::" + typeToString(pointerType->getContainedType(0));
+    }
+
+
+    if(type->isFunctionTy())
+    {
+        llvm::FunctionType* funcType = llvm::dyn_cast<llvm::FunctionType>(type);
+        std::string result = "func::(";
+        result += typeToString(funcType->getReturnType()) + ")(";
+        for(int i = 0; i < funcType->getNumParams(); i++)
+        {
+            result += typeToString(funcType->getParamType(i));
+            if(i != funcType->getNumParams() - 1)
+                result += ", ";
+        }
+        result += ")";
     }
 
     return "NULL";
