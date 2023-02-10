@@ -64,10 +64,27 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
     std::string decompiledFunction = "\n" + generateFnHeader(f);
     uint64_t numSpaces = 4, numSpacesForBlock = 4;
     std::stack<std::string> bbStack;
-    std::vector<std::string> visited;
+    std::vector<std::string> visited, valueVisited;
 
     llvm::ReversePostOrderTraversal<llvm::Function*> rpot(&f);
     std::unordered_map<std::string, uint64_t> uses = noOfUses(f);
+
+    uint64_t varCount = 1;
+    std::string varName = "var_";
+    // for(auto& bb: rpot)
+    // {
+    //     for(auto& inst: *bb)
+    //     {
+    //         if(inst.hasName())
+    //         {
+    //             if(inst.getName().str().find(varName) != std::string::npos)
+    //             {
+    //                 continue;
+    //             }
+    //             inst.setName(varName + std::to_string(varCount++));
+    //         }
+    //     }
+    // }
 
     for(auto& bb: rpot)
     {
@@ -109,9 +126,13 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
             return std::find(visited.begin(), visited.end(), key) != visited.end();
         };
 
+        auto isValueVisited = [&](const std::string& value) {
+            return std::find(valueVisited.begin(), valueVisited.end(), value) != valueVisited.end();
+        };
+
         for(auto& [key, value]: instructionMap)
         {
-            if(isKeyVisited(key))
+            if(isKeyVisited(key) && isValueVisited(value.first))
             {
                 continue;
             }
@@ -126,6 +147,7 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
             decompiledFunction += generatedInstr;
             decompiledFunction += "\n";
             visited.push_back(key);
+            valueVisited.push_back(value.first);
         }
     }
 
@@ -151,7 +173,15 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
         if(value.second == codeGen::GeneratedInstrType::RETURN)
         {
             decompiledFunction += utils::CodeGenUtils::getSpaces(numSpaces);
-            decompiledFunction += value.first + ";\n";
+            if(instructionMap.find(value.first) != instructionMap.end())
+            {
+                decompiledFunction += instructionMap[value.first].first + ";\n";
+            }
+            else
+            {
+                decompiledFunction += value.first + ";\n";
+            }
+            
             break;
         }
     }
@@ -184,8 +214,8 @@ std::string codeGen::CodeGeneration::generateInstruction(const std::string& key,
 
     if(instrType == codeGen::GeneratedInstrType::STORE)
     {
-        return "";
-        // return key + " = " + instrPair.first + ";";
+        // return "";
+        return key + " = " + instrPair.first + ";";
     }
 
     if(instrType == codeGen::GeneratedInstrType::LOAD)
@@ -194,8 +224,8 @@ std::string codeGen::CodeGeneration::generateInstruction(const std::string& key,
         {
             return "";
         }
-        // return key + " = " + instrPair.first + ";";
-        return "";
+        return key + " = " + instrPair.first + ";";
+        // return "";
     }
 
     if(instrType == codeGen::GeneratedInstrType::RETURN)
@@ -330,13 +360,12 @@ std::string codeGen::CodeGeneration::expandInstruction(llvm::Instruction* instr,
     for(auto& op: instr->operands())
     {
         logger->info("[expandInstruction] Instruction string: {}", currentInstrString);
+        std::string opName = "";
         if(!op->hasName())
         {
-            logger->warn("[expandInstruction] Instruction: doesn't have a name");
             continue;
         }
-        
-        auto opName = op->getName().str();
+        opName.empty() ? opName = op->getName().str() : opName;
         if(instructionMap.find(opName) == instructionMap.end())
         {
             logger->error("[expandInstruction] Operand: {} not found", opName);
@@ -345,7 +374,15 @@ std::string codeGen::CodeGeneration::expandInstruction(llvm::Instruction* instr,
 
         logger->info("[expandInstruction] Operand: {} found", opName);
         auto opValue = instructionMap[opName].first;
-        opValue = "(" + opValue + ")";
+
+        // If the operand is a substring of another operand, then we need to add brackets
+        // else it means that we make a replacement of the operand with its value
+        // TODO: Should repalce with a function that is more generic and takes as input the operand and the instruction
+        if(opValue.find(" ") != std::string::npos)
+        {
+            opValue = "(" + opValue + ")";
+        }
+        
         if(currentInstrString.find(opName) != std::string::npos)
         {
             logger->error("[expandInstruction] Operand: {} value: {}", opName, opValue);
@@ -384,16 +421,69 @@ void codeGen::CodeGeneration::fillInstructionMap(llvm::BasicBlock* bb, int numSp
             }
             logger->error("Expanded instruction: {}", expandedInstr);
 
-            // if(!inst.hasName())
-            // {
-            //     logger->error("Instruction doesn't have a name");
-            //     continue;
-            // }
+            std::string instrName = inst.getName().str();
+            if(!inst.hasName())
+            {
+                auto pair = instructionMapping(&inst);
+                instrName = pair.first;
+                auto instrValue = pair.second;
 
-            instructionMap.insert_or_assign(inst.getName().str(), 
+                if(!instrValue.empty())
+                {
+                    instructionMap.insert_or_assign(instrName, 
+                        std::make_pair<std::string, codeGen::GeneratedInstrType>(std::move(instrValue), getInstrTypeToGenerate(&inst)));
+                    continue;
+                }
+            }
+
+            if(auto loadInstr = llvm::dyn_cast<llvm::LoadInst>(&inst))
+            {
+                auto opName = loadInstr->getOperand(0)->getName().str();
+                instructionMap.insert_or_assign(instrName, 
+                    std::make_pair<std::string, codeGen::GeneratedInstrType>(std::move(opName), codeGen::GeneratedInstrType::LOAD));
+                continue;
+            }
+
+            instructionMap.insert_or_assign(instrName, 
                 std::make_pair<std::string, codeGen::GeneratedInstrType>(std::move(expandedInstr), getInstrTypeToGenerate(&inst)));
         }
     }
+}
+
+std::pair<std::string, std::string> codeGen::CodeGeneration::instructionMapping(llvm::Instruction* instr)
+{
+    if( auto storeInstr = llvm::dyn_cast<llvm::StoreInst>(instr))
+    {
+        auto op1Instr = llvm::dyn_cast<llvm::Instruction>(storeInstr->getOperand(0));
+        auto op2Instr = llvm::dyn_cast<llvm::Instruction>(storeInstr->getOperand(1));
+        if(op1Instr && op2Instr)
+        {
+            auto val1 = expandInstruction(op1Instr, 0);
+            auto val2 = expandInstruction(op2Instr, 0);
+            if(val1.size() > MAX_INSTR_SIZE || val1.empty())
+            {
+                val1 = storeInstr->getOperand(0)->getName().str();
+            }
+
+            if(val2.size() > MAX_INSTR_SIZE || val2.empty())
+            {
+                val2 = storeInstr->getOperand(1)->getName().str();
+            }
+            return std::make_pair<std::string, std::string> (std::move(val2), std::move(val1));
+        }
+    }
+
+    if( auto retInstr = llvm::dyn_cast<llvm::ReturnInst>(instr))
+    {
+        auto op1Instr = llvm::dyn_cast<llvm::Instruction>(retInstr->getOperand(0));
+        if(op1Instr)
+        {
+            auto val1 = retInstr->getOperand(0)->getName().str();
+            return std::make_pair<std::string, std::string> ("", std::move(val1));
+        }
+    }
+
+    return std::make_pair<std::string, std::string> ("", "");
 }
 
 codeGen::GeneratedInstrType codeGen::CodeGeneration::getInstrTypeToGenerate(llvm::Instruction* instr)

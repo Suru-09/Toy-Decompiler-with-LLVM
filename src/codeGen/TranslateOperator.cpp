@@ -51,6 +51,22 @@ std::string codeGen::TranslateOperator::translateOperator(const std::string& op)
     {
         return "==";
     }
+    else if(op == "ult")
+    {
+        return "<";
+    }
+    else if(op == "ule")
+    {
+        return "<=";
+    }
+    else if(op == "ugt")
+    {
+        return ">";
+    }
+    else if(op == "uge")
+    {
+        return ">=";
+    }
 
     return op;
 }
