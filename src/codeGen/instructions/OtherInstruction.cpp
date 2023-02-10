@@ -1,4 +1,5 @@
 #include "codeGen/instructions/OtherInstruction.h"
+#include "codeGen/TranslateOperator.h"
 #include "utils/CodeGenUtils.h"
 
 #include <llvm/IR/Instructions.h>
@@ -85,7 +86,8 @@ std::string codeGen::OtherInstruction::handleIntCmpInst(llvm::CmpInst* cmpInst) 
         }
 
         first = false;
-        iCmpString += cmpInst->getPredicateName(cmpInst->getPredicate());
+        std::string predicate = cmpInst->getPredicateName(cmpInst->getPredicate()).str();
+        iCmpString += codeGen::TranslateOperator::translateOperator(predicate);
     }
     return iCmpString;
 }
@@ -113,7 +115,8 @@ std::string codeGen::OtherInstruction::handleFPCmpInst(llvm::CmpInst* cmpInst) {
         }
 
         first = false;
-        fpCmpString += cmpInst->getPredicateName(cmpInst->getPredicate());
+        std::string predicate = cmpInst->getPredicateName(cmpInst->getPredicate()).str();
+        fpCmpString += codeGen::TranslateOperator::translateOperator(predicate);
     }
     return fpCmpString;
 }
@@ -174,22 +177,17 @@ std::string codeGen::OtherInstruction::handleCallInst(llvm::CallInst* callInst) 
 std::string codeGen::OtherInstruction::handleAllocaInst(llvm::AllocaInst* allocaInst) {
     std::string allocaString = "";
     auto type = utils::CodeGenUtils::typeToString(allocaInst->getAllocatedType());
-    allocaString += type + " " + allocaInst->getName().str();
+    // allocaString += type + " " + allocaInst->getName().str();
+    allocaString += allocaInst->getName().str();
     return allocaString;
 }
 
 std::string codeGen::OtherInstruction::handleStoreInst(llvm::StoreInst* storeInst)
 {
-    std::string storeString = "";
-    auto type = utils::CodeGenUtils::typeToString(storeInst->getValueOperand()->getType());
-    storeString += storeInst->getPointerOperand()->getName().str();
-    return storeString;
+    return storeInst->getValueOperand()->getName().str();
 }
 
 std::string codeGen::OtherInstruction::handleLoadInst(llvm::LoadInst* loadInst)
 {
-    std::string loadString = "";
-    auto type = utils::CodeGenUtils::typeToString(loadInst->getType());
-    loadString += loadInst->getPointerOperand()->getName().str();
-    return loadString;
+    return loadInst->getPointerOperand()->getName().str();
 }

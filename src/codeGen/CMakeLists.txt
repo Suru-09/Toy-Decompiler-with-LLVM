@@ -4,6 +4,7 @@ add_library(${PROJECT_NAME}-codeGen
     CodeGeneration.cpp
     LoopGen.cpp
     BranchConditionalGen.cpp
+    TranslateOperator.cpp
     instructions/Instruction.cpp
     instructions/BinaryInstruction.cpp
     instructions/TerminatorInstruction.cpp

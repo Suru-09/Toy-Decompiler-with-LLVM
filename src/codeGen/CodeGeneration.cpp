@@ -108,7 +108,7 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
         auto isKeyVisited = [&](const std::string& key) {
             return std::find(visited.begin(), visited.end(), key) != visited.end();
         };
-        
+
         for(auto& [key, value]: instructionMap)
         {
             if(isKeyVisited(key))
@@ -184,7 +184,8 @@ std::string codeGen::CodeGeneration::generateInstruction(const std::string& key,
 
     if(instrType == codeGen::GeneratedInstrType::STORE)
     {
-        return key + " = " + instrPair.first + ";";
+        return "";
+        // return key + " = " + instrPair.first + ";";
     }
 
     if(instrType == codeGen::GeneratedInstrType::LOAD)
@@ -193,7 +194,8 @@ std::string codeGen::CodeGeneration::generateInstruction(const std::string& key,
         {
             return "";
         }
-        return key + " = " + instrPair.first + ";";
+        // return key + " = " + instrPair.first + ";";
+        return "";
     }
 
     if(instrType == codeGen::GeneratedInstrType::RETURN)
@@ -313,12 +315,6 @@ std::unordered_map<std::string, uint64_t> codeGen::CodeGeneration::noOfUses(llvm
 
 std::string codeGen::CodeGeneration::expandInstruction(llvm::Instruction* instr, int numSpaces)
 {
-    // std::string instrName = instr->getName().str();
-    // if(instructionMap.find(instrName) != instructionMap.end())
-    // {
-    //     return instructionMap[instrName].first;
-    // }
-
     std::string currentInstrString = "";
     auto instrObj = codeGen::Instruction::getInstruction(*instr, 0);
     if(instrObj)
@@ -333,10 +329,10 @@ std::string codeGen::CodeGeneration::expandInstruction(llvm::Instruction* instr,
 
     for(auto& op: instr->operands())
     {
-        logger->error("[expandInstruction] Instruction string: {}", currentInstrString);
+        logger->info("[expandInstruction] Instruction string: {}", currentInstrString);
         if(!op->hasName())
         {
-            logger->error("[expandInstruction] Instruction: doesn't have a name");
+            logger->warn("[expandInstruction] Instruction: doesn't have a name");
             continue;
         }
         
@@ -347,12 +343,12 @@ std::string codeGen::CodeGeneration::expandInstruction(llvm::Instruction* instr,
             continue;
         }
 
-        logger->error("[expandInstruction] Operand: {} found", opName);
+        logger->info("[expandInstruction] Operand: {} found", opName);
         auto opValue = instructionMap[opName].first;
         opValue = "(" + opValue + ")";
-        logger->error("[expandInstruction] Operand: {} value: {}", opName, opValue);
         if(currentInstrString.find(opName) != std::string::npos)
         {
+            logger->error("[expandInstruction] Operand: {} value: {}", opName, opValue);
             currentInstrString.replace(currentInstrString.find(opName), opName.length(), opValue);
         }
     }
@@ -361,7 +357,7 @@ std::string codeGen::CodeGeneration::expandInstruction(llvm::Instruction* instr,
     {
         logger->error("[expandInstruction] ExpandINstruction returned empty string");
     }
-    logger->error("[expandInstruction] Weird expand: {}", currentInstrString);
+    logger->info("[expandInstruction] Weird expand: {}", currentInstrString);
     return currentInstrString;
 }
 
@@ -387,6 +383,13 @@ void codeGen::CodeGeneration::fillInstructionMap(llvm::BasicBlock* bb, int numSp
                 continue;
             }
             logger->error("Expanded instruction: {}", expandedInstr);
+
+            // if(!inst.hasName())
+            // {
+            //     logger->error("Instruction doesn't have a name");
+            //     continue;
+            // }
+
             instructionMap.insert_or_assign(inst.getName().str(), 
                 std::make_pair<std::string, codeGen::GeneratedInstrType>(std::move(expandedInstr), getInstrTypeToGenerate(&inst)));
         }

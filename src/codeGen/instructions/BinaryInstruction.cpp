@@ -1,4 +1,5 @@
 #include "codeGen/instructions/BinaryInstruction.h"
+#include "codeGen/TranslateOperator.h"
 #include "utils/CodeGenUtils.h"
 
 #include <llvm/IR/Function.h>
@@ -37,8 +38,8 @@ codeGen::BinaryInstruction::BinaryInstruction(llvm::Instruction& inst, int numSp
                 continue;
             }
 
-            instructionString += binOp->getOpcodeName();
-            instructionString += " ";
+            std::string predicate = binOp->getOpcodeName();
+            instructionString += codeGen::TranslateOperator::translateOperator(predicate);
             first = false;
         }
     }

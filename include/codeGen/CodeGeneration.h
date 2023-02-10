@@ -39,6 +39,13 @@ public:
 private:
     void processFunction(llvm::Function& f, const udm::FuncInfo& funcInfo);
     void fillInstructionMap(llvm::BasicBlock* bb, int numSpaces);
+    /**
+     * @param f Function to be processed
+     * @brief Change names of values that are reloaded from stack 
+     * in order to avoid having multiple variables which could merge into 1.
+     * 
+    */
+    void changeReloadedValuesNames(llvm::Function& f);
 
     std::unordered_map<std::string, uint64_t> noOfUses(llvm::Function& f);
     std::string generateConditionalBranch(llvm::BasicBlock* bb, int numSpaces, const udm::FuncInfo& funcInfo);

@@ -19,7 +19,6 @@ codeGen::TerminatorInstruction::TerminatorInstruction(llvm::Instruction& inst, i
         if(returnOp->getReturnValue()) {
             instructionString += returnOp->getReturnValue()->getName();
         }
-        instructionString += "\n";
     }
 
 }
