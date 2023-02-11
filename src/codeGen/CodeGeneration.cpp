@@ -1,5 +1,7 @@
 #include "codeGen/CodeGeneration.h"
 #include "codeGen/BranchConditionalGen.h"
+#include "codeGen/GenerateFnHeader.h"
+#include "codeGen/RenameVariables.h"
 #include "codeGen/LoopGen.h"
 #include "codeGen/instructions/Instruction.h"
 #include "logger/LoggerManager.h"
@@ -27,6 +29,13 @@
 #include <map>
 #include <vector>
 
+
+codeGen::CodeGeneration::CodeGeneration(const std::string& irFile, std::unordered_map<std::string, udm::FuncInfo> fnInfoMap) 
+: irFile(irFile), 
+funcInfoMap(fnInfoMap) 
+{
+    logger = logger::LoggerManager::getInstance()->getLogger("codeGen");
+}
 
 void codeGen::CodeGeneration::generate() {
     logger->info("Generating code for IR file: " + irFile);
@@ -61,134 +70,37 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
         return;
     }
 
-    std::string decompiledFunction = "\n" + generateFnHeader(f);
+    std::string decompiledFunction = "\n";
+    codeGen::GenerateFnHeader fnHeaderGenerator(f);
+    decompiledFunction += fnHeaderGenerator.generate();
+
+    codeGen::RenameVariables renameVariables(f);
+    auto aliasMap = renameVariables.rename();
+
+    for(const auto& [key, value]: aliasMap)
+    {
+        logger->info("Alias Key: {}, Value: {}", key, value);
+    }
+
     uint64_t numSpaces = 4, numSpacesForBlock = 4;
-    std::stack<std::string> bbStack;
-    std::vector<std::string> visited, valueVisited;
-
     llvm::ReversePostOrderTraversal<llvm::Function*> rpot(&f);
-    std::unordered_map<std::string, uint64_t> uses = noOfUses(f);
-
-    uint64_t varCount = 1;
-    std::string varName = "var_";
-    for(auto& bb: rpot)
-    {
-        for(auto& inst: *bb)
-        {
-            if(inst.hasName())
-            {
-                if(inst.getName().str().find(varName) != std::string::npos)
-                {
-                    continue;
-                }
-                inst.setName(varName + std::to_string(varCount++));
-            }
-        }
-    }
 
     for(auto& bb: rpot)
     {
-        auto bbName = bb->getName().str();
-        auto bbInfo = funcInfo.getBBInfo(bbName);
-        logger->info("Basic block: {}", bb->getName());
-        logger->error("BB Info: {}", bbInfo.toString());
-
-        fillInstructionMap(bb, numSpaces);
-
-        // generate conditional branch
-        std::string branchString = generateConditionalBranch(bb, numSpaces, funcInfo);
-        if(!branchString.empty())
-        {
-            bbStack.push(bbInfo.getFollowNode());
-            decompiledFunction += branchString;
-            numSpaces += numSpacesForBlock;
-        }
-
-        // generate loop
-        std::string loopString = generateLoop(bb, numSpaces, funcInfo);
-        if(!loopString.empty())
-        {
-            decompiledFunction += loopString;
-            numSpaces += numSpacesForBlock;
-            bbStack.push(bbInfo.getFollowNode());
-        }
-
-        while(!bbStack.empty() && bbName == bbStack.top())
-        {
-            logger->error("Equality: {} == {} -> [{}]", bbName, bbStack.top(), bbName == bbStack.top());
-            numSpaces -= numSpacesForBlock;
-            decompiledFunction += utils::CodeGenUtils::getSpaces(numSpaces) + "}\n";
-            bbStack.pop();
-        }
-
-
-        auto isKeyVisited = [&](const std::string& key) {
-            return std::find(visited.begin(), visited.end(), key) != visited.end();
-        };
-
-        auto isValueVisited = [&](const std::string& value) {
-            return std::find(valueVisited.begin(), valueVisited.end(), value) != valueVisited.end();
-        };
-
-        for(auto& [key, value]: instructionMap)
-        {
-            if(isKeyVisited(key) && isValueVisited(value.first))
-            {
-                continue;
-            }
-
-            std::string generatedInstr = generateInstruction(key, value, uses);
-            if(generatedInstr.empty())
-            {
-                continue;
-            }
-
-            decompiledFunction += utils::CodeGenUtils::getSpaces(numSpaces);
-            decompiledFunction += generatedInstr;
-            decompiledFunction += "\n";
-            visited.push_back(key);
-            valueVisited.push_back(value.first);
-        }
-    }
-
-    // print instructionMap
-    logger->error("Printing instructionMap");
-    for(auto& [key, value]: instructionMap)
-    {
-        logger->error("Key: {}, Value: {}", key, value.first);
-    }
-
-    while(!bbStack.empty())
-    {
-        numSpaces -= numSpacesForBlock;
-        decompiledFunction += utils::CodeGenUtils::getSpaces(numSpaces) + "}\n";
-        bbStack.pop();
-    }
-
-    // ! TODO: handle return instruction more elegantly
-    // for now return is always the last instruction
-    // and only one can exist in a function
-    for(auto& [key, value]: instructionMap)
-    {
-        if(value.second == codeGen::GeneratedInstrType::RETURN)
-        {
-            decompiledFunction += utils::CodeGenUtils::getSpaces(numSpaces);
-            if(instructionMap.find(value.first) != instructionMap.end())
-            {
-                decompiledFunction += instructionMap[value.first].first + ";\n";
-            }
-            else
-            {
-                decompiledFunction += value.first + ";\n";
-            }
-            
-            break;
-        }
+       for(auto& inst: *bb)
+       {
+           decompiledFunction += utils::CodeGenUtils::getSpaces(numSpaces);
+           auto instruction = codeGen::Instruction::getInstruction(inst, numSpaces);
+           if(instruction)
+           {
+               decompiledFunction += instruction->toString();
+               decompiledFunction += ";\n";
+           }
+       }
     }
 
     decompiledFunction += "}\n";
     logger->error("Decompiled function: {}", decompiledFunction);
-    instructionMap.clear();
 }
 
 std::string codeGen::CodeGeneration::generateInstruction(const std::string& key, const std::pair<std::string,
@@ -287,31 +199,6 @@ std::string codeGen::CodeGeneration::generateLoop(llvm::BasicBlock* bb, int numS
     }
 
     result += codeGen::LoopGen::generateLoop(expandedInstr, numSpaces, loopType);
-    return result;
-}
-
-std::string codeGen::CodeGeneration::generateFnHeader(llvm::Function& f)
-{
-    std::string result = "";
-    result += "Fn " + f.getName().str() + "(";
-    
-    bool isCommaNeeded = true;
-    uint64_t argCount = f.arg_size(), argIndex = 0;
-    for(auto& arg: f.args())
-    {
-        std::string argType = utils::CodeGenUtils::typeToString(arg.getType());
-        result += arg.getName().str() + ": " + argType;
-        if(argIndex < argCount - 1)
-        {
-            result += ", ";
-        }
-        argIndex++;
-    }
-
-    std::string returnType = utils::CodeGenUtils::typeToString(f.getReturnType());
-    result += ") -> " + returnType + "\n{\n";
-
-    logger->info("Function header: {}", result);
     return result;
 }
 
@@ -514,11 +401,4 @@ codeGen::GeneratedInstrType codeGen::CodeGeneration::getInstrTypeToGenerate(llvm
     }
 
     return codeGen::GeneratedInstrType::NONE;
-}
-
-codeGen::CodeGeneration::CodeGeneration(const std::string& irFile, std::unordered_map<std::string, udm::FuncInfo> fnInfoMap) 
-: irFile(irFile), 
-funcInfoMap(fnInfoMap) 
-{
-    logger = logger::LoggerManager::getInstance()->getLogger("codeGen");
 }
