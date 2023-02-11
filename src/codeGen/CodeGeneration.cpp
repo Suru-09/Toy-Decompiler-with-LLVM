@@ -71,20 +71,20 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
 
     uint64_t varCount = 1;
     std::string varName = "var_";
-    // for(auto& bb: rpot)
-    // {
-    //     for(auto& inst: *bb)
-    //     {
-    //         if(inst.hasName())
-    //         {
-    //             if(inst.getName().str().find(varName) != std::string::npos)
-    //             {
-    //                 continue;
-    //             }
-    //             inst.setName(varName + std::to_string(varCount++));
-    //         }
-    //     }
-    // }
+    for(auto& bb: rpot)
+    {
+        for(auto& inst: *bb)
+        {
+            if(inst.hasName())
+            {
+                if(inst.getName().str().find(varName) != std::string::npos)
+                {
+                    continue;
+                }
+                inst.setName(varName + std::to_string(varCount++));
+            }
+        }
+    }
 
     for(auto& bb: rpot)
     {

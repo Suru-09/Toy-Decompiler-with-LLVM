@@ -10,11 +10,11 @@ echo "Found the folowing arch: <$MACHINE_TYPE>"
 
 if [ "${MACHINE_TYPE}" == "arm64" ]
 then
-    cmake ../ -Darch:String="arm64" -DBUILD_SHARED_LIBS:BOOL=ON;
+    cmake ../ -Darch:String="arm64" -DBUILD_SHARED_LIBS:BOOL=OFF;
 elif [ "${MACHINE_TYPE}" == "x86_64" ]
 then
-    #cmake ../ -Darch:String="x86" -Dwork:STRING="OFF" -DBUILD_SHARED_LIBS:BOOL=ON;
-    cmake ../ -Darch:String="x86" -Dwork:STRING="ON" -DBUILD_SHARED_LIBS:BOOL=ON;
+    cmake ../ -Darch:String="x86" -Dwork:STRING="OFF" -DBUILD_SHARED_LIBS:BOOL=ON;
+    #cmake ../ -Darch:String="x86" -Dwork:STRING="ON" -DBUILD_SHARED_LIBS:BOOL=ON;
 fi
 
 CORES=$(nproc --all)

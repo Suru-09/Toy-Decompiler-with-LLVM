@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
 
-
 project(Reverse-Engineering-Tool)
 
 # ignore llvm building STATIC instead of SHARED libs
@@ -46,6 +45,7 @@ add_definitions(${LLVM_DEFINITIONS_LIST})
 
 # SPDLOG DEPENDECIES ----- START --------
 find_package(spdlog REQUIRED)
+find_package(fmt REQUIRED)
 
 if(${arch} STREQUAL "arm64")
     set(spdlog_INCLUDE_DIRS /opt/homebrew/Cellar/spdlog/1.11.0/include)
@@ -58,7 +58,8 @@ message(STATUS "Found SPDLOG in: <${spdlog_INCLUDE_DIRS}>")
 # GOOGLE TEST DEPENDECIES ----- START --------
 
 find_package(GTest REQUIRED)
-message(STATUS "Found GTEST in: <${GTEST_INCLUDE_DIRS}>")
+message(STATUS "Found GTEST in: <${gtest_SOURCE_DIR}>")
+
 
 # GOOGLE TEST DEPENDECIES ----- END --------
 
