@@ -9,7 +9,7 @@ codeGen::TerminatorInstruction::TerminatorInstruction(llvm::Instruction& inst, i
 
     if(llvm::BranchInst* branchOp = llvm::dyn_cast<llvm::BranchInst>(&inst)) {
         if(branchOp->isConditional()) {
-            instructionString += branchOp->getCondition()->getName();
+            instructionString += branchOp->getCondition()->getName().str(); 
         }
     }
 

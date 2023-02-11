@@ -1,6 +1,7 @@
 #include "codeGen/CodeGeneration.h"
 #include "codeGen/BranchConditionalGen.h"
 #include "codeGen/GenerateFnHeader.h"
+#include "codeGen/GenerateFnBody.h"
 #include "codeGen/RenameVariables.h"
 #include "codeGen/LoopGen.h"
 #include "codeGen/instructions/Instruction.h"
@@ -82,24 +83,10 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
         logger->info("Alias Key: {}, Value: {}", key, value);
     }
 
-    uint64_t numSpaces = 4, numSpacesForBlock = 4;
-    llvm::ReversePostOrderTraversal<llvm::Function*> rpot(&f);
+    codeGen::GenerateFnBody fnBodyGenerator(f, funcInfo);
+    auto fnBody = fnBodyGenerator.generate();
 
-    for(auto& bb: rpot)
-    {
-       for(auto& inst: *bb)
-       {
-           decompiledFunction += utils::CodeGenUtils::getSpaces(numSpaces);
-           auto instruction = codeGen::Instruction::getInstruction(inst, numSpaces);
-           if(instruction)
-           {
-               decompiledFunction += instruction->toString();
-               decompiledFunction += ";\n";
-           }
-       }
-    }
-
-    decompiledFunction += "}\n";
+    decompiledFunction += fnBody;
     logger->error("Decompiled function: {}", decompiledFunction);
 }
 

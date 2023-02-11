@@ -184,7 +184,27 @@ std::string codeGen::OtherInstruction::handleAllocaInst(llvm::AllocaInst* alloca
 
 std::string codeGen::OtherInstruction::handleStoreInst(llvm::StoreInst* storeInst)
 {
-    return storeInst->getValueOperand()->getName().str();
+    std::string storeInstrStr = "";
+    storeInstrStr += storeInst->getPointerOperand()->getName().str() + " = ";
+    auto value = storeInst->getValueOperand();
+    std::string secondOperand;
+    if(!value->hasName())
+    {
+        if(llvm::ConstantInt* constInt = llvm::dyn_cast<llvm::ConstantInt>(value))
+        {
+            secondOperand = std::to_string(constInt->getSExtValue());
+        }
+        else if(llvm::ConstantFP* constFP = llvm::dyn_cast<llvm::ConstantFP>(value))
+        {
+            secondOperand = std::to_string(constFP->getValueAPF().convertToDouble());
+        }
+    }
+    else
+    {
+        secondOperand = value->getName().str();
+    }
+    storeInstrStr += secondOperand;
+    return storeInstrStr;
 }
 
 std::string codeGen::OtherInstruction::handleLoadInst(llvm::LoadInst* loadInst)
