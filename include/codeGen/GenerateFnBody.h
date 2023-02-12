@@ -29,6 +29,7 @@ private:
 
     llvm::Function& fn;
     udm::FuncInfo funcInfo;
+    std::map<std::pair<std::string, std::string>, std::string> expandedInstructions;
     std::shared_ptr<spdlog::logger> logger;
 };
 

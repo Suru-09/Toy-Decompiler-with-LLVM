@@ -8,6 +8,7 @@ add_library(${PROJECT_NAME}-codeGen
     GenerateFnHeader.cpp
     RenameVariables.cpp
     TranslateOperator.cpp
+    InstructionExpander.cpp
     InstructionInfo.cpp
     InstructionInfoRepo.cpp
     instructions/Instruction.cpp

@@ -7,12 +7,14 @@
 #include "codeGen/InstructionInfo.h"
 #include "codeGen/LoopGen.h"
 #include "codeGen/BranchConditionalGen.h"
+#include "codeGen/InstructionExpander.h"
 
 #include "llvm/Analysis/PostDominators.h"
 #include <llvm/ADT/DepthFirstIterator.h>
 #include "llvm/IR/Function.h"
 #include "llvm/ADT/GraphTraits.h"
 #include "llvm/ADT/PostOrderIterator.h"
+#include <llvm/IR/Instructions.h>
 
 #include <vector>
 
@@ -87,15 +89,6 @@ void codeGen::GenerateFnBody::populateInstructionInfoRepo(codeGen::InstructionIn
        auto bbInfo = funcInfo.getBBInfo(bb->getName().str());
        logger->error("[populateInstructionInfoRepo] bb: {}", bb->getName().str());
        
-        if(closingBrackets.find(bb->getName().str()) != closingBrackets.end())
-        {
-            logger->error("[populateInstructionInfoRepo] closing bracket");
-            if(numSpaces - numSpacesForBlock >= numSpacesForBlock)
-            {
-                numSpaces -= numSpacesForBlock;
-            }
-        }
-
         if (bb->back().getOpcode() == llvm::Instruction::Ret)
         {
             continue;
@@ -108,21 +101,46 @@ void codeGen::GenerateFnBody::populateInstructionInfoRepo(codeGen::InstructionIn
        
         for(auto& inst: *bb)
         {
-            if(inst.getOpcode() == llvm::Instruction::Br ||  inst.getOpcode() == llvm::Instruction::Ret)
+            if(inst.getOpcode() != llvm::Instruction::Store)
             {
                 continue;
             }
 
-            if(inst.hasName())
+            if(!inst.hasName())
             {
-                instrInfo.setName(inst.getName().str());
+                auto storeInst = llvm::dyn_cast<llvm::StoreInst>(&inst);
+                if(storeInst)
+                {
+                    auto value = storeInst->getValueOperand()->getName().str();
+                    instrInfo.setName(value);
+                    
+                }
             }
             instrInfo.setIndentLevel(numSpaces);
+            auto storeInst = llvm::dyn_cast<llvm::StoreInst>(&inst);
+            std::string value;
+            if(storeInst)
+            {
+                value = storeInst->getPointerOperand()->getName().str();
+            }
+            
+            if(value.empty())
+            {
+                value = inst.getName().str();
+            }
 
             auto instruction = codeGen::Instruction::getInstruction(inst, numSpaces);
             if(instruction)
             {
-                instrInfo.setValue(instruction->toString());
+                if(expandedInstructions.find({bb->getName().str(), value}) != expandedInstructions.end())
+                {
+                    auto expandedInst = expandedInstructions[{bb->getName().str(), value}];
+                    instrInfo.setValue(expandedInst);
+                }
+                else
+                {
+                    instrInfo.setValue(instruction->toString());
+                }
             }
 
             repo.insert(instrInfo);
@@ -163,6 +181,14 @@ void codeGen::GenerateFnBody::populateInstructionInfoRepo(codeGen::InstructionIn
 
 std::string codeGen::GenerateFnBody::generate()
 {
+    codeGen::InstructionExpander instructionExpander(&fn);
+    expandedInstructions = instructionExpander.getExpandedInstructions();
+
+    for(const auto& [key, value]: expandedInstructions)
+    {
+        logger->error("[generate] expandedInstructions: [{}, {}] -> {}", key.first, key.second, value);
+    }
+
     std::string fnBody  = "";
     codeGen::InstructionInfoRepo instructionInfoRepo{};
 
@@ -206,12 +232,11 @@ std::string codeGen::GenerateFnBody::generate()
             continue;
         }
 
-        fnBody += utils::CodeGenUtils::getSpaces(instrInfo.getIndentLevel());
-        if(!instrInfo.getName().empty())
+        if(instrInfo.getName().empty() && instrInfo.getValue().empty())
         {
-            fnBody += instrInfo.getName();
-            fnBody += " = ";
+            continue;
         }
+        fnBody += utils::CodeGenUtils::getSpaces(instrInfo.getIndentLevel());
         fnBody += instrInfo.getValue();
         fnBody += "\n";
     }

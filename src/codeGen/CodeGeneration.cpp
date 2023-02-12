@@ -76,12 +76,12 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
     decompiledFunction += fnHeaderGenerator.generate();
 
     codeGen::RenameVariables renameVariables(f);
-    auto aliasMap = renameVariables.rename();
+    // auto aliasMap = renameVariables.rename();
 
-    for(const auto& [key, value]: aliasMap)
-    {
-        logger->info("Alias Key: {}, Value: {}", key, value);
-    }
+    // for(const auto& [key, value]: aliasMap)
+    // {
+    //     logger->info("Alias Key: {}, Value: {}", key, value);
+    // }
 
     codeGen::GenerateFnBody fnBodyGenerator(f, funcInfo);
     auto fnBody = fnBodyGenerator.generate();
