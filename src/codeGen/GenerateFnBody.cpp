@@ -16,6 +16,7 @@
 #include "llvm/ADT/PostOrderIterator.h"
 #include <llvm/IR/Instructions.h>
 
+#include <stack>
 #include <vector>
 
 codeGen::GenerateFnBody::GenerateFnBody(llvm::Function& function, const udm::FuncInfo funcInfo) 
@@ -73,21 +74,12 @@ void codeGen::GenerateFnBody::populateInstructionInfoRepo(codeGen::InstructionIn
     int64_t numSpaces = 4, numSpacesForBlock = 4;
     llvm::ReversePostOrderTraversal<llvm::Function*> rpot(&fn);
 
-    std::set<std::string> visited;
-    std::map<std::string, uint64_t> closingBrackets;
-    llvm::BasicBlock* entryBB = &fn.getEntryBlock();
-    dfsForClosingBrackets(visited, entryBB, closingBrackets);
-
-    for(const auto& [key, value]: closingBrackets)
-    {
-        logger->error("[populateInstructionInfoRepo] closingBrackets: {} {}", key, value);
-    }
-
+    std::stack<std::string> closeBrackets;
+    
     for(auto it = df_begin(&fn); it != df_end(&fn); ++it)
     {
        auto bb = *it;
        auto bbInfo = funcInfo.getBBInfo(bb->getName().str());
-       logger->error("[populateInstructionInfoRepo] bb: {}", bb->getName().str());
        
         if (bb->back().getOpcode() == llvm::Instruction::Ret)
         {
@@ -111,7 +103,7 @@ void codeGen::GenerateFnBody::populateInstructionInfoRepo(codeGen::InstructionIn
                 auto storeInst = llvm::dyn_cast<llvm::StoreInst>(&inst);
                 if(storeInst)
                 {
-                    auto value = storeInst->getValueOperand()->getName().str();
+                    auto value = storeInst->getPointerOperand()->getName().str();
                     instrInfo.setName(value);
                     
                 }
@@ -119,14 +111,22 @@ void codeGen::GenerateFnBody::populateInstructionInfoRepo(codeGen::InstructionIn
             instrInfo.setIndentLevel(numSpaces);
             auto storeInst = llvm::dyn_cast<llvm::StoreInst>(&inst);
             std::string value;
+            std::string pointer;
             if(storeInst)
             {
-                value = storeInst->getPointerOperand()->getName().str();
+                logger->error("[populateInstructionInfoRepo] storeInst: {}", storeInst->getPointerOperand()->getName().str());
+                value = storeInst->getValueOperand()->getName().str();
+                pointer = storeInst->getPointerOperand()->getName().str();
             }
-            
+
             if(value.empty())
             {
                 value = inst.getName().str();
+            }
+
+            if(pointer.empty())
+            {
+                pointer = inst.getName().str();
             }
 
             auto instruction = codeGen::Instruction::getInstruction(inst, numSpaces);
@@ -152,6 +152,10 @@ void codeGen::GenerateFnBody::populateInstructionInfoRepo(codeGen::InstructionIn
         {
             logger->error("[populateInstructionInfoRepo] instruction: {}", instruction->toString());
             auto str = instruction->toString();
+            if(expandedInstructions.find({bb->getName().str(), str}) != expandedInstructions.end())
+            {
+                str = expandedInstructions[{bb->getName().str(), bb->back().getName().str()}];
+            }
             instrInfo.setLoopIfCondition(str);
         }
         else {
@@ -165,6 +169,7 @@ void codeGen::GenerateFnBody::populateInstructionInfoRepo(codeGen::InstructionIn
             numSpaces += numSpacesForBlock;
             instrInfo.setLoopType(bbInfo.getLoopType());
             repo.insert(instrInfo);
+            closeBrackets.push(bb->back().getName().str());
             instrInfo.clear();
         }
         else if(!bbInfo.getFollowNode().empty() && bbInfo.getLoopType() == udm::BBInfo::LoopType::NONE)
@@ -174,6 +179,17 @@ void codeGen::GenerateFnBody::populateInstructionInfoRepo(codeGen::InstructionIn
             numSpaces += numSpacesForBlock;
             instrInfo.setLoopType(bbInfo.getLoopType());
             repo.insert(instrInfo);
+            closeBrackets.push(bb->back().getName().str());
+            instrInfo.clear();
+        }
+
+        while(closeBrackets.top() == bb->getName().str() && !closeBrackets.empty())
+        {
+            logger->error("[populateInstructionInfoRepo] close bracket");
+            numSpaces -= numSpacesForBlock;
+            instrInfo.setIndentLevel(numSpaces);
+            repo.insert(instrInfo);
+            closeBrackets.pop();
             instrInfo.clear();
         }
     }
@@ -237,6 +253,8 @@ std::string codeGen::GenerateFnBody::generate()
             continue;
         }
         fnBody += utils::CodeGenUtils::getSpaces(instrInfo.getIndentLevel());
+        fnBody += instrInfo.getName();
+        fnBody += " = ";
         fnBody += instrInfo.getValue();
         fnBody += "\n";
     }

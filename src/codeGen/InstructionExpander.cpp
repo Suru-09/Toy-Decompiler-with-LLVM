@@ -3,8 +3,9 @@
 #include "codeGen/instructions/Instruction.h"
 #include "logger/LoggerManager.h"   
 
-#include "llvm/ADT/PostOrderIterator.h"
-#include "llvm/Analysis/PostDominators.h"
+#include <llvm/ADT/PostOrderIterator.h>
+#include <llvm/Analysis/PostDominators.h>
+#include <llvm/IR/Instructions.h>
 
 codeGen::InstructionExpander::InstructionExpander(llvm::Function *f) 
 :  fn(*f)
@@ -21,6 +22,7 @@ std::map<std::pair<std::string, std::string>, std::string> codeGen::InstructionE
 std::string codeGen::InstructionExpander::expandInstruction(llvm::Instruction *inst, int64_t offset) {
     logger->debug("Expanding instruction: {}", inst->getOpcodeName());
     std::string expandedInst = "";
+
     auto instrObj = codeGen::Instruction::getInstruction(*inst, offset);
     if (instrObj != nullptr) {
         expandedInst = instrObj->toString();
@@ -34,7 +36,6 @@ std::string codeGen::InstructionExpander::expandInstruction(llvm::Instruction *i
         std::string opName = "";
         opName = op->hasName() ? op->getName().str() : "";
         if (opName.empty()) {
-            // ! TODO: should handle unnamed operands, which could be constants
             continue;
         }
 
