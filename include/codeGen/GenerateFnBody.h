@@ -27,11 +27,10 @@ private:
         codeGen::InstructionInfoRepo& repo, llvm::BasicBlock* bb,
         int64_t numSpaces, codeGen::InstructionInfo& instrInfo
     );
-    bool isBBSuccesorOf(llvm::BasicBlock* bb, llvm::BasicBlock* succBB);
-    bool isBBPredecessorOf(llvm::BasicBlock* bb, llvm::BasicBlock* predBB);
-
+    
+    std::string getSecondBranchOfBrInst(llvm::BasicBlock* bb);
     std::string getLastBlock();
-    std::string getLoopCondition(llvm::Instruction& inst, int64_t numSpaces);
+    std::string getLoopCondition(llvm::BasicBlock* bb, int64_t numSpaces);
 
     bool isLoop(const udm::BBInfo& bbInfo);
     bool isLoopSelfContained(const udm::BBInfo& bbInfo, llvm::BasicBlock* bb);

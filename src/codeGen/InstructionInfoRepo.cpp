@@ -22,6 +22,17 @@ void codeGen::InstructionInfoRepo::remove(InstructionInfo& info) {
     }
 }
 
+void codeGen::InstructionInfoRepo::update(InstructionInfo& info) {
+    auto find = std::find_if(repo.begin(), repo.end(), [&info](InstructionInfo& i) {
+        return i.getName() == info.getName();
+    });
+
+    if(find != repo.end())
+    {
+        *find = info;
+    }
+}
+
 codeGen::InstructionInfo codeGen::InstructionInfoRepo::getInstructionInfo(const std::string& instrInfoName) {
     auto find = std::find_if(repo.begin(), repo.end(), [&instrInfoName](InstructionInfo& i) {
         return i.getName() == instrInfoName;

@@ -31,6 +31,10 @@ bool codeGen::InstructionInfo::isLoop() const {
     return loopType != udm::BBInfo::LoopType::NONE;
 }
 
+bool codeGen::InstructionInfo::getShouldWriteElse() const {
+    return shouldWriteElse;
+}
+
 bool codeGen::InstructionInfo::isIf() const {
     return !loopIfCondition.empty() && loopType == udm::BBInfo::LoopType::NONE;
 }
@@ -39,8 +43,20 @@ void codeGen::InstructionInfo::setLoopIfCondition(const std::string& condition) 
     loopIfCondition = condition;
 }
 
+void codeGen::InstructionInfo::setSHouldWriteElse(bool shouldWriteElse) {
+    this->shouldWriteElse = shouldWriteElse;
+}
+
 void codeGen::InstructionInfo::setLoopType(udm::BBInfo::LoopType type) {
     loopType = type;
+}
+
+void codeGen::InstructionInfo::setCloseBraces(bool closeBraces) {
+    this->closeBraces = closeBraces;
+}
+
+bool codeGen::InstructionInfo::getCloseBraces() const {
+    return closeBraces;
 }
 
 void codeGen::InstructionInfo::setIndentLevel(int64_t level) {
@@ -83,6 +99,8 @@ std::string codeGen::InstructionInfo::toString() const
     str += ", loopIfCondition: " + loopIfCondition;
     str += ", loopType: " + std::to_string(static_cast<int>(loopType));
     str += ", indentLevel: " + std::to_string(indentLevel);
+    str += ", shouldWriteElse: " + std::to_string(shouldWriteElse);
+    str += ", closeBraces: " + std::to_string(closeBraces);
     return str;
 }
 

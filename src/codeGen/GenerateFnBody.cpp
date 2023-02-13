@@ -26,30 +26,6 @@ funcInfo(funcInfo)
     logger = logger::LoggerManager::getInstance()->getLogger("codeGen");
 }
 
-bool codeGen::GenerateFnBody::isBBSuccesorOf(llvm::BasicBlock* bb, llvm::BasicBlock* succBB)
-{
-    for(auto succ: llvm::successors(bb))
-    {
-        if(succ->getName().str() == succBB->getName().str())
-        {
-            return true;
-        }
-    }
-    return false;
-}
-
-bool codeGen::GenerateFnBody::isBBPredecessorOf(llvm::BasicBlock* bb, llvm::BasicBlock* predBB)
-{
-    for(auto pred: llvm::predecessors(bb))
-    {
-        if(pred->getName().str() == predBB->getName().str())
-        {
-            return true;
-        }
-    }
-    return false;
-}
-
 void codeGen::GenerateFnBody::populateInstructionInfoRepoForBasicBlock(
     codeGen::InstructionInfoRepo& repo, llvm::BasicBlock* bb
     , int64_t numSpaces, codeGen::InstructionInfo& instrInfo
@@ -62,15 +38,15 @@ void codeGen::GenerateFnBody::populateInstructionInfoRepoForBasicBlock(
             continue;
         }
 
-        if(!inst.hasName())
+        auto storeInstr = llvm::dyn_cast<llvm::StoreInst>(&inst);
+        logger->error("[populateInstructionInfoRepoForBasicBlock] waterducc");
+        if(storeInstr)
         {
-            auto storeInst = llvm::dyn_cast<llvm::StoreInst>(&inst);
-            if(storeInst)
-            {
-                auto value = storeInst->getPointerOperand()->getName().str();
-                instrInfo.setName(value);
-            }
+            auto value = storeInstr->getPointerOperand()->getName().str();
+            logger->error("[populateInstructionInfoRepoForBasicBlock] Name added: {}", value);
+            instrInfo.setName(value);
         }
+        
         instrInfo.setIndentLevel(numSpaces);
         auto storeInst = llvm::dyn_cast<llvm::StoreInst>(&inst);
         std::string value;
@@ -105,23 +81,25 @@ void codeGen::GenerateFnBody::populateInstructionInfoRepoForBasicBlock(
                 instrInfo.setValue(instruction->toString());
             }
         }
+        
+
         repo.insert(instrInfo);
         instrInfo.clear();
     }
 }
 
-std::string codeGen::GenerateFnBody::getLoopCondition(llvm::Instruction& inst, int64_t numSpaces)
+std::string codeGen::GenerateFnBody::getLoopCondition(llvm::BasicBlock* bb, int64_t numSpaces)
 {
     std::string loopCondition = "";
-    auto instruction = codeGen::Instruction::getInstruction(inst, numSpaces);
+    auto instruction = codeGen::Instruction::getInstruction(bb->back(), numSpaces);
     if(instruction)
     {
-        logger->error("[getLoopCondition] instruction: {}", instruction->toString());
         loopCondition = instruction->toString();
-        if(expandedInstructions.find({inst.getName().str(), loopCondition}) != expandedInstructions.end())
+        if(expandedInstructions.find({bb->getName().str(), loopCondition}) != expandedInstructions.end())
         {
-            loopCondition = expandedInstructions[{inst.getName().str(), inst.getName().str()}];
+            loopCondition = expandedInstructions[{bb->getName().str(), bb->back().getName().str()}];
         }
+        logger->error("[getLoopCondition] instruction: {}", loopCondition);
     }
     return loopCondition;
 }
@@ -166,54 +144,119 @@ bool codeGen::GenerateFnBody::isLoopSelfContained(const udm::BBInfo& bbInfo, llv
     return condition;
 }
 
+std::string codeGen::GenerateFnBody::getSecondBranchOfBrInst(llvm::BasicBlock* bb)
+{
+    std::string secondBranch = "";
+    auto terminator = bb->getTerminator();
+    if(terminator)
+    {
+        auto branchInst = llvm::dyn_cast<llvm::BranchInst>(terminator);
+        if(branchInst)
+        {
+            if(branchInst->isConditional())
+            {
+                secondBranch = branchInst->getSuccessor(1)->getName().str();
+            }
+            else
+            {
+                secondBranch = branchInst->getSuccessor(0)->getName().str();
+            }
+        }
+    }
+    return secondBranch;
+}
+
 void codeGen::GenerateFnBody::populateInstructionInfoRepo(codeGen::InstructionInfoRepo& repo)
 {
     int64_t numSpaces = 4, numSpacesForBlock = 4;
+    std::vector<std::string> closingBraces;
+    std::vector<std::string> visited;
     
     for(auto it = df_begin(&fn); it != df_end(&fn); ++it)
     {
         auto bb = *it;
         auto bbInfo = funcInfo.getBBInfo(bb->getName().str());
         
-        if (bb->back().getOpcode() == llvm::Instruction::Ret)
-        {
-            continue;
-        }
-
         logger->error("[populateInstructionInfoRepo] bb: {}", bb->getName().str());
         logger->error("[populateInstructionInfoRepo] bbInfo: {}", bbInfo.toString());
+
         codeGen::InstructionInfo instrInfo;
 
-        populateInstructionInfoRepoForBasicBlock(repo, bb, numSpaces, instrInfo);
-        
-        std::string loopCondition = getLoopCondition(bb->back(), numSpaces);
-        if(loopCondition.empty())
+        if(isLoop(bbInfo) || isConditionalBranch(bbInfo))
         {
-            continue;
+            std::string loopCondition = getLoopCondition(bb, numSpaces);
+            instrInfo.setLoopIfCondition(loopCondition);
         }
-        instrInfo.setLoopIfCondition(loopCondition);
-        
 
-        if(bbInfo.getLoopType() != udm::BBInfo::LoopType::NONE)
+        auto foundBB = [&](llvm::BasicBlock* bb) -> std::string
+        {
+            std::string result = "";
+            for(const auto& v: visited)
+            {
+                if(std::find(closingBraces.begin(), closingBraces.end(), v) != closingBraces.end())
+                {
+                    result = v;
+                    break;
+                }
+            }
+            if(std::find(closingBraces.begin(), closingBraces.end(), bb->getName().str()) != closingBraces.end())
+            {
+                result = bb->getName().str();
+            }
+            return  result;
+        };
+
+        while(!foundBB(bb).empty())
+        {
+            logger->error("[populateInstructionInfoRepo] Deleting {} from closingBraces", bb->getName().str());
+            numSpaces -= numSpacesForBlock;
+            instrInfo.setCloseBraces(true);
+            closingBraces.erase(std::find(closingBraces.begin(), closingBraces.end(), foundBB(bb)));
+        }
+        visited.push_back(bb->getName().str());
+
+        if(isLoopSelfContained(bbInfo, bb))
+        {
+            logger->error("[populateInstructionInfoRepo] is loop self contained");
+            instrInfo.setIndentLevel(numSpaces);
+            numSpaces += numSpacesForBlock;
+            instrInfo.setLoopType(bbInfo.getLoopType());
+            logger->error("[populateInstructionInfoRepo] Second Branch: {} for: {}", getSecondBranchOfBrInst(bb), bb->getName().str());
+            closingBraces.push_back(getSecondBranchOfBrInst(bb));
+        }
+
+        populateInstructionInfoRepoForBasicBlock(repo, bb, numSpaces, instrInfo);
+
+        if(isLoop(bbInfo) && !isLoopSelfContained(bbInfo, bb))
         {
             logger->error("[populateInstructionInfoRepo] is loop ");
             instrInfo.setIndentLevel(numSpaces);
             numSpaces += numSpacesForBlock;
             instrInfo.setLoopType(bbInfo.getLoopType());
-            repo.insert(instrInfo);
-            closeBrackets.push(bb->back().getName().str());
-            instrInfo.clear();
+            logger->error("[populateInstructionInfoRepo] Second Branch: {} for: {}", getSecondBranchOfBrInst(bb), bb->getName().str());
+            closingBraces.push_back(getSecondBranchOfBrInst(bb));
         }
-        else if(!bbInfo.getFollowNode().empty() && bbInfo.getLoopType() == udm::BBInfo::LoopType::NONE)
+
+        if(isConditionalBranch(bbInfo))
         {
             logger->error("[populateInstructionInfoRepo] is conditional");
             instrInfo.setIndentLevel(numSpaces);
             numSpaces += numSpacesForBlock;
             instrInfo.setLoopType(bbInfo.getLoopType());
-            repo.insert(instrInfo);
-            closeBrackets.push(bb->back().getName().str());
-            instrInfo.clear();
+            logger->error("[populateInstructionInfoRepo] Second Branch: {} for: {}", getSecondBranchOfBrInst(bb), bb->getName().str());
+            closingBraces.push_back(getSecondBranchOfBrInst(bb));
         }
+
+        if (bb->back().getOpcode() == llvm::Instruction::Ret)
+        {
+            continue;
+        }
+
+        if(!getLoopCondition(bb, numSpaces).empty())
+        {
+            repo.insert(instrInfo);
+        }
+        instrInfo.clear();
     }
 }
 
@@ -233,24 +276,19 @@ std::string codeGen::GenerateFnBody::generate()
     populateInstructionInfoRepo(instructionInfoRepo);
     logger->info("Instruction Info Repo: {}", instructionInfoRepo.toString());
 
-    int64_t currIndentLevel = -1;
     for(auto instrInfo: instructionInfoRepo)
     {
-        if(currIndentLevel == -1)
+        if(instrInfo.getCloseBraces())
         {
-            currIndentLevel = instrInfo.getIndentLevel();
-        }
-        else if(currIndentLevel < instrInfo.getIndentLevel())
-        {
-            currIndentLevel = instrInfo.getIndentLevel();
-        }
-
-        int64_t index = 4;
-        while(currIndentLevel - index >= instrInfo.getIndentLevel())
-        {
-            fnBody += utils::CodeGenUtils::getSpaces(currIndentLevel - index);
+            fnBody += utils::CodeGenUtils::getSpaces(instrInfo.getIndentLevel());
             fnBody += "}\n";
-            index += 4;
+            if(instrInfo.getShouldWriteElse())
+            {
+                fnBody += utils::CodeGenUtils::getSpaces(instrInfo.getIndentLevel());
+                fnBody += " else\n";
+                fnBody += utils::CodeGenUtils::getSpaces(instrInfo.getIndentLevel());
+                fnBody += "{\n";
+            }
         }
         
         if(instrInfo.isLoop())
@@ -274,18 +312,12 @@ std::string codeGen::GenerateFnBody::generate()
         {
             continue;
         }
+        
         fnBody += utils::CodeGenUtils::getSpaces(instrInfo.getIndentLevel());
         fnBody += instrInfo.getName();
         fnBody += " = ";
         fnBody += instrInfo.getValue();
         fnBody += "\n";
-    }
-
-    while(currIndentLevel > 0)
-    {
-        fnBody += utils::CodeGenUtils::getSpaces(currIndentLevel);
-        fnBody += "}\n";
-        currIndentLevel -= 4;
     }
 
     // print last block

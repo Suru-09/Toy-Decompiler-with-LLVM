@@ -17,6 +17,7 @@ public:
 
     void insert(InstructionInfo& info);
     void remove(InstructionInfo& info);
+    void update(InstructionInfo& info);
     InstructionInfo getInstructionInfo(const std::string& instrInfoName);
 
     // iterators
