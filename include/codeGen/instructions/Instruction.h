@@ -6,6 +6,7 @@
 
 #include <llvm/IR/Function.h>
 #include <llvm/IR/Instruction.h>
+#include <llvm/IR/Constants.h>
 
 #include "spdlog/spdlog.h"
 

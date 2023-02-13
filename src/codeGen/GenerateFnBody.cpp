@@ -97,7 +97,11 @@ std::string codeGen::GenerateFnBody::getLoopCondition(llvm::BasicBlock* bb, int6
         loopCondition = instruction->toString();
         if(expandedInstructions.find({bb->getName().str(), loopCondition}) != expandedInstructions.end())
         {
-            loopCondition = expandedInstructions[{bb->getName().str(), bb->back().getName().str()}];
+            std::string expanded = expandedInstructions[{bb->getName().str(), bb->back().getName().str()}];
+            if(!expanded.empty())
+            {
+                loopCondition = expanded;
+            }
         }
         logger->error("[getLoopCondition] instruction: {}", loopCondition);
     }
@@ -111,7 +115,7 @@ bool codeGen::GenerateFnBody::isLoop(const udm::BBInfo& bbinfo)
 
 bool codeGen::GenerateFnBody::isConditionalBranch(const udm::BBInfo& bbinfo)
 {
-    return bbinfo.getLoopType() == udm::BBInfo::LoopType::NONE && !bbinfo.getFollowNode().empty();
+    return !isLoop(bbinfo) && !bbinfo.getFollowNode().empty();
 }
 
 bool codeGen::GenerateFnBody::isLoopSelfContained(const udm::BBInfo& bbInfo, llvm::BasicBlock* bb)
@@ -185,6 +189,7 @@ void codeGen::GenerateFnBody::populateInstructionInfoRepo(codeGen::InstructionIn
         if(isLoop(bbInfo) || isConditionalBranch(bbInfo))
         {
             std::string loopCondition = getLoopCondition(bb, numSpaces);
+            logger->error("[populateInstructionInfoRepo] wtf {}", loopCondition);
             instrInfo.setLoopIfCondition(loopCondition);
         }
 
@@ -225,7 +230,11 @@ void codeGen::GenerateFnBody::populateInstructionInfoRepo(codeGen::InstructionIn
             closingBraces.push_back(getSecondBranchOfBrInst(bb));
         }
 
-        populateInstructionInfoRepoForBasicBlock(repo, bb, numSpaces, instrInfo);
+        if(!isLoop(bbInfo) && !isConditionalBranch(bbInfo))
+        {
+            populateInstructionInfoRepoForBasicBlock(repo, bb, numSpaces, instrInfo);
+        }
+        
 
         if(isLoop(bbInfo) && !isLoopSelfContained(bbInfo, bb))
         {
@@ -252,7 +261,8 @@ void codeGen::GenerateFnBody::populateInstructionInfoRepo(codeGen::InstructionIn
             continue;
         }
 
-        if(!getLoopCondition(bb, numSpaces).empty())
+        logger->info("[populateInstructionInfoRepo] InstructionInfo loop condition: {}", instrInfo.getLoopIfCondition());
+        if(!instrInfo.getLoopIfCondition().empty())
         {
             repo.insert(instrInfo);
         }
@@ -276,8 +286,21 @@ std::string codeGen::GenerateFnBody::generate()
     populateInstructionInfoRepo(instructionInfoRepo);
     logger->info("Instruction Info Repo: {}", instructionInfoRepo.toString());
 
+    bool wasIfOrLoop = false;
     for(auto instrInfo: instructionInfoRepo)
     {
+        bool copyWas = wasIfOrLoop;
+
+        if(wasIfOrLoop && !instrInfo.isLoop() && !instrInfo.isIf())
+        {
+            fnBody += utils::CodeGenUtils::getSpaces(instrInfo.getIndentLevel());
+            fnBody += instrInfo.getName();
+            fnBody += " = ";
+            fnBody += instrInfo.getValue();
+            fnBody += "\n";
+            wasIfOrLoop = false;
+        }
+
         if(instrInfo.getCloseBraces())
         {
             fnBody += utils::CodeGenUtils::getSpaces(instrInfo.getIndentLevel());
@@ -297,6 +320,7 @@ std::string codeGen::GenerateFnBody::generate()
             auto indentLevel = instrInfo.getIndentLevel();
             auto loopType = instrInfo.getLoopType();
             fnBody += codeGen::LoopGen::generateLoop(condition, indentLevel, loopType);
+            wasIfOrLoop = true;
             continue;
         }
 
@@ -305,19 +329,23 @@ std::string codeGen::GenerateFnBody::generate()
             auto condition = instrInfo.getLoopIfCondition();
             auto indentLevel = instrInfo.getIndentLevel();
             fnBody += codeGen::BranchConditionalGen::generateConditional(condition, indentLevel);
+            wasIfOrLoop = true;
             continue;
         }
 
-        if(instrInfo.getName().empty() && instrInfo.getValue().empty())
+        // if(instrInfo.getName().empty() && instrInfo.getValue().empty())
+        // {
+        //     continue;
+        // }
+
+        if(copyWas == wasIfOrLoop)
         {
-            continue;
+            fnBody += utils::CodeGenUtils::getSpaces(instrInfo.getIndentLevel());
+            fnBody += instrInfo.getName();
+            fnBody += " = ";
+            fnBody += instrInfo.getValue();
+            fnBody += "\n";
         }
-        
-        fnBody += utils::CodeGenUtils::getSpaces(instrInfo.getIndentLevel());
-        fnBody += instrInfo.getName();
-        fnBody += " = ";
-        fnBody += instrInfo.getValue();
-        fnBody += "\n";
     }
 
     // print last block
