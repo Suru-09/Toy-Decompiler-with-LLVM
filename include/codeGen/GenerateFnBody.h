@@ -25,7 +25,7 @@ private:
     void populateInstructionInfoRepo(codeGen::InstructionInfoRepo& repo);
     void populateInstructionInfoRepoForBasicBlock(
         codeGen::InstructionInfoRepo& repo, llvm::BasicBlock* bb,
-        int64_t numSpaces, codeGen::InstructionInfo& instrInfo
+        int64_t numSpaces, codeGen::InstructionInfo instrInfo
     );
     
     std::string getSecondBranchOfBrInst(llvm::BasicBlock* bb);

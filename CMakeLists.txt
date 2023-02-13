@@ -13,7 +13,7 @@ SET(work "work" CACHE STRING "")
 
 message(STATUS "Architecture compiled on: <${arch}>")
 
-find_package(capstone REQUIRED)
+# find_package(capstone REQUIRED)
 
 # # CAPSTONE DEPENDECIES ----- START --------
 if (${arch} STREQUAL "arm64")
@@ -21,10 +21,10 @@ if (${arch} STREQUAL "arm64")
     set(Capstone_INCLUDE /Users/suru/Documents/GitCloning/capstone/include)
 elseif(${arch} STREQUAL "x86")
     if(${work} STREQUAL "ON")
-        #set(Capstone_LIB /home/users/dragoss/Documents/licenta/capstone/build)
-        #set(Capstone_INCLUDE /home/users/dragoss/Documents/licenta/capstone/include)
-        set(Capstone_LIB /home/suru/Documents/GitCloning/capstone/build)
-        set(Capstone_INCLUDE /home/suru/Documents/GitCloning/capstone/include)
+        set(Capstone_LIB /home/users/dragoss/Documents/licenta/capstone/build)
+        set(Capstone_INCLUDE /home/users/dragoss/Documents/licenta/capstone/include)
+        # set(Capstone_LIB /home/suru/Documents/GitCloning/capstone/build)
+        # set(Capstone_INCLUDE /home/suru/Documents/GitCloning/capstone/include)
     elseif(${work} STREQUAL "OFF")
         set(Capstone_LIB /mnt/d/GithubCloning/capstone/build)
         set(Capstone_INCLUDE /mnt/d/GithubCloning/capstone/include)

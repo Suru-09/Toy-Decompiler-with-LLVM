@@ -20,7 +20,7 @@ std::map<std::pair<std::string, std::string>, std::string> codeGen::InstructionE
 }
 
 std::string codeGen::InstructionExpander::expandInstruction(llvm::Instruction *inst, int64_t offset) {
-    logger->debug("Expanding instruction: {}", inst->getOpcodeName());
+    logger->error("Expanding instruction: {}", inst->getOpcodeName());
     std::string expandedInst = "";
 
     auto instrObj = codeGen::Instruction::getInstruction(*inst, offset);
@@ -30,6 +30,14 @@ std::string codeGen::InstructionExpander::expandInstruction(llvm::Instruction *i
     else {
         logger->error("[expandInstruction] Instruction not supported: {}", inst->getOpcodeName());
         return "";
+    }
+
+    auto storeInst = llvm::dyn_cast<llvm::StoreInst>(inst);
+    llvm::Value* valueOperand = storeInst ? storeInst->getValueOperand() : nullptr;
+    if(inst->getOpcode() == llvm::Instruction::Store && valueOperand && valueOperand->getName().str().empty())
+    {
+        logger->error("[expandInstruction] Store expanded: {}", expandedInst);
+        return expandedInst;
     }
 
     for (auto &op : inst->operands()) {
@@ -77,6 +85,10 @@ void codeGen::InstructionExpander::initExpandedInstructions()
         {
             std::string bbName = bb->getName().str();
             std::string instName = inst.getName().str();
+            if(llvm::StoreInst* storeInst = llvm::dyn_cast<llvm::StoreInst>(&inst))
+            {
+                instName = storeInst->getPointerOperand()->getName().str();
+            }
             std::string expandedInst = expandInstruction(&inst, 0);
             expandedInstructions.insert_or_assign(std::make_pair<std::string, std::string>(std::move(bbName), std::move(instName)), std::move(expandedInst));
         }

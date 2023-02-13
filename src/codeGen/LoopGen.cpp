@@ -8,7 +8,7 @@ std::string codeGen::LoopGen::generateLoop(const std::string& condition, int num
 {
    std::string result = utils::CodeGenUtils::getSpaces(numSpaces);
    
-    if(loopType == udm::BBInfo::LoopType::WHILE)
+    if(loopType == udm::BBInfo::LoopType::WHILE || loopType == udm::BBInfo::LoopType::DO_WHILE)
     {
         result += "while(" + condition + ")\n";
     }

@@ -186,9 +186,9 @@ std::string codeGen::OtherInstruction::handleStoreInst(llvm::StoreInst* storeIns
 {
     std::string storeInstrStr = "";
     storeInstrStr += storeInst->getPointerOperand()->getName().str() + " = ";
-    auto value = storeInst->getValueOperand();
-    std::string secondOperand;
-    if(!value->hasName())
+    llvm::Value* value = storeInst->getValueOperand();
+    std::string secondOperand = "";
+    if(value && !value->hasName())
     {
         if(llvm::ConstantInt* constInt = llvm::dyn_cast<llvm::ConstantInt>(value))
         {
@@ -203,8 +203,9 @@ std::string codeGen::OtherInstruction::handleStoreInst(llvm::StoreInst* storeIns
     {
         secondOperand = value->getName().str();
     }
+    logger->error("Store instruction: {} -> {}", storeInst->getPointerOperand()->getName().str(), secondOperand);
     storeInstrStr += secondOperand;
-    return storeInstrStr;
+    return secondOperand;
 }
 
 std::string codeGen::OtherInstruction::handleLoadInst(llvm::LoadInst* loadInst)

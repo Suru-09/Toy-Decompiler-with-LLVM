@@ -46,7 +46,7 @@ void udm::UDM::cfgAnalysis(std::unique_ptr<llvm::Module> module)
         udm::IntervalGraph ig{dt};
 
         if(f.getName() == "calc_sum" || f.getName() == "fibo" || f.getName() =="main" || f.getName() == "n_way_conditional_switch"
-            || f.getName() == "while_pre_tested_loop" || f.getName() == "while_post_tested_loop" || f.getName() == "two_way")
+            || f.getName() == "while_pre_tested_loop" || f.getName() == "while_post_tested_loop" || f.getName() == "two_way" || f.getName() == "for_loop")
         {
         }
         else
