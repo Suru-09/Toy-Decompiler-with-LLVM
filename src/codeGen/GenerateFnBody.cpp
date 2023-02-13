@@ -50,117 +50,149 @@ bool codeGen::GenerateFnBody::isBBPredecessorOf(llvm::BasicBlock* bb, llvm::Basi
     return false;
 }
 
-void codeGen::GenerateFnBody::dfsForClosingBrackets(
-    std::set<std::string>& visited,
-    llvm::BasicBlock* bb,
-    std::map<std::string, uint64_t>& closingBrackets
+void codeGen::GenerateFnBody::populateInstructionInfoRepoForBasicBlock(
+    codeGen::InstructionInfoRepo& repo, llvm::BasicBlock* bb
+    , int64_t numSpaces, codeGen::InstructionInfo& instrInfo
 )
 {
-    // iterate over function using depth first search without LLVM iterators
-    visited.insert(bb->getName().str());
-
-    for(auto succ: llvm::successors(bb))
+    for(auto& inst: *bb)
     {
-        if(visited.find(succ->getName().str()) == visited.end())
+        if(inst.getOpcode() != llvm::Instruction::Store)
         {
-            dfsForClosingBrackets(visited, succ, closingBrackets);
-            closingBrackets[bb->getName().str()] = 1;
+            continue;
+        }
+
+        if(!inst.hasName())
+        {
+            auto storeInst = llvm::dyn_cast<llvm::StoreInst>(&inst);
+            if(storeInst)
+            {
+                auto value = storeInst->getPointerOperand()->getName().str();
+                instrInfo.setName(value);
+            }
+        }
+        instrInfo.setIndentLevel(numSpaces);
+        auto storeInst = llvm::dyn_cast<llvm::StoreInst>(&inst);
+        std::string value;
+        std::string pointer;
+        if(storeInst)
+        {
+            logger->error("[populateInstructionInfoRepoForBasicBlock] storeInst: {}", storeInst->getPointerOperand()->getName().str());
+            value = storeInst->getValueOperand()->getName().str();
+            pointer = storeInst->getPointerOperand()->getName().str();
+        }
+
+        if(value.empty())
+        {
+            value = inst.getName().str();
+        }
+
+        if(pointer.empty())
+        {
+            pointer = inst.getName().str();
+        }
+
+        auto instruction = codeGen::Instruction::getInstruction(inst, numSpaces);
+        if(instruction)
+        {
+            if(expandedInstructions.find({bb->getName().str(), value}) != expandedInstructions.end())
+            {
+                auto expandedInst = expandedInstructions[{bb->getName().str(), value}];
+                instrInfo.setValue(expandedInst);
+            }
+            else
+            {
+                instrInfo.setValue(instruction->toString());
+            }
+        }
+        repo.insert(instrInfo);
+        instrInfo.clear();
+    }
+}
+
+std::string codeGen::GenerateFnBody::getLoopCondition(llvm::Instruction& inst, int64_t numSpaces)
+{
+    std::string loopCondition = "";
+    auto instruction = codeGen::Instruction::getInstruction(inst, numSpaces);
+    if(instruction)
+    {
+        logger->error("[getLoopCondition] instruction: {}", instruction->toString());
+        loopCondition = instruction->toString();
+        if(expandedInstructions.find({inst.getName().str(), loopCondition}) != expandedInstructions.end())
+        {
+            loopCondition = expandedInstructions[{inst.getName().str(), inst.getName().str()}];
         }
     }
+    return loopCondition;
+}
+
+bool codeGen::GenerateFnBody::isLoop(const udm::BBInfo& bbinfo)
+{
+    return bbinfo.getLoopType() != udm::BBInfo::LoopType::NONE;
+}
+
+bool codeGen::GenerateFnBody::isConditionalBranch(const udm::BBInfo& bbinfo)
+{
+    return bbinfo.getLoopType() == udm::BBInfo::LoopType::NONE && !bbinfo.getFollowNode().empty();
+}
+
+bool codeGen::GenerateFnBody::isLoopSelfContained(const udm::BBInfo& bbInfo, llvm::BasicBlock* bb)
+{
+    bool condition = false;
+    if(!isLoop(bbInfo))
+    {
+        return false;
+    }
+    auto terminator = bb->getTerminator();
+    if(terminator)
+    {
+        auto branchInst = llvm::dyn_cast<llvm::BranchInst>(terminator);
+        if(branchInst)
+        {
+            if(branchInst->isConditional())
+            {
+                auto value = branchInst->getCondition()->getName().str();
+                if (value == bb->getName().str())
+                {
+                    condition = true;
+                }
+            }
+            else
+            {
+                return false;
+            }
+        }
+    }
+    return condition;
 }
 
 void codeGen::GenerateFnBody::populateInstructionInfoRepo(codeGen::InstructionInfoRepo& repo)
 {
     int64_t numSpaces = 4, numSpacesForBlock = 4;
-    llvm::ReversePostOrderTraversal<llvm::Function*> rpot(&fn);
-
-    std::stack<std::string> closeBrackets;
     
     for(auto it = df_begin(&fn); it != df_end(&fn); ++it)
     {
-       auto bb = *it;
-       auto bbInfo = funcInfo.getBBInfo(bb->getName().str());
-       
+        auto bb = *it;
+        auto bbInfo = funcInfo.getBBInfo(bb->getName().str());
+        
         if (bb->back().getOpcode() == llvm::Instruction::Ret)
         {
             continue;
         }
 
-       logger->error("[populateInstructionInfoRepo] bb: {}", bb->getName().str());
-       logger->error("[populateInstructionInfoRepo] bbInfo: {}", bbInfo.toString());
-       codeGen::InstructionInfo instrInfo;
+        logger->error("[populateInstructionInfoRepo] bb: {}", bb->getName().str());
+        logger->error("[populateInstructionInfoRepo] bbInfo: {}", bbInfo.toString());
+        codeGen::InstructionInfo instrInfo;
 
-       
-        for(auto& inst: *bb)
+        populateInstructionInfoRepoForBasicBlock(repo, bb, numSpaces, instrInfo);
+        
+        std::string loopCondition = getLoopCondition(bb->back(), numSpaces);
+        if(loopCondition.empty())
         {
-            if(inst.getOpcode() != llvm::Instruction::Store)
-            {
-                continue;
-            }
-
-            if(!inst.hasName())
-            {
-                auto storeInst = llvm::dyn_cast<llvm::StoreInst>(&inst);
-                if(storeInst)
-                {
-                    auto value = storeInst->getPointerOperand()->getName().str();
-                    instrInfo.setName(value);
-                    
-                }
-            }
-            instrInfo.setIndentLevel(numSpaces);
-            auto storeInst = llvm::dyn_cast<llvm::StoreInst>(&inst);
-            std::string value;
-            std::string pointer;
-            if(storeInst)
-            {
-                logger->error("[populateInstructionInfoRepo] storeInst: {}", storeInst->getPointerOperand()->getName().str());
-                value = storeInst->getValueOperand()->getName().str();
-                pointer = storeInst->getPointerOperand()->getName().str();
-            }
-
-            if(value.empty())
-            {
-                value = inst.getName().str();
-            }
-
-            if(pointer.empty())
-            {
-                pointer = inst.getName().str();
-            }
-
-            auto instruction = codeGen::Instruction::getInstruction(inst, numSpaces);
-            if(instruction)
-            {
-                if(expandedInstructions.find({bb->getName().str(), value}) != expandedInstructions.end())
-                {
-                    auto expandedInst = expandedInstructions[{bb->getName().str(), value}];
-                    instrInfo.setValue(expandedInst);
-                }
-                else
-                {
-                    instrInfo.setValue(instruction->toString());
-                }
-            }
-
-            repo.insert(instrInfo);
-            instrInfo.clear();
-        }
-
-        auto instruction = codeGen::Instruction::getInstruction(bb->back(), numSpaces);
-        if(instruction)
-        {
-            logger->error("[populateInstructionInfoRepo] instruction: {}", instruction->toString());
-            auto str = instruction->toString();
-            if(expandedInstructions.find({bb->getName().str(), str}) != expandedInstructions.end())
-            {
-                str = expandedInstructions[{bb->getName().str(), bb->back().getName().str()}];
-            }
-            instrInfo.setLoopIfCondition(str);
-        }
-        else {
             continue;
         }
+        instrInfo.setLoopIfCondition(loopCondition);
+        
 
         if(bbInfo.getLoopType() != udm::BBInfo::LoopType::NONE)
         {
@@ -180,16 +212,6 @@ void codeGen::GenerateFnBody::populateInstructionInfoRepo(codeGen::InstructionIn
             instrInfo.setLoopType(bbInfo.getLoopType());
             repo.insert(instrInfo);
             closeBrackets.push(bb->back().getName().str());
-            instrInfo.clear();
-        }
-
-        while(closeBrackets.top() == bb->getName().str() && !closeBrackets.empty())
-        {
-            logger->error("[populateInstructionInfoRepo] close bracket");
-            numSpaces -= numSpacesForBlock;
-            instrInfo.setIndentLevel(numSpaces);
-            repo.insert(instrInfo);
-            closeBrackets.pop();
             instrInfo.clear();
         }
     }
@@ -267,6 +289,14 @@ std::string codeGen::GenerateFnBody::generate()
     }
 
     // print last block
+    fnBody += getLastBlock();
+
+    return fnBody;
+}
+
+std::string codeGen::GenerateFnBody::getLastBlock()
+{
+    std::string fnBody = "";
     for(auto& inst: fn.back())
     {
         auto instruction = codeGen::Instruction::getInstruction(inst, 4);
@@ -283,6 +313,5 @@ std::string codeGen::GenerateFnBody::generate()
         }
     }
     fnBody += "}\n";
-
     return fnBody;
 }
