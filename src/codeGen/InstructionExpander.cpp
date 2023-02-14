@@ -14,7 +14,7 @@ codeGen::InstructionExpander::InstructionExpander(llvm::Function *f)
     initExpandedInstructions();
 }
 
-std::map<std::pair<std::string, std::string>, std::string> codeGen::InstructionExpander::getExpandedInstructions()
+std::vector<codeGen::ExpandedInstr> codeGen::InstructionExpander::getExpandedInstructions()
 {
     return expandedInstructions;
 }
@@ -32,41 +32,31 @@ std::string codeGen::InstructionExpander::expandInstruction(llvm::Instruction *i
         return "";
     }
 
-    auto storeInst = llvm::dyn_cast<llvm::StoreInst>(inst);
-    llvm::Value* valueOperand = storeInst ? storeInst->getValueOperand() : nullptr;
-    if(inst->getOpcode() == llvm::Instruction::Store && valueOperand && valueOperand->getName().str().empty())
-    {
-        logger->error("[expandInstruction] Store expanded: {}", expandedInst);
-        return expandedInst;
-    }
+    // auto storeInst = llvm::dyn_cast<llvm::StoreInst>(inst);
+    // llvm::Value* valueOperand = storeInst ? storeInst->getValueOperand() : nullptr;
+    // if(inst->getOpcode() == llvm::Instruction::Store && valueOperand && valueOperand->getName().str().empty())
+    // {
+    //     logger->error("[expandInstruction] Store expanded: {}", expandedInst);
+    //     return expandedInst;
+    // }
 
     for (auto &op : inst->operands()) {
-        std::string opName = "";
-        opName = op->hasName() ? op->getName().str() : "";
+        std::string opName = op->hasName() ? op->getName().str() : "";
+        std::string parentStr = inst->getParent()->getName().str();
         if (opName.empty()) {
             continue;
         }
 
-        auto parentStr = inst->getParent()->getName().str();
-        auto opNameStr = opName;
-        auto opKey = std::make_pair(std::move(parentStr), std::move(opNameStr));
-        for(auto it = expandedInstructions.rbegin(); it != expandedInstructions.rend(); ++it)
+        codeGen::ExpandedInstr searchedInstr(parentStr, opName);
+        auto found = std::find(expandedInstructions.rbegin(), expandedInstructions.rend(), searchedInstr);
+        if(found == expandedInstructions.rend())
         {
-            if(it->first.second == opName)
-            {
-                opKey.first = it->first.first;
-                opKey.second = it->first.second;
-                break;
-            }
-        }
-
-        if(expandedInstructions.find(opKey) == expandedInstructions.end()) {
-            logger->error("[expandInstruction] Operand not found in map: {}", opName);
+            logger->error("[expandInstruction] Operand [{}, {}] not found in expanded instructions", parentStr, opName);
             continue;
         }
 
-        std::string opValue = expandedInstructions[opKey];
-        // if operand is used in expanded instruction, replace it with its value
+        std::string opValue = found->getExpandedInstr();
+        logger->error("[expandInstruction] Opvalue: [{}] vs: expandedInst: [{}]", opValue, expandedInst);
         if(expandedInst.find(opName) != std::string::npos) {
             logger->debug("[expandInstruction] Replacing operand {} with value {}", opName, opValue);
             expandedInst.replace(expandedInst.find(opName), opName.length(), opValue);
@@ -85,12 +75,19 @@ void codeGen::InstructionExpander::initExpandedInstructions()
         {
             std::string bbName = bb->getName().str();
             std::string instName = inst.getName().str();
-            if(llvm::StoreInst* storeInst = llvm::dyn_cast<llvm::StoreInst>(&inst))
+            if(!inst.hasName())
             {
-                instName = storeInst->getPointerOperand()->getName().str();
+                continue;
             }
+            // if(llvm::StoreInst* storeInst = llvm::dyn_cast<llvm::StoreInst>(&inst))
+            // {
+            //     instName = storeInst->getPointerOperand()->getName().str();
+            // }
+            codeGen::ExpandedInstr searchedInstr(bbName, instName);
             std::string expandedInst = expandInstruction(&inst, 0);
-            expandedInstructions.insert_or_assign(std::make_pair<std::string, std::string>(std::move(bbName), std::move(instName)), std::move(expandedInst));
+            searchedInstr.setExpandedInstr(expandedInst);
+
+            expandedInstructions.push_back(searchedInstr);
         }
     }
 }

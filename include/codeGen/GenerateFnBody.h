@@ -4,6 +4,7 @@
 #include <iostream>
 #include <map>
 #include <set>
+#include <vector>
 
 #include <llvm/IR/Function.h>
 
@@ -12,6 +13,7 @@
 #include "udm/FuncInfo.h"
 #include "udm/BBInfo.h"
 #include "codeGen/InstructionInfoRepo.h"
+#include "codeGen/ExpandedInstr.h"
 
 namespace codeGen {
 
@@ -38,7 +40,7 @@ private:
 
     llvm::Function& fn;
     udm::FuncInfo funcInfo;
-    std::map<std::pair<std::string, std::string>, std::string> expandedInstructions;
+    std::vector<codeGen::ExpandedInstr> expandedInstructions;
     std::shared_ptr<spdlog::logger> logger;
 };
 

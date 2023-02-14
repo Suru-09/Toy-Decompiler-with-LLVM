@@ -6,6 +6,7 @@ add_library(${PROJECT_NAME}-codeGen
     BranchConditionalGen.cpp
     GenerateFnBody.cpp
     GenerateFnHeader.cpp
+    ExpandedInstr.cpp
     RenameVariables.cpp
     TranslateOperator.cpp
     InstructionExpander.cpp

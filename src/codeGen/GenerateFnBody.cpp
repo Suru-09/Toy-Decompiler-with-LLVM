@@ -71,9 +71,11 @@ void codeGen::GenerateFnBody::populateInstructionInfoRepoForBasicBlock(
         auto instruction = codeGen::Instruction::getInstruction(inst, numSpaces);
         if(instruction)
         {
-            if(expandedInstructions.find({bb->getName().str(), pointer}) != expandedInstructions.end())
+            codeGen::ExpandedInstr expandedInstr{bb->getName().str(), pointer};
+            auto found = std::find(expandedInstructions.begin(), expandedInstructions.end(), expandedInstr);
+            if(found != expandedInstructions.end())
             {
-                auto expandedInst = expandedInstructions[{bb->getName().str(), pointer}];
+                auto expandedInst = found->getExpandedInstr();
                 instrInfo.setValue(expandedInst);
             }
             else
@@ -92,16 +94,29 @@ std::string codeGen::GenerateFnBody::getLoopCondition(llvm::BasicBlock* bb, int6
     auto instruction = codeGen::Instruction::getInstruction(bb->back(), numSpaces);
     if(instruction)
     {
+        auto terminator = bb->getTerminator();
+        std::string search = "";
         loopCondition = instruction->toString();
-        if(expandedInstructions.find({bb->getName().str(), loopCondition}) != expandedInstructions.end())
+
+        if(terminator->getOpcode() == llvm::Instruction::Br)
         {
-            std::string expanded = expandedInstructions[{bb->getName().str(), bb->back().getName().str()}];
+            auto brInst = llvm::dyn_cast<llvm::BranchInst>(terminator);
+            if(brInst->isConditional())
+            {
+                search = brInst->getCondition()->getName().str();
+            }
+        }
+        codeGen::ExpandedInstr expandedInstr{bb->getName().str(), search};
+        auto found = std::find(expandedInstructions.begin(), expandedInstructions.end(), expandedInstr);
+        if(found != expandedInstructions.end())
+        {
+            std::string expanded = found->getExpandedInstr();
             if(!expanded.empty())
             {
                 loopCondition = expanded;
             }
         }
-        logger->error("[getLoopCondition] instruction: {}", loopCondition);
+        logger->error("[getLoopCondition] instruction: {} for: [{}]", loopCondition, bb->back().getName().str());
     }
     return loopCondition;
 }
@@ -283,9 +298,9 @@ std::string codeGen::GenerateFnBody::generate()
     codeGen::InstructionExpander instructionExpander(&fn);
     expandedInstructions = instructionExpander.getExpandedInstructions();
 
-    for(const auto& [key, value]: expandedInstructions)
+    for(auto instr: expandedInstructions)
     {
-        logger->error("[generate] expandedInstructions: [{}, {}] -> {}", key.first, key.second, value);
+        logger->error("[generate] expandedInstructions: [{}, {}] -> {}", instr.getBBName(), instr.getInstrName(), instr.getExpandedInstr());
     }
 
     std::string fnBody  = "";
