@@ -126,16 +126,19 @@ dec_label_pc_116d:                                ; preds = %dec_label_pc_116d.l
   store i32 %i6, i32* %storemerge13.reg2mem, align 4, !insn.addr !26
   store i32 %stack_var_-20.0, i32* %stack_var_-20.12.reg2mem, align 4, !insn.addr !26
   store i32 %stack_var_-20.0, i32* %stack_var_-20.1.lcssa.reg2mem, align 4, !insn.addr !26
-  br i1 %i8, label %dec_label_pc_116d, label %dec_label_pc_1199, !insn.addr !26
+  br i1 %i8, label %dec_label_pc_116d, label %dec_label_pc_1199.loopexit, !insn.addr !26
 
-dec_label_pc_1199:                                ; preds = %dec_label_pc_116d, %dec_label_pc_1188.preheader
+dec_label_pc_1199.loopexit:                       ; preds = %dec_label_pc_116d
+  br label %dec_label_pc_1199
+
+dec_label_pc_1199:                                ; preds = %dec_label_pc_1199.loopexit, %dec_label_pc_1188.preheader
   %stack_var_-20.1.lcssa.reload = load i32, i32* %stack_var_-20.1.lcssa.reg2mem, align 4
   %i9 = add nuw nsw i32 %storemerge6.reload, 1, !insn.addr !27
   %exitcond = icmp eq i32 %i9, %n
   store i32 %i9, i32* %storemerge6.reg2mem, align 4, !insn.addr !23
   store i32 %stack_var_-20.1.lcssa.reload, i32* %stack_var_-20.25.reg2mem, align 4, !insn.addr !23
   store i32 %stack_var_-20.1.lcssa.reload, i32* %stack_var_-20.2.lcssa.reg2mem, align 4, !insn.addr !23
-  br i1 %exitcond, label %dec_label_pc_11a5, label %dec_label_pc_1188.preheader, !insn.addr !23
+  br i1 %exitcond, label %dec_label_pc_11a5.loopexit, label %dec_label_pc_1188.preheader, !insn.addr !23
 
 dec_label_pc_1188.preheader:                      ; preds = %dec_label_pc_1199, %dec_label_pc_1188.preheader.lr.ph
   %stack_var_-20.25.reload = load i32, i32* %stack_var_-20.25.reg2mem, align 4
@@ -150,7 +153,10 @@ dec_label_pc_116d.lr.ph:                          ; preds = %dec_label_pc_1188.p
   store i32 %stack_var_-20.25.reload, i32* %stack_var_-20.12.reg2mem, align 4
   br label %dec_label_pc_116d
 
-dec_label_pc_11a5:                                ; preds = %dec_label_pc_1199, %dec_label_pc_1149
+dec_label_pc_11a5.loopexit:                       ; preds = %dec_label_pc_1199
+  br label %dec_label_pc_11a5
+
+dec_label_pc_11a5:                                ; preds = %dec_label_pc_11a5.loopexit, %dec_label_pc_1149
   %stack_var_-20.2.lcssa.reload = load i32, i32* %stack_var_-20.2.lcssa.reg2mem, align 4
   ret i32 %stack_var_-20.2.lcssa.reload, !insn.addr !29
 }

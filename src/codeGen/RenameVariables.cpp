@@ -25,8 +25,8 @@ std::unordered_map<std::string, std::string> codeGen::RenameVariables::rename()
             auto instrTypeStr = utils::CodeGenUtils::typeToString(inst.getType());
             auto instrAlias = "var" + std::to_string(argIndex);
 
-            inst.setName(instrAlias);
             result[inst.getName().str()] = instrAlias;
+            inst.setName(instrAlias);
             argIndex++;
         }
     }

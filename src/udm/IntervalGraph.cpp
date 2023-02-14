@@ -348,8 +348,23 @@ udm::BBInfo::LoopType udm::IntervalGraph::getLoopType(std::pair<std::string, std
     size_t headerSuccessorsNum = getNumSuccessors(backEdge.first); 
     size_t latchSuccessorsNum = getNumSuccessors(backEdge.second);
 
-    logger->critical("Node header: <{}>", headerSuccessorsNum);
-    logger->critical("Node latch: <{}>", latchSuccessorsNum);
+    if(backEdge.first == backEdge.second)
+    {
+        std::vector<std::string> preds = utils::UdmUtils::getPredecessors(getBB(backEdge.first));
+        logger->critical("[getLoopType] Node header: <{}>, preds size: <{}>", preds.front(), preds.size());
+        auto found = std::find(preds.begin(), preds.end(), "preheader");
+        if(found != preds.end())
+        {
+            return udm::BBInfo::LoopType::WHILE;
+        }
+        else
+        {
+            return udm::BBInfo::LoopType::DO_WHILE;
+        }
+    }
+
+    logger->critical("[getLoopType] Node header: <{}>", headerSuccessorsNum);
+    logger->critical("[getLoopType] Node latch: <{}>", latchSuccessorsNum);
 
     if(headerSuccessorsNum >= 2)
     {
