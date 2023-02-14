@@ -79,14 +79,11 @@ void codeGen::InstructionExpander::initExpandedInstructions()
             {
                 continue;
             }
-            // if(llvm::StoreInst* storeInst = llvm::dyn_cast<llvm::StoreInst>(&inst))
-            // {
-            //     instName = storeInst->getPointerOperand()->getName().str();
-            // }
             codeGen::ExpandedInstr searchedInstr(bbName, instName);
             std::string expandedInst = expandInstruction(&inst, 0);
             searchedInstr.setExpandedInstr(expandedInst);
 
+            logger->error("[initExpandedInstructions] Initialising instruction with: {}, name: {}, bb: {}", expandedInst, instName, bbName);
             expandedInstructions.push_back(searchedInstr);
         }
     }

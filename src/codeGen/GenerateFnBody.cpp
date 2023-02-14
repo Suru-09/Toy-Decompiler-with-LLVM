@@ -38,7 +38,6 @@ void codeGen::GenerateFnBody::populateInstructionInfoRepoForBasicBlock(
         if( (isLoop(bbInfo) || isConditionalBranch(bbInfo)) && instrInfo.getCloseBraces() == true)
         {
             instrInfo.setCloseBraces(false);
-            numSpaces += 4;
         }
         
         if(inst.getOpcode() != llvm::Instruction::Store)
@@ -64,6 +63,27 @@ void codeGen::GenerateFnBody::populateInstructionInfoRepoForBasicBlock(
         std::string pointer;
 
         value = storeInst->getValueOperand()->getName().str();
+        if(value.empty())
+        {
+            if (llvm::dyn_cast<llvm::ConstantInt>(storeInst->getValueOperand()) )
+            {
+                auto constantInt = llvm::dyn_cast<llvm::ConstantInt>(storeInst->getValueOperand());
+                value = std::to_string(constantInt->getSExtValue());
+            }
+            else if (llvm::dyn_cast<llvm::ConstantFP>(storeInst->getValueOperand()) )
+            {
+                auto constantFP = llvm::dyn_cast<llvm::ConstantFP>(storeInst->getValueOperand());
+                value = std::to_string(constantFP->getValueAPF().convertToDouble());
+            }
+            if(!value.empty())
+            {
+                logger->error("[populateInstructionInfoRepoForBasicBlock] value: {}", value);
+                instrInfo.setValue(value);
+                repo.insert(instrInfo);
+                continue;
+            }
+        }
+
         pointer = storeInst->getPointerOperand()->getName().str();
         logger->error("[populateInstructionInfoRepoForBasicBlock] storeInst: {} -> {}", pointer, value);
         
@@ -71,9 +91,9 @@ void codeGen::GenerateFnBody::populateInstructionInfoRepoForBasicBlock(
         auto instruction = codeGen::Instruction::getInstruction(inst, numSpaces);
         if(instruction)
         {
-            codeGen::ExpandedInstr expandedInstr{bb->getName().str(), pointer};
-            auto found = std::find(expandedInstructions.begin(), expandedInstructions.end(), expandedInstr);
-            if(found != expandedInstructions.end())
+            codeGen::ExpandedInstr expandedInstr{bb->getName().str(), value};
+            auto found = std::find(expandedInstructions.rbegin(), expandedInstructions.rend(), expandedInstr);
+            if(found != expandedInstructions.rend())
             {
                 auto expandedInst = found->getExpandedInstr();
                 instrInfo.setValue(expandedInst);
@@ -146,7 +166,7 @@ bool codeGen::GenerateFnBody::isLoopSelfContained(const udm::BBInfo& bbInfo, llv
         {
             if(branchInst->isConditional())
             {
-                auto value = branchInst->getCondition()->getName().str();
+                auto value = branchInst->getSuccessor(0)->getName().str();
                 if (value == bb->getName().str())
                 {
                     condition = true;
@@ -194,6 +214,7 @@ void codeGen::GenerateFnBody::populateInstructionInfoRepo(codeGen::InstructionIn
         return isConditionalBranch(bbInfo);
     };
     
+    llvm::ReversePostOrderTraversal<llvm::Function*> rpot(&fn);
     for(auto it = df_begin(&fn); it != df_end(&fn); ++it)
     {
         auto bb = *it;
@@ -217,14 +238,14 @@ void codeGen::GenerateFnBody::populateInstructionInfoRepo(codeGen::InstructionIn
         auto foundBB = [&](llvm::BasicBlock* bb) -> std::string
         {
             std::string result = "";
-            for(const auto& v: visited)
-            {
-                if(std::find(closingBraces.begin(), closingBraces.end(), v) != closingBraces.end())
-                {
-                    result = v;
-                    break;
-                }
-            }
+            // for(const auto& v: visited)
+            // {
+            //     if(std::find(closingBraces.begin(), closingBraces.end(), v) != closingBraces.end())
+            //     {
+            //         result = v;
+            //         break;
+            //     }
+            // }
             if(std::find(closingBraces.begin(), closingBraces.end(), bb->getName().str()) != closingBraces.end())
             {
                 result = bb->getName().str();
@@ -255,6 +276,7 @@ void codeGen::GenerateFnBody::populateInstructionInfoRepo(codeGen::InstructionIn
             instrInfo.setLoopType(bbInfo.getLoopType());
             logger->error("[populateInstructionInfoRepo] Second Branch: {} for: {}", getSecondBranchOfBrInst(bb), bb->getName().str());
             closingBraces.push_back(getSecondBranchOfBrInst(bb));
+            repo.insert(instrInfo);
         }
 
         populateInstructionInfoRepoForBasicBlock(repo, bb, numSpaces, instrInfo);
@@ -285,7 +307,7 @@ void codeGen::GenerateFnBody::populateInstructionInfoRepo(codeGen::InstructionIn
         }
 
         logger->info("[populateInstructionInfoRepo] InstructionInfo loop condition: {}", instrInfo.getLoopIfCondition());
-        if(!instrInfo.getLoopIfCondition().empty())
+        if(!instrInfo.getLoopIfCondition().empty() && !isLoopSelfContained(bbInfo, bb))
         {
             repo.insert(instrInfo);
         }
