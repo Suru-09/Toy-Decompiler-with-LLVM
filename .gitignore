@@ -36,3 +36,10 @@ cmake-build-debug/
 # Ignore logs
 logs/*
 *.log
+
+
+# TS server
+liftService/node_modules
+liftService/node_modules/*
+/binary/*
+/liftService/binary/*
