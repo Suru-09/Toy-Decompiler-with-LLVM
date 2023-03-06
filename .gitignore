@@ -43,3 +43,5 @@ liftService/node_modules
 liftService/node_modules/*
 /binary/*
 /liftService/binary/*
+/liftService/upload/*
+/liftService/gen/*
