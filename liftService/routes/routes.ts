@@ -76,6 +76,17 @@ router.post('/lift-executable', (req: Request, res: Response) => {
     // Listen for child process exit event
     childProcess.on('exit', (code: number) => {
       // Send response when child process has finished
+      if(code !== 0) {
+          return res.status(400).json({ message: `Execution failed!`});
+      }
+
+      const oldPath: string = "loops.ll";
+      const newPath: string  = "gen/loops.ll";
+      fs.rename(oldPath, newPath, (err) => {
+            if(err) {
+                return res.status(400).json({ message: `Error while renaming file: ${err}`});
+            }
+      });
       res.status(200).json({ message: `Execution for file: ${filePath} and binary with path: ${binaryPath} finished with code ${code}` });
     });
 });
