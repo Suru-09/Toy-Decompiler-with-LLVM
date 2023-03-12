@@ -60,10 +60,13 @@ router.post('/lift-executable', (req: Request, res: Response) => {
         return res.status(400).json({ message: 'Key called <file> missing from GET request!' });
     }
   
-    var binaryPath: string = path.join(__dirname, '../../binary/retdec/bin/retdec-decompiler');
+    var pathToRetdec: string = "../../binary/retdec/bin/retdec-decompiler";
+    var uploadsPath: string = "../../uploads/";
+    var binaryPath: string = path.join(__dirname, pathToRetdec);
     var filePath: string = path.join(__dirname, '../../uploads/loops');
     const args: string[] = [filePath, "--print-after-all"];
-    const childProcess = spawn(binaryPath, args, {shell: true, stdio: ['ignore', fs.openSync('./gen/loops.ll', 'w'), fs.openSync('./gen/loops.ll', 'w')]});
+    // TODO: add WSL support for Windows
+    const childProcess = spawn(binaryPath, args, {shell: true});
 
     if(!fs.existsSync(binaryPath)) {
         return res.status(400).json({ message: `File ${file} does not exist at: ${binaryPath}` });
