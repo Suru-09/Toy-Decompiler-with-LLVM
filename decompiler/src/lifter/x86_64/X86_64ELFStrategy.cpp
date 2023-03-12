@@ -11,7 +11,6 @@
 #include <llvm/Support/raw_ostream.h>
 
 #include <spdlog/spdlog.h>
-#include <capstone/capstone.h>
 
 
 void lifter::X86_64ELFStrategy::lift(const std::string& file) {
@@ -71,29 +70,6 @@ std::vector<std::unique_ptr<llvm::Module>>
         }
 
         spdlog::info("Size of data: {}, <{}>", sizeof(data), section.getSize());
-
-        csh handle;
-        cs_err error = cs_open(CS_ARCH_X86, CS_MODE_64, &handle);
-        cs_option(handle, CS_OPT_DETAIL, CS_OPT_ON);
-        if (error != CS_ERR_OK) {
-            spdlog::error("Error from capstone");
-        }
-
-        auto addressToStart = section.getAddress();
-        cs_insn *insn;
-        size_t count = cs_disasm(handle, data, sizeof(data), addressToStart, 0, &insn);
-        if (count > 0) {
-            // Iterate over the disassembled instructions
-            for (size_t j = 0; j < count; j++) {
-                // printf( "0x%"PRIx64":\t%s\t\t%s\n", insn[j].address, insn[j].mnemonic,
-                //         insn[j].op_str);
-            }
-
-            // Free the disassembled instructions
-            cs_free(insn, count);
-        } else {
-            // Handle
-        }
     }
     
     return sectionModules;
