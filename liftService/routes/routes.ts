@@ -34,7 +34,7 @@ const deleteFilesInDirectory = (directoryPath: string): void => {
 /************************************************************/
 
 router.get('/hello', (req, res) => {
-  res.send('Hello, world!');
+  res.status(200).json({ message: 'Hello, world!'});
 });
 
 

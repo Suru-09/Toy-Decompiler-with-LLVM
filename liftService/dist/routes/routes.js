@@ -33,7 +33,7 @@ const deleteFilesInDirectory = (directoryPath) => {
 /*  ALL ROUTES FOR REST LIFTING SERVER (GET & POST for now)         */
 /************************************************************/
 router.get('/hello', (req, res) => {
-    res.send('Hello, world!');
+    res.status(200).json({ message: 'Hello, world!' });
 });
 // POST FOR BINARY FILE
 router.post('/upload', upload.single('file'), (req, res) => {
