@@ -45,3 +45,6 @@ liftService/node_modules/*
 /liftService/binary/*
 /liftService/upload/*
 /liftService/gen/*
+
+# Ignore package-lock.json
+package-lock.json

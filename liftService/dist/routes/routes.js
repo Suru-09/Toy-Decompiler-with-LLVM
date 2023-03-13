@@ -7,6 +7,7 @@ const express_1 = __importDefault(require("express"));
 const multer_1 = __importDefault(require("multer"));
 const child_process_1 = require("child_process");
 const fs_1 = __importDefault(require("fs"));
+const fs_2 = require("fs");
 const path_1 = __importDefault(require("path"));
 const router = express_1.default.Router();
 // Middleware to parse JSON body
@@ -20,6 +21,14 @@ const upload = (0, multer_1.default)({
         },
     }),
 });
+const deleteFilesInDirectory = (directoryPath) => {
+    const files = (0, fs_2.readdirSync)(directoryPath);
+    for (const file of files) {
+        const filePath = `${directoryPath}/${file}`;
+        (0, fs_2.unlinkSync)(filePath);
+        console.log(`Deleted file: ${filePath}`);
+    }
+};
 /************************************************************/
 /*  ALL ROUTES FOR REST LIFTING SERVER (GET & POST for now)         */
 /************************************************************/
@@ -49,45 +58,71 @@ router.get('/exist', (req, res) => {
 });
 // IF BINARY FILE WAS UPLOADED, START LIFTING IT
 router.post('/lift-executable', (req, res) => {
-    const { file } = req.body;
-    if (file) {
+    const executable = req.body.file;
+    if (!executable) {
         return res.status(400).json({ message: 'Key called <file> missing from GET request!' });
     }
-    var binaryPath = path_1.default.join(__dirname, '../../binary/retdec/bin/retdec-decompiler');
+    var pathToRetdec = "../../binary/retdec/bin/retdec-decompiler";
+    var uploadsPath = "../../uploads/";
+    var binaryPath = path_1.default.join(__dirname, pathToRetdec);
     var filePath = path_1.default.join(__dirname, '../../uploads/loops');
-    const args = [filePath, "--print-after-all"];
-    const childProcess = (0, child_process_1.spawn)(binaryPath, args, { shell: true, stdio: ['ignore', fs_1.default.openSync('./gen/loops.ll', 'w'), fs_1.default.openSync('./gen/loops.ll', 'w')] });
+    console.log("Binary path: " + binaryPath);
+    const args = [filePath];
+    // TODO: add WSL support for Windows
+    const childProcess = (0, child_process_1.spawn)(binaryPath, args, { shell: true });
+    console.log("Child process: ");
     if (!fs_1.default.existsSync(binaryPath)) {
-        return res.status(400).json({ message: `File ${file} does not exist at: ${binaryPath}` });
+        return res.status(400).json({ message: `File ${executable} does not exist at: ${binaryPath}` });
     }
     if (!fs_1.default.existsSync(filePath)) {
-        return res.status(400).json({ message: `File ${file} does not exist at: ${filePath}` });
+        return res.status(400).json({ message: `File ${executable} does not exist at: ${filePath}` });
     }
     // Listen for child process exit event
     childProcess.on('exit', (code) => {
         // Send response when child process has finished
+        if (code !== 0) {
+            return res.status(400).json({ message: `Execution failed!` });
+        }
+        const oldPath = path_1.default.join(__dirname, "../../uploads/" + "loops" + ".ll");
+        const newPath = path_1.default.join(__dirname, "../../gen/" + "loops" + ".ll");
+        console.log("Old path: " + oldPath);
+        console.log("New path: " + newPath);
+        try {
+            fs_1.default.copyFileSync(oldPath, newPath);
+        }
+        catch (err) {
+            return res.status(400).json({ message: `File ${executable.file} could not be copied to gen folder!}` });
+        }
+        try {
+            deleteFilesInDirectory(path_1.default.join(__dirname, "../../uploads/"));
+        }
+        catch (err) {
+            return res.status(400).json({ message: `Files in uploads folder could not be deleted!}` });
+        }
         res.status(200).json({ message: `Execution for file: ${filePath} and binary with path: ${binaryPath} finished with code ${code}` });
     });
 });
 // ASK IF IR FILE HAS BEEN CREATED
 router.get('/ir-exist', (req, res) => {
-    if (!req.file) {
+    const file = req.query.file;
+    if (!file) {
         return res.status(400).json({ message: 'Key called <file> missing from GET request!' });
     }
-    const filePath = "gen/" + req.file;
+    const filePath = path_1.default.join(__dirname, "../../gen/" + file + ".ll");
     if (!fs_1.default.existsSync(filePath)) {
-        return res.status(400).json({ message: `File ${req.file} does not exist` });
+        return res.status(400).json({ message: `File ${filePath} does not exist` });
     }
     else { // file exists
-        return res.status(200).json({ message: `File ${req.file} exists` });
+        return res.status(200).json({ message: `File ${file} exists` });
     }
 });
 // GET IR FILE
 router.get('/ir', (req, res) => {
-    if (!req.file) { // if no file was uploaded
+    const file = req.query.file;
+    if (!file) { // if no file was uploaded
         return res.status(400).json({ message: 'Key called <file> missing from GET request!' });
     }
-    const filePath = "gen/" + req.file;
+    const filePath = path_1.default.join(__dirname, "../../gen/" + file + ".ll");
     const fileContents = fs_1.default.readFileSync(filePath, 'utf8');
     return res.status(200).json({ message: fileContents });
 });
