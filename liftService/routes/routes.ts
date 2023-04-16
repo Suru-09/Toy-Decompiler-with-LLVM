@@ -30,7 +30,7 @@ const deleteFilesInDirectory = (directoryPath: string): void => {
 };
 
 /************************************************************/
-/*  ALL ROUTES FOR REST LIFTING SERVER (GET & POST for now)         */
+/*  ALL ROUTES FOR REST LIFTING SERVER (GET & POST for now) */
 /************************************************************/
 
 router.get('/hello', (req, res) => {

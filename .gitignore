@@ -44,7 +44,10 @@ liftService/node_modules/*
 /binary/*
 /liftService/binary/*
 /liftService/upload/*
+# Do NOT ignore the test file in uploads
+/liftService/upload/test.txt
 /liftService/gen/*
 
 # Ignore package-lock.json
 package-lock.json
+liftService/package-lock.json
