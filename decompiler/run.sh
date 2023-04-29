@@ -12,7 +12,7 @@ echo "Found the folowing arch: <$MACHINE_TYPE>"
 
 if [ "${MACHINE_TYPE}" == "arm64" ]
 then
-    cmake ../ -Darch:String="arm64" -DBUILD_SHARED_LIBS:BOOL=OFF;
+    cmake ../ -DOPENSSL_ROOT_DIR=/opt/homebrew/opt/openssl@1.1/ -Darch:String="arm64" -DBUILD_SHARED_LIBS:BOOL=OFF;
 elif [ "${MACHINE_TYPE}" == "x86_64" ]
 then
     cmake ../ -Darch:String="x86" -DBUILD_SHARED_LIBS:BOOL=ON;

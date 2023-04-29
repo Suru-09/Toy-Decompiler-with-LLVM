@@ -23,9 +23,9 @@ public:
 
     static std::shared_ptr<LifterSettings> getInstance();
 
+    // delete copy/move constructors and assignment/move operators.
     LifterSettings(LifterSettings const&) = delete;
     LifterSettings(LifterSettings&&) = delete;
-
     void operator=(LifterSettings const&) = delete;
     void operator=(LifterSettings&&) = delete;
 };

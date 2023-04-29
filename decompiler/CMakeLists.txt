@@ -22,6 +22,28 @@ include_directories(${LLVM_INCLUDE_DIRS})
 add_definitions(${LLVM_DEFINITIONS_LIST})
 # LLVM DEPENDECIES ----- END --------
 
+# CPPREST DEPENDECIES ----- START --------
+
+find_package(cpprestsdk REQUIRED)
+
+include_directories(${cpprestsdk_INCLUDE_DIRS})
+
+if(cpprestsdk_FOUND)
+    message(STATUS "=====================================")
+    message(STATUS "cpprestsdk_DIR          : ${cpprestsdk_DIR}")
+    message(STATUS "cpprestsdk_VERSION      : ${cpprestsdk_VERSION}")
+    message(STATUS "cpprestsdk_INCLUDE_DIRS : ${cpprestsdk_INCLUDE_DIRS}")
+    message(STATUS "cpprestsdk_INCLUDE_DIR  : ${cpprestsdk_INCLUDE_DIR}")
+    message(STATUS "cpprestsdk_LIBRARIES    : ${cpprestsdk_LIBS}")
+    message(STATUS "=====================================")
+    message(STATUS "OPENSSL_VERSION      : ${OPENSSL_VERSION}")
+    message(STATUS "OPENSSL_INCLUDE_DIR  : ${OPENSSL_INCLUDE_DIR}")
+    message(STATUS "OPENSSL_LIBRARIES    : ${OPENSSL_LIBRARIES}")
+    message(STATUS "=====================================")
+endif(cpprestsdk_FOUND)
+
+# CPPREST DEPENDECIES ----- END --------
+
 # SPDLOG DEPENDECIES ----- START --------
 find_package(spdlog REQUIRED)
 find_package(fmt REQUIRED)
