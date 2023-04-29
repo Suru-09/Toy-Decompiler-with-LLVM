@@ -5,6 +5,7 @@ SET(CMAKE_CXX_STANDARD 17)
 
 
 add_subdirectory(logger)
+add_subdirectory(settings)
 add_subdirectory(utils)
 add_subdirectory(lifter)
 add_subdirectory(udm)
@@ -27,6 +28,7 @@ target_link_libraries(${PROJECT_NAME}
         ${PROJECT_NAME}-utils
         ${PROJECT_NAME}-lifter
         ${PROJECT_NAME}-codeGen
+        ${PROJECT_NAME}-settings
         # DO NOT MOVE LLVM UPPER(it will try to link it wrongly 
         # -> linking errors in .txt sections of own libs)
         ${llvm_libs}

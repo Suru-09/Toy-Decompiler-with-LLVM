@@ -27,6 +27,7 @@ target_link_libraries(${PROJECT_NAME}-test
         ${PROJECT_NAME}-utils
         ${PROJECT_NAME}-lifter
         ${PROJECT_NAME}-codeGen
+        ${PROJECT_NAME}-settings
         # DO NOT MOVE LLVM UPPER(it will try to link it wrongly 
         # -> linking errors in .txt sections of own libs)
         ${llvm_libs}

@@ -1,6 +1,6 @@
 import { expect } from 'chai';
-import { describe, it } from 'mocha';
 import express from 'express';
+import { describe, it } from 'mocha';
 import request from 'supertest';
 
 const app = express();
