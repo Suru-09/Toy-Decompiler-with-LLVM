@@ -33,6 +33,8 @@ target_link_libraries(${PROJECT_NAME}
         # -> linking errors in .txt sections of own libs)
         ${llvm_libs}
         spdlog::spdlog
+        OpenSSL::SSL
+        cpprestsdk::cpprest
 )
 
 target_include_directories(${PROJECT_NAME}

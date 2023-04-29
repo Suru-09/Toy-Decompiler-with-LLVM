@@ -15,8 +15,10 @@ message(STATUS "Architecture compiled on: <${arch}>")
 # LLVM DEPENDECIES ----- START --------
 find_package(LLVM REQUIRED CONFIG)
 
+message(STATUS "=====================================")
 message(STATUS "Found LLVM: <${LLVM_PACKAGE_VERSION}>")
 message(STATUS "Using LLVMConfig.cmake in: <${LLVM_DIR}>")
+message(STATUS "=====================================")
 
 include_directories(${LLVM_INCLUDE_DIRS})
 add_definitions(${LLVM_DEFINITIONS_LIST})
@@ -26,15 +28,13 @@ add_definitions(${LLVM_DEFINITIONS_LIST})
 
 find_package(cpprestsdk REQUIRED)
 
-include_directories(${cpprestsdk_INCLUDE_DIRS})
+include_directories()
 
 if(cpprestsdk_FOUND)
     message(STATUS "=====================================")
     message(STATUS "cpprestsdk_DIR          : ${cpprestsdk_DIR}")
     message(STATUS "cpprestsdk_VERSION      : ${cpprestsdk_VERSION}")
-    message(STATUS "cpprestsdk_INCLUDE_DIRS : ${cpprestsdk_INCLUDE_DIRS}")
     message(STATUS "cpprestsdk_INCLUDE_DIR  : ${cpprestsdk_INCLUDE_DIR}")
-    message(STATUS "cpprestsdk_LIBRARIES    : ${cpprestsdk_LIBS}")
     message(STATUS "=====================================")
     message(STATUS "OPENSSL_VERSION      : ${OPENSSL_VERSION}")
     message(STATUS "OPENSSL_INCLUDE_DIR  : ${OPENSSL_INCLUDE_DIR}")
@@ -59,7 +59,7 @@ message(STATUS "Found SPDLOG in: <${spdlog_INCLUDE_DIRS}>")
 # GOOGLE TEST DEPENDECIES ----- START --------
 
 find_package(GTest REQUIRED)
-message(STATUS "Found GTEST in: <${gtest_SOURCE_DIR}>")
+message(STATUS "=====================================")
 
 # GOOGLE TEST DEPENDECIES ----- END --------
 
@@ -72,6 +72,7 @@ set(INCL_DIR
     ${Capstone_INCLUDE}
     ${LLVM_INCLUDE_DIRS}
     ${spdlog_INCLUDE_DIRS}
+    ${cpprestsdk_INCLUDE_DIRS}
     $<$<STREQUAL:"${arch}","arm64">:${fmt_INCLUDE_DIRS}>
 )
 

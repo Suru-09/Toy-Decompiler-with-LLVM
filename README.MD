@@ -26,4 +26,4 @@ code in the application specific DSL(Domain specific language) specified in the 
 ## **Architecture**
 -----------------------
 
-![Architecture](documents/architecture.svg)
+![Architecture](decompiler/documents/architecture.svg)

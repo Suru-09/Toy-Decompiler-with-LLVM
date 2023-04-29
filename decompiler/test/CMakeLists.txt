@@ -32,6 +32,8 @@ target_link_libraries(${PROJECT_NAME}-test
         # -> linking errors in .txt sections of own libs)
         ${llvm_libs}
         spdlog::spdlog
+        cpprestsdk::cpprest
+        OpenSSL::SSL
         gtest
         gtest_main
 )
