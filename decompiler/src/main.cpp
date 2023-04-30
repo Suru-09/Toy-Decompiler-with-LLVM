@@ -6,22 +6,43 @@
 #include "logger/LoggerManager.h"
 #include "codeGen/CodeGeneration.h"
 
-#include "spdlog/spdlog.h"
-#include "spdlog/sinks/basic_file_sink.h" 
-#include "spdlog/sinks/rotating_file_sink.h"
+#include "settings/LifterSettings.h"
+#include "settings/UdmSettings.h"
+#include "settings/CodegenSettings.h"
 
 int main(int argc, char** argv) {
+   
+   // creating all the singletons first thing.
+   logger::LoggerManager* loggerManager = logger::LoggerManager::getInstance();
+   std::shared_ptr<settings::LifterSettings> lifterSettings = settings::LifterSettings::getInstance();
+   std::shared_ptr<settings::UdmSettings> udmSettings = settings::UdmSettings::getInstance();
+   std::shared_ptr<settings::CodegenSettings> codegenSettings = settings::CodegenSettings::getInstance();
+
+   for(size_t i = 1; i < argc; ++i)
+   {
+      spdlog::info("Argument {}: {}", i, argv[i]);
+      if (strlen(argv[i]) < 2)
+      {
+         // ignore settings smaller than 2 characters for now.
+         continue;
+      }
+
+      if(argv[i][0] == '-' && argv[i][1] == 'l')
+         lifterSettings->parseLifterSettings(argv[i]);
+      else if(argv[i][0] == '-' && argv[i][1] == 'u')
+         udmSettings->parseUdmSettings(argv[i]);
+      else if(argv[i][0] == '-' && argv[i][1] == 'c')
+         codegenSettings->parseCodegenSettings(argv[i]);
+   }
+
    std::string testing_file = "../testing_files/elfC/conditionals";
    std::shared_ptr<lifter::LifterContext> lifterCtx = utils::getLifterCtx(testing_file);
-
-   //create an instance of logger manager(so that it is already initialized later).
-   logger::LoggerManager* loggerManager = logger::LoggerManager::getInstance();
-
    if(!lifterCtx)
    {
       spdlog::critical("Invalid lifterContext created(nullptr)!");
       exit(1);
    }
+   lifterCtx->executeStrategy();
 
    std::string irFile = testing_file + ".ll";
    
@@ -34,5 +55,6 @@ int main(int argc, char** argv) {
    std::unique_ptr<codeGen::CodeGeneration> codeGen = 
       std::make_unique<codeGen::CodeGeneration>(optimizedIRFile, funcInfoMap);
    codeGen->generate();
+
    return 0;
 }

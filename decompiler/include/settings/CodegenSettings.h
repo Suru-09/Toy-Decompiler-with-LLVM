@@ -2,6 +2,9 @@
 #define _CODEGEN_SETTINGS_H_
 
 #include <mutex>
+#include <memory>
+
+#include <spdlog/spdlog.h>
 
 namespace settings {
 
@@ -21,7 +24,7 @@ namespace settings {
 class CodegenSettings {
 
 private:
-CodegenSettings() = default;
+explicit CodegenSettings();
 static void initInstance();
 
 
@@ -29,9 +32,13 @@ static void initInstance();
 class Foo {};
 static std::shared_ptr<CodegenSettings> m_instance;
 static std::once_flag m_flag;
+std::shared_ptr<spdlog::logger> logger;
+
+// codegen variables.
 
 public:
 static std::shared_ptr<CodegenSettings> getInstance();
+void parseCodegenSettings(const std::string& setting);
 
 // dummy constructor
 CodegenSettings(Foo foo) {};

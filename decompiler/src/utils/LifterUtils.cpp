@@ -1,8 +1,9 @@
 #include "utils/LifterUtils.h"
 
+#include <spdlog/spdlog.h>
+
 #include "lifter/ExecutableType.h"
 #include "lifter/StrategyFactory.h"
-
 
 std::unique_ptr<lifter::IArchitectureStrategy> utils::getStrategy(const std::string& testingFile) 
 {
@@ -17,6 +18,10 @@ std::shared_ptr<::lifter::LifterContext> utils::getLifterCtx(const std::string& 
     auto factory = getStrategy(testingFile);
     auto liftertCtx = std::make_shared<lifter::LifterContext>(lifter::LifterContext{testingFile});
     auto strategy = utils::getStrategy(testingFile);
+    if(!strategy) {
+        spdlog::critical("Invalid strategy created(nullptr)!");
+        return nullptr;
+    }
     liftertCtx->setStrategy(std::move(strategy));
 
     return liftertCtx;
