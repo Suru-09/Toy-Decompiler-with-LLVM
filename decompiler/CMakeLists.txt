@@ -42,6 +42,17 @@ if(cpprestsdk_FOUND)
     message(STATUS "=====================================")
 endif(cpprestsdk_FOUND)
 
+# BOOST DEPENDECIES ----- START --------
+
+IF(Boost_FOUND)
+    INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
+    LINK_DIRECTORIES(${Boost_LIBRARY_DIRS})
+    message(STATUS "Boost_INCLUDE_DIRS  : ${Boost_INCLUDE_DIRS}")
+    message(STATUS "Boost_LIBRARY_DIRS    : ${Boost_LIBRARY_DIRS}")
+    message(STATUS "=====================================")
+ENDIF(Boost_FOUND)
+# BOOST DEPENDECIES ----- END --------
+
 # CPPREST DEPENDECIES ----- END --------
 
 # SPDLOG DEPENDECIES ----- START --------
@@ -51,9 +62,13 @@ find_package(fmt REQUIRED)
 if(${arch} STREQUAL "arm64")
     set(spdlog_INCLUDE_DIRS /opt/homebrew/Cellar/spdlog/1.11.0/include)
     set(fmt_INCLUDE_DIRS /opt/homebrew/Cellar/fmt/9.1.0/include)
-endif()    
+    message(STATUS "SPDLOG_INCLUDE_DIRS  : ${spdlog_INCLUDE_DIRS}")
+    message(STATUS "FMT_INCLUDE_DIRS     : ${fmt_INCLUDE_DIRS}")
+else()
+    message(STATUS "SPDLOG_INCLUDE_DIRS  : ${spdlog_INCLUDE_DIRS}")
+    message(STATUS "FMT_INCLUDE_DIRS     : ${fmt_INCLUDE_DIRS}")
+endif()   
 
-message(STATUS "Found SPDLOG in: <${spdlog_INCLUDE_DIRS}>")
 # SPDLOG DEPENDECIES ----- END --------
 
 # GOOGLE TEST DEPENDECIES ----- START --------
@@ -72,7 +87,9 @@ set(INCL_DIR
     ${Capstone_INCLUDE}
     ${LLVM_INCLUDE_DIRS}
     ${spdlog_INCLUDE_DIRS}
-    ${cpprestsdk_INCLUDE_DIRS}
+    ${cpprestsdk_INCLUDE_DIR}
+    ${Boost_INCLUDE_DIRS}
+    ${OPENSSL_INCLUDE_DIR}
     $<$<STREQUAL:"${arch}","arm64">:${fmt_INCLUDE_DIRS}>
 )
 

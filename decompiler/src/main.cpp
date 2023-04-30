@@ -10,9 +10,6 @@
 #include "spdlog/sinks/basic_file_sink.h" 
 #include "spdlog/sinks/rotating_file_sink.h"
 
-#include "cpprest/http_client.h"
-
-
 int main(int argc, char** argv) {
    std::string testing_file = "../testing_files/elfC/conditionals";
    std::shared_ptr<lifter::LifterContext> lifterCtx = utils::getLifterCtx(testing_file);

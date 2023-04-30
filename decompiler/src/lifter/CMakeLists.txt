@@ -8,6 +8,7 @@ add_library(${PROJECT_NAME}-lifter
     x86_64/X86_64ELFStrategy.cpp
     x86_64/X86_64StrategyFactory.cpp
     arm64/ARM64StrategyFactory.cpp
+    server/RetdecClient.cpp
 )
 
 target_include_directories(${PROJECT_NAME}-lifter
