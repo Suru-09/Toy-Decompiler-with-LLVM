@@ -30,7 +30,7 @@ const deleteFilesInDirectory = (directoryPath) => {
     }
 };
 /************************************************************/
-/*  ALL ROUTES FOR REST LIFTING SERVER (GET & POST for now)         */
+/*  ALL ROUTES FOR REST LIFTING SERVER (GET & POST for now) */
 /************************************************************/
 router.get('/hello', (req, res) => {
     res.status(200).json({ message: 'Hello, world!' });
@@ -43,21 +43,21 @@ router.post('/upload', upload.single('file'), (req, res) => {
     res.status(200).json({ message: `File ${req.file} been uploaded successfully` });
 });
 // ASK IF BINARY FILE WAS UPLOADED
-router.get('/exist', (req, res) => {
-    const file = req.query.file;
-    if (!file) {
-        return res.status(400).json({ message: 'Key called <file> missing from GET request!' });
-    }
-    const filePath = "uploads/" + file;
-    if (!fs_1.default.existsSync(filePath)) {
-        return res.status(400).json({ message: `File ${file} does not exist at: ${filePath}` });
-    }
-    else { // file exists
-        return res.status(200).json({ message: `File ${file} exists` });
-    }
-});
+// router.get('/exist', (req: Request, res: Response) => {
+//     const file  = req.query.file;
+//     if(!file) {
+//         return res.status(400).json({ message: 'Key called <file> missing from GET request!' });
+//     }
+//     const filePath: string = "uploads/" + file;
+//     if(!fs.existsSync(filePath)) {
+//         return res.status(400).json({ message: `File ${file} does not exist at: ${filePath}` });
+//     }
+//     else { // file exists
+//         return res.status(200).json({ message: `File ${file} exists` });
+//     }
+// });
 // IF BINARY FILE WAS UPLOADED, START LIFTING IT
-router.post('/lift-executable', (req, res) => {
+router.post('/decompile', (req, res) => {
     const executable = req.body.file;
     if (!executable) {
         return res.status(400).json({ message: 'Key called <file> missing from GET request!' });
