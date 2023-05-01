@@ -51,3 +51,15 @@ liftService/node_modules/*
 # Ignore package-lock.json
 package-lock.json
 liftService/package-lock.json
+
+# Latex stuff
+*.aux
+*.fdb_latexmk
+*.log
+*.lof
+*.fls
+*.blg
+*.bbl
+*.toc
+*.out
+*.synctex.gz

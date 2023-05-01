@@ -35,7 +35,7 @@ int main(int argc, char** argv) {
          codegenSettings->parseCodegenSettings(argv[i]);
    }
 
-   std::string testing_file = "../testing_files/elfC/conditionals";
+   std::string testing_file = "../testing_files/elfC/loops";
    std::shared_ptr<lifter::LifterContext> lifterCtx = utils::getLifterCtx(testing_file);
    if(!lifterCtx)
    {
