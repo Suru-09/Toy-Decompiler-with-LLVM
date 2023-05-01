@@ -5,7 +5,7 @@ const app = express();
 app.use(express.json());
 
 // Server PORT
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 5000;
 
 app.use('/api', routes);
 
@@ -14,6 +14,6 @@ app.get('/', (req, res) => {
 });
 
 // message to console the PORT for the server
-app.listen(3000, () => {
+app.listen(5000, () => {
   console.log(`Server running on port ${port}`);
 });
