@@ -1,0 +1,99 @@
+@article{einstein,
+    author = "Albert Einstein",
+    title = "{Zur Elektrodynamik bewegter K{\"o}rper}. ({German})
+    [{On} the electrodynamics of moving bodies]",
+    journal = "Annalen der Physik",
+    volume = "322",
+    number = "10",
+    pages = "891--921",
+    year = "1905",
+    DOI = "http://dx.doi.org/10.1002/andp.19053221004",
+    keywords = "physics"
+}
+
+@inproceedings{saturn,
+author = {Garba, Peter and Favaro, Matteo},
+title = {SATURN - Software Deobfuscation Framework Based On LLVM},
+year = {2019},
+isbn = {9781450368353},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/3338503.3357721},
+doi = {10.1145/3338503.3357721},
+abstract = {The strength of obfuscated software has increased over the recent years. Compiler based obfuscation has become the de facto standard in the industry and recent papers also show that injection of obfuscation techniques is done at the compiler level. In this paper we discuss a generic approach for deobfuscation and recompilation of obfuscated code based on the compiler framework LLVM. We show how binary code can be lifted back into the compiler intermediate language LLVM-IR and explain how we recover the control flow graph of an obfuscated binary function with an iterative control flow graph construction algorithm based on compiler optimizations and satisfiability modulo theories (SMT) solving. Our approach does not make any assumptions about the obfuscated code, but instead uses strong compiler optimizations available in LLVM and Souper Optimizer to simplify away the obfuscation. Our experimental results show that this approach can be effective to weaken or even remove the applied obfuscation techniques like constant unfolding, certain arithmetic-based opaque expressions, dead code insertions, bogus control flow or integer encoding found in public and commercial obfuscators. The recovered LLVM-IR can be further processed by custom deobfuscation passes that are now applied at the same level as the injected obfuscation techniques or recompiled with one of the available LLVM backends. The presented work is implemented in a deobfuscation tool called SATURN.},
+booktitle = {Proceedings of the 3rd ACM Workshop on Software Protection},
+pages = {27–38},
+numpages = {12},
+keywords = {static software analysis, code lifting, deobfuscation, binary rewriting, binary recompilation, llvm, reverse engineering, obfuscation},
+location = {London, United Kingdom},
+series = {SPRO'19}
+}
+
+@article{cifuentes,
+author = {Cifuentes, Cristina and Gough, K. John},
+title = {Decompilation of binary programs},
+journal = {Software: Practice and Experience},
+volume = {25},
+number = {7},
+pages = {811-829},
+keywords = {decompiler, reverse compiler, compiler signature, library signature, i80286, C language},
+doi = {https://doi.org/10.1002/spe.4380250706},
+url = {https://onlinelibrary.wiley.com/doi/abs/10.1002/spe.4380250706},
+eprint = {https://onlinelibrary.wiley.com/doi/pdf/10.1002/spe.4380250706},
+abstract = {Abstract The structure of a decompiler is presented, along with a thorough description of the different modules that form part of a decompiler, and the type of analyses that are performed on the machine code to regenerate high-level language code. The phases of the decompiler have been grouped into three main modules: front-end, universal decompiling machine, and back-end. The front-end is a machine-dependent module that performs the loading, parsing and semantic analysis of the input program, as well as generating an intermediate representation of the program. The universal decompiling machine is a machine- and language-independent module that performs data and control flow analysis of the program based on the intermediate representation, and the program's control flow graph. The back-end is a language-dependent module that deals with the details of the target high-level language. In order to increase the readability of the generated programs, a decompiling system has been implemented which integrates a decompiler, dcc, and an automatic signature generator, dccSign. Signatures for libraries and compilers are stored in a database that is read by the decompiler; thus, the generated programs can make use of known library names, such as WriteLn() and printf(). dcc is a decompiler for the Intel 80286 architecture and the DOS operating system. dec takes as input binary programs from a DOS environment and generates C programs as output. Sample code produced by this decompiler is given.},
+year = {1995}
+}
+
+@article{whatyousee,
+author = {Balakrishnan, Gogul and Reps, Thomas},
+title = {WYSINWYX: What You See is Not What You EXecute},
+year = {2010},
+issue_date = {August 2010},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {32},
+number = {6},
+issn = {0164-0925},
+url = {https://doi.org/10.1145/1749608.1749612},
+doi = {10.1145/1749608.1749612},
+abstract = {Over the last seven years, we have developed static-analysis methods to recover a good approximation to the variables and dynamically allocated memory objects of a stripped executable, and to track the flow of values through them. The article presents the algorithms that we developed, explains how they are used to recover Intermediate Representations (IRs) from executables that are similar to the IRs that would be available if one started from source code, and describes their application in the context of program understanding and automated bug hunting.Unlike algorithms for analyzing executables that existed prior to our work, the ones presented in this article provide useful information about memory accesses, even in the absence of debugging information. The ideas described in the article are incorporated in a tool for analyzing Intel x86 executables, called CodeSurfer/x86. CodeSurfer/x86 builds a system dependence graph for the program, and provides a GUI for exploring the graph by (i) navigating its edges, and (ii) invoking operations, such as forward slicing, backward slicing, and chopping, to discover how parts of the program can impact other parts.To assess the usefulness of the IRs recovered by CodeSurfer/x86 in the context of automated bug hunting, we built a tool on top of CodeSurfer/x86, called Device-Driver Analyzer for x86 (DDA/x86), which analyzes device-driver executables for bugs. Without the benefit of either source code or symbol-table/debugging information, DDA/x86 was able to find known bugs (that had been discovered previously by source-code analysis tools), along with useful error traces, while having a low false-positive rate. DDA/x86 is the first known application of program analysis/verification techniques to industrial executables.},
+journal = {ACM Trans. Program. Lang. Syst.},
+month = {aug},
+articleno = {23},
+numpages = {84},
+keywords = {context-sensitive analysis, static analysis, data structure recovery, reverse engineering, interprocedural dataflow analysis, pointer analysis, Abstract interpretation}
+}
+
+@phdthesis{humanCentric,
+urn = https://nbn-resolving.org/urn:nbn:de:hbz:5n-50042,
+author = {{Khaled Yakdan}},
+title = {A Human-Centric Approach For Binary Code Decompilation},
+school = {Rheinische Friedrich-Wilhelms-Universität Bonn},
+year = 2018,
+month = mar,
+note = {Many security techniques have been developed both in academia and industry to analyze source code, including methods to discover bugs, apply taint tracking, or find vulnerabilities. These source-based techniques leverage the wealth of high-level abstractions available in the source code to achieve good precision and efficiency. Unfortunately, these methods cannot be applied directly on binary code which lacks such abstractions. In security, there are many scenarios where analysts only have access to the compiled version of a program. When compiled, all high-level abstractions, such as variables, types, and functions, are removed from the final version of the program that security analysts have access to.
+This dissertation investigates novel methods to recover abstractions from binary code. First, a novel pattern-independent control flow structuring algorithm is presented to recover high-level control-flow abstractions from binary code. Unlike existing structural analysis algorithms which produce unstructured code with many goto statements, our algorithm produces fully-structured goto-free decompiled code. We implemented this algorithm in a decompiler called DREAM. Second, we develop three categories of code optimizations in order to simplify the decompiled code and increase readability. These categories are expression simplification, control-flow simplification and semantics-aware naming. We have implemented our usability extensions on top of DREAM and call this extended version DREAM++.
+We conducted the first user study to evaluate the quality of decompilers for malware analysis. We have chosen malware since it represents one of the most challenging cases for binary code analysis. The study included six reverse engineering tasks of real malware samples that we obtained from independent malware experts. We evaluated three decompilers: the leading industry decompiler Hex-Rays and both versions of our decompiler DREAM and DREAM++. The results of our study show that our improved decompiler DREAM++ produced significantly more understandable code that outperforms both Hex-Rays and DREAM. Using DREAM++participants solved 3 times more tasks than when using Hex-Rays and 2 times more tasks than when using DREAM. Moreover, participants rated DREAM++ significantly higher than the competition.},
+url = {https://hdl.handle.net/20.500.11811/7517}
+}
+
+@misc{ibmCostData,
+	author = {},
+	title = {{C}ost of a data breach 2022 --- ibm.com},
+	howpublished = {\url{https://www.ibm.com/reports/data-breach}},
+	year = {2022},
+}
+
+@article{baxter,
+title = {Reverse engineering is reverse forward engineering},
+journal = {Science of Computer Programming},
+volume = {36},
+number = {2},
+pages = {131-147},
+year = {2000},
+issn = {0167-6423},
+doi = {https://doi.org/10.1016/S0167-6423(99)00034-9},
+url = {https://www.sciencedirect.com/science/article/pii/S0167642399000349},
+author = {Ira D. Baxter and Michael Mehlich},
+abstract = {Reverse Engineering is focused on the challenging task of understanding legacy program code without having suitable documentation. Using a transformational forward engineering perspective, we gain the insight that much of this difficulty is caused by design decisions made during system development. Such decisions “hide” the program functionality and performance requirements in the final system by applying repeated refinements through layers of abstraction, and information-spreading optimizations, both of which change representations and force single program entities to serve multiple purposes. To be able to reverse engineer, we essentially have to reverse these design decisions. Following the transformational approach we can use the transformations of a forward engineering methodology and apply them “backwards” to reverse engineer code to a more abstract specification. Since most of the existing code was not generated by transformational synthesis, this produces a plausible formal transformational design rather than the original authors’ actual design. As an example, a small fragment of a real-time operating system is reverse-engineered using this approach. A byproduct of the transformational reverse engineering process is a design database for the program that then can be maintained to minimize the need for further reverse engineering during the remaining lifetime of the system. A consequence of a transformational forward engineering perspective is the belief that the standard plan recognition methods proposed for reverse engineering are not sufficient.}
+}

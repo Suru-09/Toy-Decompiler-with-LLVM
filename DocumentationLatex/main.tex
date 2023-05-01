@@ -1,0 +1,65 @@
+\documentclass[12pt, english, a4paper]{report}
+\usepackage{babel}
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{geometry}
+\usepackage{abstract}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{multirow}
+\usepackage{amsmath}
+\usepackage{listings}
+\usepackage{csquotes}
+\usepackage{xcolor}
+\usepackage{xurl}
+\usepackage{hyperref}
+\usepackage{cleveref}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{pdfpages}
+\usepackage{nimbusmono}
+\usepackage{nimbussans}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+
+
+%generates filler text
+\usepackage{lipsum}
+
+\usepackage[style=ieee,backend=bibtex]{biblatex}
+
+\addbibresource{bibliography.bib}
+
+\input{customs}
+\input{components/Format}
+\input{components/Styles}
+
+\begin{document}
+\pagestyle{pagestyle}
+\include{chapters/1-Title}
+\include{chapters/2-AbstractRO}
+\include{chapters/3-AbstractEN}
+\tableofcontents
+\listoffigures
+\vspace{24pt}
+\begingroup
+	\let\clearpage\relax
+	\listoftables
+	\vspace{24pt}
+	\listof{code}{Fragment list}
+\endgroup
+\include{chapters/4-Introduction}
+\include{chapters/4-StateOfTheStart}
+\include{chapters/5-TheoricalAspects}
+\include{chapters/6-DesignAndImplementation}
+\include{chapters/7-ExperimentalResults}
+\include{chapters/8-Conclusions}
+
+% Look for building the .bib file on Overleaf documentation
+\printbibliography[heading=bibnumbered]
+
+%\includepdf[pages={1}]{\declarationPath}
+
+\end{document}

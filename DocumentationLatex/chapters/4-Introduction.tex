@@ -1,0 +1,123 @@
+\chapter{Introduction}\label{section:introduction}
+\thispagestyle{pagestyle}
+
+As computers have become increasingly ubiquitous, software has become more complex to meet the demands of a
+growing user base.This complexity has led to a greater risk of software bugs and vulnerabilities, which 
+can be exploited by attackers to compromise systems and steal sensitive information. According to a 
+recent study by the Ponemon Institute\cite{ibmCostData}, the average cost of a data breach is now over \$4.35 million,
+highlighting the need for effective cybersecurity measures to protect software systems from attack.
+
+The growing threat of cybersecurity attacks has made software engineering more challenging than ever. 
+Developers must not only create software that meets the functional requirements of users but also
+ensure that the software is secure and resistant to attack. This requires a deep understanding of
+software design principles, programming languages, and security best practices.
+
+Another issue that is perfectly described in \cite{whatyousee} is that software is often distributed in
+binary form and even if we have access to the source code it is not always possible to compile it.
+Therefore, the following phenomenom occurs: the source code doesn't match the binary code, it could
+be that the intent of the binary is malicious or maybe the optimizations brought by the compiler are
+not the ones that the developer desired.
+
+To address this challenges, decompilation has emerged as a critical tool for software engineers.
+Decompilation allows developers to analyze and translate the machine code back into a high-level
+domain-specific language(DSL) such as C or Java. This DSL is way easier for the developer to
+understand, enabling the developer to efficiently analyze the code and identify potential security
+vulnerabilities with a greater degree of confidence. By using decompilation, developers can
+get a better sense of how their code will behave when it's executed and can make informed decisions
+about how to optimize it or fix certain undesired behaviours.
+
+Overall, decompilation is an essential tool for modern software engineering. By enabling developers
+to better understand and modify software, decompilation plays a critical role in improving the
+security, reliability, and performance of the software that powers our digital lives. 
+
+
+\section{Fields and objectives targeted}
+\subsection{Reverse Engineering} \label{section:reverse}
+Reverse engineering is the process of analyzing existing software to understand how it works. 
+This process can be used for a variety of purposes, including identifying security vulnerabilities,
+understanding how already existing software works, or simply learning about new programming techniques.
+
+The idea that reverse engineering is reverse forward engineering introduced in \cite{baxter} is an 
+intriguing concept that highlights the importance of understanding existing software in order to 
+create new and innovative solutions.In traditional software development, engineers start with a 
+set of requirements and then design and implement a solution from scratch. However, as software 
+systems have become more complex, this approach is no longer always practical or efficient.
+Instead, many developers now use reverse engineering techniques to analyze and understand existing
+software systems. By reverse engineering a system, engineers can identify its underlying components,
+dependencies, and design patterns. This information can then be used to create new software systems
+that are more efficient, secure, and reliable.
+
+In this way, reverse engineering can be seen as a form of forward engineering. By understanding and
+improving upon existing software systems, developers can create new and innovative solutions that 
+build upon the foundations of what has come before.
+
+\subsection{Binary analysis and source code analysis} \label{section:binary}
+Binary analysis is a key aspect of reverse engineering, which is used to gain a deep understanding
+of compiled executable code. This process involves analyzing binary files to identify the underlying
+logic and structure of software systems.
+
+One of the most important aspects of binary analysis while comparing it to source code analysis is
+the fact that often the semantics of programming language leave certain aspects not specificed and
+the compiler is free to choose the implementation. Therefore, in order to do a proper source code
+analysis one need to take into consideration all possible behaviours of the given code, which is
+tremendously difficult. On the other hand, binary analysis is more precise because the compiler
+has already chosen the implementation, and we are left with only one case to consider. This idea
+is underlined in \cite{whatyousee}.
+
+A good example of this is shown in the following code snippet:
+\begin{code}
+	\begin{lstlisting}[language=C]
+  int function(int32_t x)
+  {
+    return x + 1 > x;
+  }
+  
+  int main()
+  {
+    int32_t  x = 0x7FFFFFFF;
+    printf("%d\n", function(x));
+    return 0;
+  }
+	\end{lstlisting}
+	\caption{Undefined behaviour(UB) in C}
+	\label{code:polym3}
+\end{code}
+
+The code snippet provided checks whether adding 1 to an integer results in a value greater than 
+the integer itself, which can lead to undefined behavior due to integer overflow. From a binary
+analysis perspective, the information on line \texttt(8) is enough to determine that the adding
+operation in \texttt{function} will always result in an integer overflow. On the other hand, 
+source code analysis would require a deeper understanding of the program semantics, as it needs
+to consider different possible values of variable x that can lead to undefined behavior.
+
+\section{Thesis structure}
+In the following chapters of the decompiler thesis, the topic is explored in a structured manner
+to provide a comprehensive understanding of the decompilation process, namely: lifting a binary
+to an intermediate representation(IR), conducting a control-flow graph(CFG) analysis, and finally
+generating the high-level code in the project's target domain-specific language(DSL).
+
+The introduction chapter provides an overview of the thesis and highlights the significance of
+the decompilation process in software engineering, presenting the concepts of reverse engineering
+and binary analysis and their importance in creating innovative solutions and high quality software.
+
+The state of the art chapter discusses the current state of decompilation technology and highlights
+the strengths and weaknesses of existing decompilers, with a focus on two popular tools, Hex-Rays
+and RetDec and their intermediate representations, specifically Hex-Rays' microcode and RetDec's
+LLVM IR.
+
+The theoretical foundations chapter delves into the underlying principles of decompilation and the
+LLVM compiler infrastructure, which is used in the design and implementation of the decompiler.
+Things like the LLVM functions, basic blocks, modules, optimizations will be discussed in detail, as
+well as control and data flow analysis techniques presented in \cite{cifuentes}.
+
+The chapter on design and implementation in the decompiler thesis outlines the methodology employed
+to construct the decompiler. This includes the selection of programming language, libraries, and
+algorithms utilized in the process. Additionally, it covers the choice of design patterns and build
+system, as well as the build generator (CMake) and the server for the lifter service, which is
+written in Typescript.
+
+The experimental results chapter provides a detailed analysis of the decompiler's performance,
+accuracy, and scalability, with examples of decompiled code and comparison with existing decompilers.
+
+The last section of this paper summarizes the key findings of the thesis and presents ideas
+for future work on the decompiler.

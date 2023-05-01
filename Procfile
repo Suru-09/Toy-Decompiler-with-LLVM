@@ -1,0 +1,1 @@
+worker: cd ./liftService && npm run start

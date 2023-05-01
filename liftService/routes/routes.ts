@@ -48,23 +48,23 @@ router.post('/upload', upload.single('file'), (req: Request, res: Response) => {
 });
 
 // ASK IF BINARY FILE WAS UPLOADED
-router.get('/exist', (req: Request, res: Response) => {
-    const file  = req.query.file;
-    if(!file) {
-        return res.status(400).json({ message: 'Key called <file> missing from GET request!' });
-    }
+// router.get('/exist', (req: Request, res: Response) => {
+//     const file  = req.query.file;
+//     if(!file) {
+//         return res.status(400).json({ message: 'Key called <file> missing from GET request!' });
+//     }
 
-    const filePath: string = "uploads/" + file;
-    if(!fs.existsSync(filePath)) {
-        return res.status(400).json({ message: `File ${file} does not exist at: ${filePath}` });
-    }
-    else { // file exists
-        return res.status(200).json({ message: `File ${file} exists` });
-    }
-});
+//     const filePath: string = "uploads/" + file;
+//     if(!fs.existsSync(filePath)) {
+//         return res.status(400).json({ message: `File ${file} does not exist at: ${filePath}` });
+//     }
+//     else { // file exists
+//         return res.status(200).json({ message: `File ${file} exists` });
+//     }
+// });
 
 // IF BINARY FILE WAS UPLOADED, START LIFTING IT
-router.post('/lift-executable', (req: Request, res: Response) => {
+router.post('/decompile', (req: Request, res: Response) => {
     const executable = req.body.file;
     if(!executable) {
         return res.status(400).json({ message: 'Key called <file> missing from GET request!' });

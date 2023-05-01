@@ -1,0 +1,107 @@
+\fancypagestyle{titlepagestyle}{
+	\fancyhf{}
+	\fancyhead[L]{
+		\fontsize{8}{9.6}\selectfont
+		\studyProgram \\
+		\textbf{\academicYear} \\
+	}
+	\fancyhead[R]{\includegraphics[height=15mm, keepaspectratio]{images/logo.png}}
+	\fancyheadoffset[rh]{20mm}
+	\renewcommand{\headrulewidth}{0pt}
+	\renewcommand\footrulewidth{0pt}
+}
+
+\fancypagestyle{abstractpagestyle}{
+	\fancyhf{}
+	\fancyhead[L]{
+		\fontsize{8}{9.6}\selectfont
+		%        \university \\
+		\studyProgram{} \\
+		\academicYear \\
+		\candidateName{} \\
+		\thesisTitle
+	}
+	\fancyhead[R]{\includegraphics[height=15mm, keepaspectratio]{images/logo.png}}
+	\fancyheadoffset[rh]{20mm}
+	\renewcommand{\headrulewidth}{0pt}
+	\renewcommand\footrulewidth{0pt}
+}
+
+\fancypagestyle{pagestyle}{
+	\fancyhf{}
+	\fancyhead[L]{
+		\fontsize{8}{9.6}\selectfont
+		%        \university \\
+		\studyProgram{} \\
+		\academicYear \\
+		\candidateName{} \\
+		\thesisTitle
+	}
+	\fancyhead[R]{\includegraphics[height=15mm, keepaspectratio]{images/logo.png}}
+	\fancyfoot[C]{- {\thepage} -}
+	\fancyheadoffset[rh]{20mm}
+	\renewcommand{\headrulewidth}{0pt}
+	\renewcommand\footrulewidth{0pt}
+}
+
+\fancypagestyle{plain}{\pagestyle{pagestyle}}
+
+% set chapter titles format
+\titleformat
+{\chapter}
+[hang]
+{\bfseries\fontsize{14pt}{18pt}\selectfont\MakeUppercase} % format
+{\thechapter.}
+{1em}
+{\centering}
+
+\titlespacing
+{\chapter}
+{0cm}
+{0pt}
+{24pt}
+
+% set section titles format
+\titleformat
+{\section}
+[hang]
+{\bfseries\fontsize{12pt}{16pt}\selectfont\MakeUppercase} % format
+{\thesection}
+{1.5em}
+{}
+
+\titlespacing
+{\section}
+{0pt}
+{12pt}
+{12pt}
+
+% set sub section titles format
+\titleformat
+{\subsection}
+[hang]
+{\fontsize{12pt}{16pt}\selectfont\MakeUppercase} % format
+{\thesubsection}
+{2em}
+{}
+
+\titlespacing
+{\subsection}
+{0pt}
+{12pt}
+{12pt}
+
+\titleformat
+{name=\chapter, numberless}
+[hang]
+{\bfseries\fontsize{14pt}{18pt}\selectfont\MakeUppercase}
+{}
+{0pt}
+{\centering}%
+
+\titlespacing
+{name=\chapter, numberless}
+{0pt}
+{0pt}
+{24pt}
+%\setlength\cftaftertoctitleskip{8pt}
