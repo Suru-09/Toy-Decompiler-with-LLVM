@@ -41,8 +41,7 @@ logs/*
 # TS server
 liftService/node_modules
 liftService/node_modules/*
-/binary/*
-/liftService/binary/*
+/liftService/binary/retdec/*
 /liftService/upload/*
 # Do NOT ignore the test file in uploads
 /liftService/upload/test.txt
