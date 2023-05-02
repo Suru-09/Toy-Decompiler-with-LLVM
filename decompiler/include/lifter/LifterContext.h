@@ -14,10 +14,9 @@ private:
     std::shared_ptr<IArchitectureStrategy> strategy;
     std::string file;
 public:
-    LifterContext() = delete;
-    LifterContext(const std::string& file);
+    explicit LifterContext();
+    ~LifterContext() = default;
     
-    std::string& getFile();
     void setStrategy(std::shared_ptr<IArchitectureStrategy> strategy);
     void executeStrategy();
 };

@@ -34,9 +34,10 @@ int main(int argc, char** argv) {
       else if(argv[i][0] == '-' && argv[i][1] == 'c')
          codegenSettings->parseCodegenSettings(argv[i]);
    }
-
    std::string testing_file = "../testing_files/elfC/loops";
-   std::shared_ptr<lifter::LifterContext> lifterCtx = utils::getLifterCtx(testing_file);
+   lifterSettings->setBinaryPath(testing_file);
+   
+   std::shared_ptr<lifter::LifterContext> lifterCtx = utils::getLifterCtx();
    if(!lifterCtx)
    {
       spdlog::critical("Invalid lifterContext created(nullptr)!");
@@ -45,7 +46,6 @@ int main(int argc, char** argv) {
    lifterCtx->executeStrategy();
 
    std::string irFile = testing_file + ".ll";
-   
    std::unique_ptr<udm::UDM> udm = std::make_unique<udm::UDM>(irFile);
    udm->execute();
 

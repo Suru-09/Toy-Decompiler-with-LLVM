@@ -10,8 +10,8 @@
 namespace utils
 {
 
-std::unique_ptr<lifter::IArchitectureStrategy> getStrategy(const std::string& testingFile);
-std::shared_ptr<lifter::LifterContext> getLifterCtx(const std::string& testingFile);
+std::unique_ptr<lifter::IArchitectureStrategy> getStrategy();
+std::shared_ptr<lifter::LifterContext> getLifterCtx();
 
 } // namespace utils
 
