@@ -26,12 +26,12 @@ std::pair<std::string, std::string> generate_form_data(std::ifstream &strm, cons
     }
 
     std::cout << file << std::endl;
-    data << "--" << boundary << "\n";
+    data << "\r\n--" << boundary << "--\r\n";
     data << "Content-Disposition: form-data; name=\"file\"; filename=\""
-            << file << "\"\nContent-Type: application/octet-stream\n\n"
+            << file << "\"\r\nContent-Type: application/octet-stream\r\n\r\n"
             << std::string((std::istreambuf_iterator<char>(strm)),
-                           (std::istreambuf_iterator<char>())) << "\n\n";
-    data << "--" << boundary << "--";
+                           (std::istreambuf_iterator<char>())) << "\r\n\r\n";
+    data << "--" << boundary << "--\r\n";
 
     return { boundary, data.str() };
 }
@@ -45,32 +45,36 @@ std::string server::RetdecClient::getBinaryName(const std::string& binaryPath) {
 }
 
 web::http::status_code server::RetdecClient::uploadBinary(const std::string& binaryPath) {
-    std::string binaryName = getBinaryName(binaryPath);
-    std::string uploadUrl = m_serverUrl + "/api/upload";
+    const char* cmd = "curl --location '145.14.158.175:29200/api/upload' --form 'file=@\"/Users/suru/Documents/GitCloning/Reverse-Engineering-Tool/decompiler/testing_files/elfC/loops\"'";
+    system(cmd);
+    // std::string binaryName = getBinaryName(binaryPath);
+    // std::string uploadUrl = m_serverUrl + "/api/upload";
     
-    web::http::client::http_client client(uploadUrl);
+    // web::http::client::http_client client(uploadUrl);
 
-    auto postJson = pplx::create_task([&]() {
-        // Create an http_request object with PUT method and set the binary file as the request body
-        web::http::http_request request(web::http::methods::POST);
-        request.set_request_uri(uploadUrl);
-        std::ifstream binaryStream(binaryPath);
-        auto p = generate_form_data(binaryStream, binaryName);
-        std::cout << p.second << std::endl;
-        request.set_body(p.second, "multipart/form-data; boundary=" + p.first);
-        request.headers().add("Accept", "*/*");
-        // Set the content type header to "application/octet-stream"
-        // Send the http request to the server
-        logger->info("Request to string: {}, {}", request.to_string(), request.body());
-        return client.request(request);
-    }).then([&](web::http::http_response response) {
-        // Print the status code and response body to the console
-        logger->info("Binary uploaded with status code {}", response.status_code());
-        return response.extract_string();
-    }).then([&](std::string responseString) {
-        logger->info("Response string: {}", responseString);
-    }).wait();
-    return web::http::status_codes::NotImplemented;
+    // auto postJson = pplx::create_task([&]() {
+    //     // Create an http_request object with PUT method and set the binary file as the request body
+    //     web::http::http_request request(web::http::methods::POST);
+    //     std::ifstream binaryStream(binaryPath, std::ios::binary);
+    //     auto p = generate_form_data(binaryStream, binaryName);
+    //     request.set_body(p.second, "multipart/form-data; boundary=" + p.first);
+    //     //request.headers().add("User-Agent", "RetDec Client, 0.0.0");
+    //     request.headers().add("Accept", "*/*");
+        
+    //     std::cout << request.to_string() << "\n";
+    //     std::cout << p.second << std::endl;
+    //     // Set the content type header to "application/octet-stream"
+    //     // Send the http request to the server
+    //     logger->info("Request to string: {}, {}", request.to_string(), request.body());
+    //     return client.request(request);
+    // }).then([&](web::http::http_response response) {
+    //     // Print the status code and response body to the console
+    //     logger->info("Binary uploaded with status code {}", response.status_code());
+    //     return response.extract_string();
+    // }).then([&](std::string responseString) {
+    //     logger->info("Response string: {}", responseString);
+    // }).wait();
+    return web::http::status_codes::OK;
 }
 
 web::http::status_code server::RetdecClient::decompileBinary(const std::string& binaryPath) {

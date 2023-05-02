@@ -34,6 +34,7 @@ target_link_libraries(${PROJECT_NAME}-test
         spdlog::spdlog
         cpprestsdk::cpprest
         OpenSSL::SSL
+        CURL::libcurl 
         gtest
         gtest_main
 )

@@ -34,7 +34,8 @@ target_link_libraries(${PROJECT_NAME}
         ${llvm_libs}
         spdlog::spdlog
         OpenSSL::SSL
-        cpprestsdk::cpprest      
+        cpprestsdk::cpprest
+        CURL::libcurl 
 )
 
 target_include_directories(${PROJECT_NAME}

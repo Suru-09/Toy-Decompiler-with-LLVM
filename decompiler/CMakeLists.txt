@@ -42,6 +42,19 @@ if(cpprestsdk_FOUND)
     message(STATUS "=====================================")
 endif(cpprestsdk_FOUND)
 
+# CURL DEPENDECIES ----- START --------
+
+find_package(CURL REQUIRED)
+
+if(CURL_FOUND)
+    message(STATUS "=====================================")
+    message(STATUS "CURL_INCLUDE_DIR  : ${CURL_INCLUDE_DIR}")
+    message(STATUS "CURL_LIBRARIES    : ${CURL_LIBRARIES}")
+    message(STATUS "=====================================")
+endif(CURL_FOUND)
+
+# CURL DEPENDECIES ----- END --------
+
 # BOOST DEPENDECIES ----- START --------
 
 IF(Boost_FOUND)
@@ -90,6 +103,7 @@ set(INCL_DIR
     ${cpprestsdk_INCLUDE_DIR}
     ${Boost_INCLUDE_DIRS}
     ${OPENSSL_INCLUDE_DIR}
+    ${CURL_INCLUDE_DIR}
     $<$<STREQUAL:"${arch}","arm64">:${fmt_INCLUDE_DIRS}>
 )
 
