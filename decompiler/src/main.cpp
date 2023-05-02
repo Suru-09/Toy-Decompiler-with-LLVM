@@ -36,6 +36,7 @@ int main(int argc, char** argv) {
    }
    std::string testing_file = "../testing_files/elfC/loops";
    lifterSettings->setBinaryPath(testing_file);
+   lifterSettings->setServerUrl("http://145.14.158.175:29200");
    
    std::shared_ptr<lifter::LifterContext> lifterCtx = utils::getLifterCtx();
    if(!lifterCtx)
