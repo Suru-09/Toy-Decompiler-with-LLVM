@@ -47,7 +47,6 @@ endif(cpprestsdk_FOUND)
 find_package(CURL REQUIRED)
 
 if(CURL_FOUND)
-    message(STATUS "=====================================")
     message(STATUS "CURL_INCLUDE_DIR  : ${CURL_INCLUDE_DIR}")
     message(STATUS "CURL_LIBRARIES    : ${CURL_LIBRARIES}")
     message(STATUS "=====================================")

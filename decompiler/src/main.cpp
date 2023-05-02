@@ -10,8 +10,12 @@
 #include "settings/UdmSettings.h"
 #include "settings/CodegenSettings.h"
 
+#include <curl/curl.h>
+
 
 int main(int argc, char** argv) {
+   // initialize libcurl
+   curl_global_init(CURL_GLOBAL_ALL);
    
    // creating all the singletons first thing.
    logger::LoggerManager* loggerManager = logger::LoggerManager::getInstance();
@@ -58,5 +62,7 @@ int main(int argc, char** argv) {
       std::make_unique<codeGen::CodeGeneration>(optimizedIRFile, funcInfoMap);
    codeGen->generate();
 
+   // cleanup libcurl
+   curl_global_cleanup();
    return 0;
 }

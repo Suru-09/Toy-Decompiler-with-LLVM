@@ -1,14 +1,14 @@
 #include "lifter/server/RetdecClient.h"
 
+#include <curl/curl.h>
+
 #include <iostream>
 #include <filesystem>
+#include <sstream>
+#include <fstream>
 
 #include "logger/LoggerManager.h"
 #include <spdlog/spdlog.h>
-
-#include "pplx/pplxtasks.h"
-#include "cpprest/http_client.h"
-#include "cpprest/filestream.h"
 
 
 server::RetdecClient::RetdecClient(const std::string& serverUrl) 
@@ -17,24 +17,7 @@ server::RetdecClient::RetdecClient(const std::string& serverUrl)
     logger = logger::LoggerManager::getInstance()->getLogger("lifter");
 }
 
-std::pair<std::string, std::string> generate_form_data(std::ifstream &strm, const std::string& file) {
-    std::stringstream data;
 
-    std::string boundary{};
-    for (int i = 0; i < 50; i++) {
-        boundary += (rand() % 26) + 'A';
-    }
-
-    std::cout << file << std::endl;
-    data << "\r\n--" << boundary << "--\r\n";
-    data << "Content-Disposition: form-data; name=\"file\"; filename=\""
-            << file << "\"\r\nContent-Type: application/octet-stream\r\n\r\n"
-            << std::string((std::istreambuf_iterator<char>(strm)),
-                           (std::istreambuf_iterator<char>())) << "\r\n\r\n";
-    data << "--" << boundary << "--\r\n";
-
-    return { boundary, data.str() };
-}
 
 std::string server::RetdecClient::getBinaryName(const std::string& binaryPath) {
     size_t lastSlash = binaryPath.find_last_of('/');
@@ -44,82 +27,115 @@ std::string server::RetdecClient::getBinaryName(const std::string& binaryPath) {
     return binaryPath.substr(lastSlash + 1);
 }
 
-web::http::status_code server::RetdecClient::uploadBinary(const std::string& binaryPath) {
-    const char* cmd = "curl --location '145.14.158.175:29200/api/upload' --form 'file=@\"/Users/suru/Documents/GitCloning/Reverse-Engineering-Tool/decompiler/testing_files/elfC/loops\"'";
-    system(cmd);
-    // std::string binaryName = getBinaryName(binaryPath);
-    // std::string uploadUrl = m_serverUrl + "/api/upload";
+CURLcode server::RetdecClient::uploadBinary(const std::string& binaryPath) {
+    const std::string uploadUrl = m_serverUrl + "/api/upload";
+    const std::string binaryName = getBinaryName(binaryPath);
+    logger->info("uploading binary to {}", uploadUrl);
+    CURL *curl = curl_easy_init();
+    if(!curl) {
+        logger->error("[uploadBinary] Failed to initialize curl");
+        return CURLE_FAILED_INIT;
+    }
+
+    std::ifstream binaryFile(binaryPath, std::ios::binary);
+    if(!binaryFile.is_open()) {
+        logger->error("[uploadBinary] Failed to open binary file: {}", binaryPath);
+        return CURLE_FILE_COULDNT_READ_FILE;
+    }
+
+    std::stringstream binaryStream;
+    binaryStream << binaryFile.rdbuf();
+    std::string binaryContent = binaryStream.str();
+
+    curl_easy_setopt(curl, CURLOPT_URL, uploadUrl.c_str());
     
-    // web::http::client::http_client client(uploadUrl);
+    // Create the form data structure
+    struct curl_httppost* formpost = NULL;
+    struct curl_httppost* lastptr = NULL;
 
-    // auto postJson = pplx::create_task([&]() {
-    //     // Create an http_request object with PUT method and set the binary file as the request body
-    //     web::http::http_request request(web::http::methods::POST);
-    //     std::ifstream binaryStream(binaryPath, std::ios::binary);
-    //     auto p = generate_form_data(binaryStream, binaryName);
-    //     request.set_body(p.second, "multipart/form-data; boundary=" + p.first);
-    //     //request.headers().add("User-Agent", "RetDec Client, 0.0.0");
-    //     request.headers().add("Accept", "*/*");
-        
-    //     std::cout << request.to_string() << "\n";
-    //     std::cout << p.second << std::endl;
-    //     // Set the content type header to "application/octet-stream"
-    //     // Send the http request to the server
-    //     logger->info("Request to string: {}, {}", request.to_string(), request.body());
-    //     return client.request(request);
-    // }).then([&](web::http::http_response response) {
-    //     // Print the status code and response body to the console
-    //     logger->info("Binary uploaded with status code {}", response.status_code());
-    //     return response.extract_string();
-    // }).then([&](std::string responseString) {
-    //     logger->info("Response string: {}", responseString);
-    // }).wait();
-    return web::http::status_codes::OK;
+    // Add the binary file as a form field
+    curl_formadd(&formpost, &lastptr,
+                    CURLFORM_COPYNAME, "file",
+                    CURLFORM_BUFFER, binaryName.c_str(),
+                    CURLFORM_BUFFERPTR, binaryContent.data(),
+                    CURLFORM_BUFFERLENGTH, binaryContent.size(),
+                    CURLFORM_END);
+    curl_easy_setopt(curl, CURLOPT_HTTPPOST, formpost);
+
+    CURLcode res = curl_easy_perform(curl);
+    if(res != CURLE_OK) {
+        logger->error("[uploadBinary] Failed to upload binary: {}", curl_easy_strerror(res));
+        return CURLE_UPLOAD_FAILED;
+    }
+
+    curl_easy_cleanup(curl);
+    curl_formfree(formpost);
+    
+    return CURLE_OK;
 }
 
-web::http::status_code server::RetdecClient::decompileBinary(const std::string& binaryPath) {
+CURLcode server::RetdecClient::decompileBinary(const std::string& binaryPath) {
     std::string binaryName = getBinaryName(binaryPath);
-    std::string decompileUrl = m_serverUrl + "/api/decompile/" + binaryName;
-    //logger->info("decompiling binary at {}", decompileUrl);
-    web::json::value postData;
-    postData["file"] = web::json::value::string(U(binaryName));
-    web::http::client::http_client client(decompileUrl);
-    web::http::status_code statusCode = web::http::status_codes::OK;
-    try {
-        pplx::task<web::http::http_response> response = client.request(web::http::methods::POST, binaryPath, postData);
-        response.wait();
-        statusCode = response.get().status_code();
-       statusCode == web::http::status_codes::OK ? logger->info("Binary decompiled successfully") : logger->error("Binary decompilation failed");
-    } catch(const std::exception& e) {
-        logger->error("Exception while decompiling binary");
+    std::string decompileUrl = m_serverUrl + "/api/decompile";
+    logger->info("[decompileBinary] decompiling binary at {}", decompileUrl);
+
+    CURL *curl = curl_easy_init();
+    if(!curl) {
+        logger->error("[decompileBinary] Failed to initialize curl");
+        return CURLE_FAILED_INIT;
     }
-    return statusCode;
+
+    curl_easy_setopt(curl, CURLOPT_URL, decompileUrl.c_str());
+    // if we don't set this option and try to set it directly curl will crash
+    struct curl_slist *headers = NULL;
+    headers = curl_slist_append(headers, "Content-Type: application/json");
+    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+    // send binary file string in json format in post request with form { "file": binaryName }
+    std::string json = "{\"file\": \"" + binaryName + "\"}";
+    curl_easy_setopt(curl, CURLOPT_POSTFIELDS, json.c_str());
+    curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, json.size());
+
+    CURLcode res = curl_easy_perform(curl);
+    if(res != CURLE_OK) {
+        logger->error("[decompileBinary] Failed to decompile binary: {}", curl_easy_strerror(res));
+        return CURLE_UPLOAD_FAILED;
+    }
+
+    curl_easy_cleanup(curl);
+    return CURLE_OK;
 }
 
-web::http::status_code server::RetdecClient::downloadIR(const std::string& binaryPath) {
+CURLcode server::RetdecClient::downloadIR(const std::string& binaryPath) {
     std::string binaryName = getBinaryName(binaryPath);
-    std::string downloadUrl = m_serverUrl + "/api/ir/" + binaryName;
-    logger->info("downloading IR from {}", downloadUrl);
-    web::http::client::http_client client(downloadUrl);
-    web::http::status_code statusCode = web::http::status_codes::OK;
-    try {
-        pplx::task<web::http::http_response> response = client.request(web::http::methods::GET);
-        response.wait();
-        statusCode = response.get().status_code();
-        if(statusCode == web::http::status_codes::OK) {
-            std::string irFileName = binaryName + ".ll";
-            std::string downloadsDir = std::filesystem::current_path().parent_path().parent_path().string() + "/downloads";
-            if (!std::filesystem::exists(downloadsDir)) {
-                std::filesystem::create_directory(downloadsDir);
-            }
-            std::string irFilePath = downloadsDir + "/ir/" + irFileName; 
-            std::ofstream irFile(irFilePath);
-            irFile << response.get().extract_string().get();
-            irFile.close();
-            logger->info("IR downloaded to {}", irFilePath);
-        }
-    } catch(const std::exception& e) {
-        logger->error("Exception while downloading IR");
+    std::string downloadIRUri = m_serverUrl + "/api/ir";
+    logger->info("[downloadIR] downloading IR at {}", downloadIRUri);
+
+    CURL *curl = curl_easy_init();
+    if(!curl) {
+        logger->error("[downloadIR] Failed to initialize curl");
+        return CURLE_FAILED_INIT;
     }
-    return statusCode;
+    
+    const std::string downloadPath = binaryName + ".ll";
+    std::ofstream irFile(downloadPath, std::ios::out | std::ios::app);
+    if(!irFile.is_open()) {
+        logger->error("[downloadIR] Failed to open IR file: {}", downloadPath);
+        return CURLE_FILE_COULDNT_READ_FILE;
+    }
+
+    // donwload the IR file
+    curl_easy_setopt(curl, CURLOPT_URL, downloadIRUri.c_str());
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, fwrite);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &irFile);
+
+    // CURLcode res = curl_easy_perform(curl);
+    // if(res != CURLE_OK) {
+    //     logger->error("[downloadIR] Failed to download IR from server {}", curl_easy_strerror(res));
+    //     return CURLE_UPLOAD_FAILED;
+    // }
+
+
+    irFile.close();
+    curl_easy_cleanup(curl);
+    return CURLE_OK;
 }

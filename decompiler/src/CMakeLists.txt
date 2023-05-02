@@ -32,10 +32,10 @@ target_link_libraries(${PROJECT_NAME}
         # DO NOT MOVE LLVM UPPER(it will try to link it wrongly 
         # -> linking errors in .txt sections of own libs)
         ${llvm_libs}
+        CURL::libcurl 
         spdlog::spdlog
         OpenSSL::SSL
         cpprestsdk::cpprest
-        CURL::libcurl 
 )
 
 target_include_directories(${PROJECT_NAME}

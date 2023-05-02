@@ -4,7 +4,7 @@
 #include <memory>
 
 #include "spdlog/spdlog.h"
-#include "cpprest/http_client.h"
+#include <curl/curl.h>
 
 namespace server {
 
@@ -14,9 +14,9 @@ public:
 RetdecClient(const std::string& serverUrl);
 ~RetdecClient() = default;
 
-web::http::status_code uploadBinary(const std::string& binaryPath);
-web::http::status_code decompileBinary(const std::string& binaryPath);
-web::http::status_code downloadIR(const std::string& binaryPath);
+CURLcode uploadBinary(const std::string& binaryPath);
+CURLcode decompileBinary(const std::string& binaryPath);
+CURLcode downloadIR(const std::string& binaryPath);
 
 private:
 std::string m_serverUrl;
