@@ -42,6 +42,7 @@ logs/*
 liftService/node_modules
 liftService/node_modules/*
 /liftService/binary/retdec/*
+/liftService/binary/*
 /liftService/upload/*
 # Do NOT ignore the test file in uploads
 /liftService/upload/test.txt

@@ -1,11 +1,17 @@
 import express from 'express';
 import routes from './routes/routes';
 
+const bodyParser = require('body-parser');
+
 const app = express();
+
+// octet-stream for binary file
+app.use(bodyParser.raw({type: 'application/octet-stream', limit : '2mb'}));
+// json for everything else hopefully
 app.use(express.json());
 
 // Server PORT
-const port = process.env.PORT || 3000;
+const port: any = process.env.PORT || 29200;
 const HOST = process.env.HOST || '0.0.0.0';
 app.use('/api', routes);
 

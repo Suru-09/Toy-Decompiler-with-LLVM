@@ -37,9 +37,11 @@ router.get('/hello', (req, res) => {
 });
 // POST FOR BINARY FILE
 router.post('/upload', upload.single('file'), (req, res) => {
+    console.log("Post for file: " + req.file);
     if (!req.file) {
         return res.status(400).json({ message: 'No file uploaded' });
     }
+    console.log(req.body);
     res.status(200).json({ message: `File ${req.file} been uploaded successfully` });
 });
 // ASK IF BINARY FILE WAS UPLOADED
@@ -58,6 +60,7 @@ router.post('/upload', upload.single('file'), (req, res) => {
 // });
 // IF BINARY FILE WAS UPLOADED, START LIFTING IT
 router.post('/decompile', (req, res) => {
+    console.log(req);
     const executable = req.body.file;
     if (!executable) {
         return res.status(400).json({ message: 'Key called <file> missing from GET request!' });
@@ -83,6 +86,17 @@ router.post('/decompile', (req, res) => {
         if (code !== 0) {
             return res.status(400).json({ message: `Execution failed!` });
         }
+        const generatedDir = path_1.default.join(__dirname, "../../gen/");
+        if (!fs_1.default.existsSync(generatedDir)) {
+            fs_1.default.mkdir(generatedDir, (err) => {
+                if (err) {
+                    console.log("Could not create dir: " + generatedDir);
+                }
+                else {
+                    console.log("Dir gen has been created at: " + generatedDir);
+                }
+            });
+        }
         const oldPath = path_1.default.join(__dirname, "../../uploads/" + "loops" + ".ll");
         const newPath = path_1.default.join(__dirname, "../../gen/" + "loops" + ".ll");
         console.log("Old path: " + oldPath);
@@ -91,7 +105,7 @@ router.post('/decompile', (req, res) => {
             fs_1.default.copyFileSync(oldPath, newPath);
         }
         catch (err) {
-            return res.status(400).json({ message: `File ${executable.file} could not be copied to gen folder!}` });
+            return res.status(400).json({ message: `File ${executable} could not be copied to gen folder!}` });
         }
         try {
             deleteFilesInDirectory(path_1.default.join(__dirname, "../../uploads/"));

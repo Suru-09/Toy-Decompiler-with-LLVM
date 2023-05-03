@@ -40,9 +40,11 @@ router.get('/hello', (req, res) => {
 
 // POST FOR BINARY FILE
 router.post('/upload', upload.single('file'), (req: Request, res: Response) => {
-    if (!req.file) {
+   console.log("Post for file: " + req.file);
+   if (!req.file) {
       return res.status(400).json({ message: 'No file uploaded' });
-    }
+   }
+   console.log(req.body);
 
     res.status(200).json({ message: `File ${req.file} been uploaded successfully` });
 });
@@ -65,6 +67,7 @@ router.post('/upload', upload.single('file'), (req: Request, res: Response) => {
 
 // IF BINARY FILE WAS UPLOADED, START LIFTING IT
 router.post('/decompile', (req: Request, res: Response) => {
+    console.log(req);	
     const executable = req.body.file;
     if(!executable) {
         return res.status(400).json({ message: 'Key called <file> missing from GET request!' });
@@ -95,7 +98,19 @@ router.post('/decompile', (req: Request, res: Response) => {
       if(code !== 0) {
           return res.status(400).json({ message: `Execution failed!`});
       }
-
+      
+      const generatedDir = path.join(__dirname, "../../gen/");
+      if (!fs.existsSync(generatedDir))
+      {
+	 fs.mkdir(generatedDir, (err) => {
+	    if(err) {
+	    	console.log("Could not create dir: " + generatedDir);
+	    }
+	    else {
+	    	console.log("Dir gen has been created at: " + generatedDir);
+	    }		    
+	 });
+      }	      
       const oldPath: string = path.join(__dirname, "../../uploads/" + "loops" + ".ll");
       const newPath: string  = path.join(__dirname, "../../gen/" + "loops" + ".ll");
       console.log("Old path: " + oldPath);
@@ -104,7 +119,7 @@ router.post('/decompile', (req: Request, res: Response) => {
         fs.copyFileSync(oldPath, newPath)
       }
       catch(err) {
-        return res.status(400).json({ message: `File ${executable.file} could not be copied to gen folder!}`});
+        return res.status(400).json({ message: `File ${executable} could not be copied to gen folder!}`});
       }
 
       try {
