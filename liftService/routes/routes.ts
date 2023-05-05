@@ -40,6 +40,19 @@ router.get('/hello', (req, res) => {
 
 // POST FOR BINARY FILE
 router.post('/upload', upload.single('file'), (req: Request, res: Response) => {
+  const uploadsDir = path.join(__dirname, "../../uploads/");
+  if (!fs.existsSync(uploadsDir))
+  {
+    fs.mkdir(uploadsDir, (err) => {
+      if(err) {
+        console.log("Could not create dir: " + uploadsDir);
+      }
+      else {
+        console.log("Dir uploads has been created at: " + uploadsDir);
+      }
+    });
+  }	
+
    console.log("Post for file: " + req.file);
    if (!req.file) {
       return res.status(400).json({ message: 'No file uploaded' });
@@ -67,7 +80,6 @@ router.post('/upload', upload.single('file'), (req: Request, res: Response) => {
 
 // IF BINARY FILE WAS UPLOADED, START LIFTING IT
 router.post('/decompile', (req: Request, res: Response) => {
-    console.log(req);	
     const executable = req.body.file;
     if(!executable) {
         return res.status(400).json({ message: 'Key called <file> missing from GET request!' });
@@ -102,15 +114,16 @@ router.post('/decompile', (req: Request, res: Response) => {
       const generatedDir = path.join(__dirname, "../../gen/");
       if (!fs.existsSync(generatedDir))
       {
-	 fs.mkdir(generatedDir, (err) => {
-	    if(err) {
-	    	console.log("Could not create dir: " + generatedDir);
-	    }
-	    else {
-	    	console.log("Dir gen has been created at: " + generatedDir);
-	    }		    
-	 });
+	      fs.mkdir(generatedDir, (err) => {
+          if(err) {
+            console.log("Could not create dir: " + generatedDir);
+          }
+          else {
+            console.log("Dir gen has been created at: " + generatedDir);
+          }
+        });
       }	      
+      console.log("File gen was created/already existed.");
       const oldPath: string = path.join(__dirname, "../../uploads/" + "loops" + ".ll");
       const newPath: string  = path.join(__dirname, "../../gen/" + "loops" + ".ll");
       console.log("Old path: " + oldPath);
@@ -130,6 +143,14 @@ router.post('/decompile', (req: Request, res: Response) => {
       }
 
       res.status(200).json({ message: `Execution for file: ${filePath} and binary with path: ${binaryPath} finished with code ${code}` });
+    });
+    
+    // childProcess.stdout.on('data', (data) => {
+    //   console.log(`Decompile stdout: ${data}`);
+    // });
+    
+    childProcess.stderr.on('data', (data) => {
+      console.error(`Decompile stderr: ${data}`);
     });
 });
 
@@ -152,12 +173,15 @@ router.get('/ir-exist', (req: Request, res: Response) => {
 // GET IR FILE
 router.get('/ir', (req: Request, res: Response) => {
     const file = req.query.file;
+    console.log("Get IR for: " + file);
     if(!file) { // if no file was uploaded
         return res.status(400).json({ message: 'Key called <file> missing from GET request!' });
     }
 
     const filePath: string = path.join(__dirname, "../../gen/" + file + ".ll");
+    console.log("File path for reading the generated file: " + filePath);
     const fileContents = fs.readFileSync(filePath, 'utf8');
+
     return res.status(200).json({ message: fileContents });
 });
 

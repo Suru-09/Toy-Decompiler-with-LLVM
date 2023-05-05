@@ -7,7 +7,9 @@ const express_1 = __importDefault(require("express"));
 const routes_1 = __importDefault(require("./routes/routes"));
 const bodyParser = require('body-parser');
 const app = (0, express_1.default)();
+// octet-stream for binary file
 app.use(bodyParser.raw({ type: 'application/octet-stream', limit: '2mb' }));
+// json for everything else hopefully
 app.use(express_1.default.json());
 // Server PORT
 const port = process.env.PORT || 29200;
