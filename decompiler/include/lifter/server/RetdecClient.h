@@ -17,6 +17,7 @@ RetdecClient(const std::string& serverUrl);
 CURLcode uploadBinary(const std::string& binaryPath);
 CURLcode decompileBinary(const std::string& binaryPath);
 CURLcode downloadIR(const std::string& binaryPath);
+void convertJsonIRToPlainText(const std::string& llvmIRPath);
 
 private:
 std::string m_serverUrl;
