@@ -17,15 +17,14 @@ RetdecClient(const std::string& serverUrl);
 CURLcode uploadBinary(const std::string& binaryPath);
 CURLcode decompileBinary(const std::string& binaryPath);
 CURLcode downloadIR(const std::string& binaryPath);
-void convertJsonIRToPlainText(const std::string& llvmIRPath);
 
 private:
-std::string m_serverUrl;
+const std::string m_serverUrl;
 std::shared_ptr<spdlog::logger> logger;
 
 private:
 std::string getBinaryName(const std::string& binaryPath);
-
+bool convertJsonIRToPlainText(const std::string& llvmIRPath);
 };
 
 }   // namespace server

@@ -10,6 +10,11 @@
 
 
 codeGen::OtherInstruction::OtherInstruction(llvm::Instruction& inst, int numSpaces) {
+    bool printLhs = utils::CodeGenUtils::canAssignTo(&inst);
+    if(printLhs)
+    {
+        instructionString += inst.getName().str() + " = ";
+    }
     if(llvm::CmpInst* cmpOp = llvm::dyn_cast<llvm::CmpInst>(&inst))
     {
         instructionString += handleCmpInst(cmpOp, numSpaces);
@@ -123,13 +128,29 @@ std::string codeGen::OtherInstruction::handleFPCmpInst(llvm::CmpInst* cmpInst) {
 
 std::string codeGen::OtherInstruction::handlePhiNode(llvm::PHINode* phiNode) {
     std::string phiString = "";
-    bool first = true;
-    for(auto& operand : phiNode->operands())
+
+    auto llvmValueToString = [](llvm::Value* value){
+        std::string str;
+        if(llvm::ConstantInt* constInt = llvm::dyn_cast<llvm::ConstantInt>(value))
+        {
+            str += std::to_string(constInt->getSExtValue());
+        }
+        else if(llvm::ConstantFP* constFP = llvm::dyn_cast<llvm::ConstantFP>(value))
+        {
+            str += std::to_string(constFP->getValueAPF().convertToDouble());
+        }
+        else
+        {
+            str += value->getName().str();
+        }
+        return str;
+    };
+
+    for(size_t i = 0; i < phiNode->getNumIncomingValues(); ++i)
     {
-        std::string name = operand->getName().str();
-        phiString += !first ? ", " : "";
-        phiString += name + " ";
-        first = false;
+        llvm::Value* incomingValue = phiNode->getIncomingValue(i);
+        std::string incomingBlock = phiNode->getIncomingBlock(i)->getName().str();
+        phiString += "[ value:{" + llvmValueToString(incomingValue) + "}, label:{" + incomingBlock + "}], ";
     }
     return phiString;
 }

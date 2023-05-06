@@ -3,7 +3,7 @@
 #include "codeGen/GenerateFnHeader.h"
 #include "codeGen/GenerateFnBody.h"
 #include "codeGen/RenameVariables.h"
-#include "codeGen/LoopGen.h"
+#include "codeGen/LoopHandler.h"
 #include "codeGen/instructions/Instruction.h"
 #include "logger/LoggerManager.h"
 #include "utils/CodeGenUtils.h"
@@ -24,6 +24,10 @@
 #include <llvm/Pass.h>
 #include "llvm/IR/LegacyPassManager.h"
 #include "llvm/Analysis/LoopPass.h"
+#include "codeGen/ast/LlvmFunctionNode.h"
+#include "codeGen/ast/LlvmBasicBlockNode.h"
+#include "codeGen/ast/LlvmInstructionNode.h"
+#include "codeGen/ast/GenerateFileVisitor.h"
 #include <llvm/ADT/PostOrderIterator.h>
 
 #include <stack>
@@ -59,33 +63,124 @@ void codeGen::CodeGeneration::generate() {
     }
 }
 
+void codeGen::CodeGeneration::fillInstructionNode(llvm::Instruction* instr, std::shared_ptr<ast::LlvmInstructionNode> root)
+{
+    std::shared_ptr<codeGen::Instruction> instruction = codeGen::Instruction::getInstruction(*instr, 0);
+    if(instruction)
+    {
+        root->setInstructionBody(instruction->toString());
+        root->setOpcode(instr->getOpcode());
+    }
+    else
+    {
+        logger->error("[codeGen::fillInstructionNode] Instruction not found: {}", instr->getOpcodeName());
+    }
+
+    // if instruction is phi rteturn
+    if(instr->getOpcode() == llvm::Instruction::PHI)
+    {
+        return;
+    }
+
+    // see if you can cast operand to instructions
+    for(auto& op: instr->operands())
+    {
+        if(auto* opInstr = llvm::dyn_cast<llvm::Instruction>(&op))
+        {
+            logger->info("Found instruction: {}", opInstr->getOpcodeName());
+            std::shared_ptr<ast::LlvmInstructionNode> opNode = std::make_shared<ast::LlvmInstructionNode>(opInstr->getOpcodeName());
+            opNode->setOpcode(opInstr->getOpcode());
+            auto myInstr = codeGen::Instruction::getInstruction(*opInstr, 0);
+            if(myInstr)
+            {
+                opNode->setInstructionBody(myInstr->toString());
+                opNode->setOpcode(opInstr->getOpcode());
+                root->addChild(opNode);
+//                if(opNode != root)
+//                    fillInstructionNode(opInstr, opNode);
+            }
+            else
+            {
+                logger->error("[codeGen::fillInstructionNode] Instruction not found: {}", opInstr->getOpcodeName());
+            }
+        }
+    }
+}
+
 void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::FuncInfo& funcInfo)
 {
-    std::vector<std::string> functionNames = {"calc_sum", 
-    "fibo", "main", "n_way_conditional_switch", "while_pre_tested_loop",
-    "while_post_tested_loop", "two_way", "for_loop"
+    std::vector<std::string> functionNames = {"calc_sum",
+                                              "fibo", "main", "n_way_conditional_switch", "while_pre_tested_loop",
+                                              "while_post_tested_loop", "two_way", "for_loop"
     };
-    
+
     if(std::find(functionNames.begin(), functionNames.end(), f.getName().str()) == functionNames.end())
     {
         return;
     }
 
+    logger->info("Processing function: " + f.getName().str());
+    std::shared_ptr<ast::LlvmFunctionNode> root = std::make_shared<ast::LlvmFunctionNode>(f.getName().str());
+
+    llvm::ReversePostOrderTraversal<llvm::Function*> rpot(&f);
+    for(auto &bb: rpot)
+    {
+        spdlog::error("Basic block: {}", bb->getName().str());
+        std::shared_ptr<ast::LlvmBasicBlockNode> bbNode = std::make_shared<ast::LlvmBasicBlockNode>(bb->getName().str());
+        for(auto & inst : *bb)
+        {
+            std::shared_ptr<ast::LlvmInstructionNode> instNode = std::make_shared<ast::LlvmInstructionNode>(inst.getName().str());
+            fillInstructionNode(&inst, instNode);
+
+            bbNode->addChild(instNode);
+        }
+        root->addChild(bbNode);
+    }
+
+    std::shared_ptr<ast::GenerateFileVisitor> visitor = std::make_shared<ast::GenerateFileVisitor>(f);
+    visitor->setFuncInfo(funcInfo);
+    root->accept(visitor);
+
     std::string decompiledFunction = "\n";
     codeGen::GenerateFnHeader fnHeaderGenerator(f);
     decompiledFunction += fnHeaderGenerator.generate();
+    auto output = visitor->getOutput();
 
-    codeGen::RenameVariables renameVariables(f);
-    auto aliasMap = renameVariables.rename();
-
-    for(const auto& [key, value]: aliasMap)
+    for(auto &bb: rpot)
     {
-        logger->info("Alias Key: {}, Value: {}", key, value);
+        auto key = bb->getName().str();
+        if (output.find(key) == output.end())
+        {
+            logger->error("Basic block not found: <{}>", key);
+            continue;
+        }
+
+        decompiledFunction += "Basic Block: <" + key + ">\n";
+        for(const auto& el: output[key])
+        {
+            decompiledFunction += + "\t" + el + "\n";
+        }
     }
 
-    codeGen::GenerateFnBody fnBodyGenerator(f, funcInfo);
-    auto fnBody = fnBodyGenerator.generate();
 
-    decompiledFunction += fnBody;
     logger->error("Decompiled function: {}", decompiledFunction);
+
+//
+//    std::string decompiledFunction = "\n";
+//    codeGen::GenerateFnHeader fnHeaderGenerator(f);
+//    decompiledFunction += fnHeaderGenerator.generate();
+//
+//    codeGen::RenameVariables renameVariables(f);
+//    auto aliasMap = renameVariables.rename();
+//
+//    for(const auto& [key, value]: aliasMap)
+//    {
+//        logger->info("Alias Key: {}, Value: {}", key, value);
+//    }
+//
+//    codeGen::GenerateFnBody fnBodyGenerator(f, funcInfo);
+//    auto fnBody = fnBodyGenerator.generate();
+//
+//    decompiledFunction += fnBody;
+//    logger->error("Decompiled function: {}", decompiledFunction);
 }

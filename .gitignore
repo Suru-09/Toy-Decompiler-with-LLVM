@@ -55,7 +55,6 @@ liftService/package-lock.json
 # Latex stuff
 *.aux
 *.fdb_latexmk
-*.log
 *.lof
 *.fls
 *.blg
@@ -63,3 +62,8 @@ liftService/package-lock.json
 *.toc
 *.out
 *.synctex.gz
+
+
+# Ignore generated & downloaded files
+/decompiler/downloads/*
+/decompiler/generated/*

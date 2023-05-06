@@ -8,6 +8,12 @@
 
 codeGen::BinaryInstruction::BinaryInstruction(llvm::Instruction& inst, int numSpaces) {
     logger->info("BinaryInstruction::BinaryInstruction");
+    bool printLhs = utils::CodeGenUtils::canAssignTo(&inst);
+    if(printLhs)
+    {
+        instructionString += inst.getName().str() + " = ";
+    }
+
     if(llvm::BinaryOperator* binOp = llvm::dyn_cast<llvm::BinaryOperator>(&inst))
     {
         bool first = true;

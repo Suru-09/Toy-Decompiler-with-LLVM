@@ -7,6 +7,11 @@
 #include <llvm/IR/InstrTypes.h>
 
 codeGen::ConversionInstruction::ConversionInstruction(llvm::Instruction& inst, int numSpaces) {
+    bool printLhs = utils::CodeGenUtils::canAssignTo(&inst);
+    if(printLhs)
+    {
+        instructionString += inst.getName().str() + " = ";
+    }
     if(llvm::CastInst* castOp = llvm::dyn_cast<llvm::CastInst>(&inst))
     {
         if(auto sextInstr = llvm::dyn_cast<llvm::SExtInst>(&inst))

@@ -6,7 +6,11 @@
 #include "llvm/IR/InstrTypes.h"
 
 codeGen::BitwiseBinaryInstruction::BitwiseBinaryInstruction(llvm::Instruction& inst, int numSpaces) {
-
+    bool printLhs = utils::CodeGenUtils::canAssignTo(&inst);
+    if(printLhs)
+    {
+        instructionString += inst.getName().str() + " = ";
+    }
     if(llvm::BinaryOperator* bitwiseOp = llvm::dyn_cast<llvm::BinaryOperator>(&inst))
     {
         bool first = true;

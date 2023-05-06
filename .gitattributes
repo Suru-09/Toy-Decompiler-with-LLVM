@@ -1,1 +1,4 @@
+# Ignore all attributes for all this files (we won't have them in git status)
 decompiler/testing_files/** linguist-vendored
+decompiler/downloads/** linguist-vendored
+DocumentationLatex/** linguist-vendored

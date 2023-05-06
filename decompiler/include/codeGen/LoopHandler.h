@@ -8,10 +8,10 @@
 
 namespace codeGen {
 
-class LoopGen {
+class LoopHandler {
 public:
-    LoopGen() = default;
-    ~LoopGen() = default;
+    LoopHandler() = default;
+    ~LoopHandler() = default;
 
     static std::string generateLoop(const std::string& condition, int numSpaces, udm::BBInfo::LoopType loopType);
 };

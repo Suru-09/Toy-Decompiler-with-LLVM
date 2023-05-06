@@ -81,7 +81,7 @@ void udm::UDM::dataFlowAnalysis()
     llvm::SMDiagnostic error;
 
     std::string optimizedIRFile = irFile.size() > 2 ? irFile.substr(0, irFile.size() - 3) + "_optimized.ll" : irFile;
-    std::string optimizations = "--sccp --reassociate --instcombine --dce --dse -simplifycfg --instnamer --loop-simplify ";
+    std::string optimizations = "--sccp --reassociate --instcombine --dce --dse -simplifycfg --instnamer --loop-simplify --mem2reg ";
     std::string command = "opt " + optimizations + irFile +  " -S > " + optimizedIRFile;
     system(command.c_str());
 

@@ -37,14 +37,16 @@ CURLcode server::RetdecClient::uploadBinary(const std::string& binaryPath) {
 
     std::stringstream binaryStream;
     binaryStream << binaryFile.rdbuf();
+    binaryFile.close();
     std::string binaryContent = binaryStream.str();
 
     curl_easy_setopt(curl, CURLOPT_URL, uploadUrl.c_str());
     
     // Create the form data structure
-    struct curl_httppost* formpost = NULL;
-    struct curl_httppost* lastptr = NULL;
+    struct curl_httppost* formpost = nullptr;
+    struct curl_httppost* lastptr = nullptr;
 
+    // ! NOTE: see if you ever to add more form fields
     // Add the binary file as a form field
     curl_formadd(&formpost, &lastptr,
                     CURLFORM_COPYNAME, "file",
@@ -79,11 +81,11 @@ CURLcode server::RetdecClient::decompileBinary(const std::string& binaryPath) {
 
     curl_easy_setopt(curl, CURLOPT_URL, decompileUrl.c_str());
     // if we don't set this option and try to set it directly curl will crash
-    struct curl_slist *headers = NULL;
+    struct curl_slist *headers = nullptr;
     headers = curl_slist_append(headers, "Content-Type: application/json");
     curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
     // send binary file string in json format in post request with form { "file": binaryName }
-    std::string json = "{\"file\": \"" + binaryName + "\"}";
+    std::string json = R"({"file": ")" + binaryName + "\"}";
     curl_easy_setopt(curl, CURLOPT_POSTFIELDS, json.c_str());
     curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, json.size());
 
@@ -102,20 +104,25 @@ size_t write_data(void* ptr, size_t size, size_t nmemb, void* userdata) {
     return fwrite(ptr, size, nmemb, file);
 }
 
-void server::RetdecClient::convertJsonIRToPlainText(const std::string& llvmIRPath)
+bool server::RetdecClient::convertJsonIRToPlainText(const std::string& llvmIRPath)
 {
     std::ifstream jsonFile(llvmIRPath);
     if(!jsonFile.is_open()) {
         logger->error("[RetdecClient::convertJsonIRToPlainText] Failed to open json file: {}", llvmIRPath);
-        return;
+        return false;
     }
 
     boost::property_tree::ptree pt;
     boost::property_tree::read_json(jsonFile, pt);
     const auto llvmIR = pt.get<std::string>("message");
+    if(llvmIR.empty()) {
+        logger->error("[RetdecClient::convertJsonIRToPlainText] Failed to get llvm IR from json file: {}", llvmIRPath);
+        return false;
+    }
     std::ofstream llvmIRFile(llvmIRPath );
     llvmIRFile << llvmIR;
     llvmIRFile.close();
+    return true;
 }
 
 CURLcode server::RetdecClient::downloadIR(const std::string& binaryPath) {
@@ -129,14 +136,20 @@ CURLcode server::RetdecClient::downloadIR(const std::string& binaryPath) {
         return CURLE_FAILED_INIT;
     }
 
-    const std::string downloadPath = binaryName + ".ll";
+    // ========= create downloads directory if it doesn't exist before accessing it =========
+    if(!std::filesystem::exists("../downloads")) {
+        logger->info("[RetdecClient::downloadIR] creating downloads directory");
+        std::filesystem::create_directory("../downloads");
+    }
+
+    const std::string downloadPath = "../downloads/" + binaryName + ".ll";
     FILE* irFile = fopen(downloadPath.c_str(), "wb");
     if(!irFile) {
         logger->error("[RetdecClient::downloadIR] Failed to open IR file: {}", downloadPath);
         return CURLE_FILE_COULDNT_READ_FILE;
     }
 
-    // donwload the IR file
+    // we need to set the write callback function to write the IR to a file
     curl_easy_setopt(curl, CURLOPT_URL, downloadIRUri.c_str());
     curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, irFile);
@@ -149,9 +162,10 @@ CURLcode server::RetdecClient::downloadIR(const std::string& binaryPath) {
      }
 
     fclose(irFile);
-    // convert the json IR to plain text
-    convertJsonIRToPlainText(downloadPath);
-
     curl_easy_cleanup(curl);
-    return CURLE_OK;
+
+    // libcurl returned the IR file in json format, so we need to convert it to plain text
+    // before ending the download phase
+    // if the conversion fails we return CURLE_BAD_DOWNLOAD_RESUME
+    return convertJsonIRToPlainText(downloadPath) ? CURLE_OK : CURLE_BAD_DOWNLOAD_RESUME;
 }

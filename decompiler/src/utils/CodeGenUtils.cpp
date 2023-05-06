@@ -1,3 +1,4 @@
+#include <llvm/IR/Instructions.h>
 #include "utils/CodeGenUtils.h"
 
 
@@ -122,3 +123,76 @@ std::string utils::CodeGenUtils::typeToString(llvm::Type* type)
 
     return "NULL";
 }
+
+bool utils::CodeGenUtils::canAssignTo(llvm::Instruction *instr) {
+    const unsigned int opCode = instr->getOpcode();
+    switch (opCode)
+    {
+        case llvm::Instruction::Br:
+        case llvm::Instruction::Ret:
+        case llvm::Instruction::Switch:
+        case llvm::Instruction::IndirectBr:
+        case llvm::Instruction::Store:
+            return false;
+        default:
+            return true;
+    }
+    return false;
+}
+
+std::vector<std::string> utils::CodeGenUtils::extractValuesFromPhiString(const std::string &phiString) {
+    std::vector<std::string> values;
+    size_t startPos = phiString.find("value:{");
+    startPos += 7;
+    size_t endPos = phiString.find('}', startPos);
+
+    while((startPos = phiString.find("value:{", endPos)) != std::string::npos)
+    {
+        startPos += 7;
+        endPos = phiString.find('}', startPos);
+        values.push_back(phiString.substr(startPos, endPos - startPos));
+    }
+    return values;
+}
+
+std::vector<std::string> utils::CodeGenUtils::extractLabelsFromPhiString(const std::string &phiString) {
+    std::vector<std::string> labels;
+    size_t startPos = phiString.find("label:{") + 7;
+    size_t endPos = phiString.find('}', startPos);
+    while((startPos = phiString.find("label:{", endPos)) != std::string::npos)
+    {
+        startPos += 7;
+        endPos = phiString.find('}', startPos);
+        labels.push_back(phiString.substr(startPos, endPos - startPos));
+    }
+    return labels;
+}
+
+std::string utils::CodeGenUtils::extractPhiNodeLeftValue(const std::string &phiString) {
+    size_t startPos = phiString.find('=');
+    return phiString.substr(0, startPos);
+}
+
+bool utils::CodeGenUtils::isLoop(const udm::FuncInfo& funcInfo, const std::string& bbLabel)
+{
+    auto bbInfo = funcInfo.getBBInfo(bbLabel);
+    return bbInfo.getIsLoop() && bbInfo.getLoopType() != udm::BBInfo::LoopType::NONE;
+}
+
+std::string utils::CodeGenUtils::getLoopCondition(llvm::Function &func, const std::string &bbLabel) {
+    for(auto& bb : func)
+    {
+        if(bb.getName() == bbLabel)
+        {
+           auto terminator = bb.getTerminator();
+              if(terminator->getNumSuccessors() == 2)
+              {
+                auto cond = llvm::dyn_cast<llvm::BranchInst>(terminator)->getCondition();
+                return cond->getName().str();
+              }
+        }
+    }
+    return std::string{};
+}
+
+

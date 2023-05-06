@@ -1,11 +1,12 @@
 #include "codeGen/instructions/TerminatorInstruction.h"
+#include "utils/CodeGenUtils.h"
 
 codeGen::TerminatorInstruction::TerminatorInstruction(llvm::Instruction& inst, int numSpaces) {
-    auto printLhs = [&]() {
-        instructionString += std::string(numSpaces, ' ');
-        instructionString += inst.getOpcodeName();
-        instructionString += " ";
-    };
+    bool printLhs = utils::CodeGenUtils::canAssignTo(&inst);
+    if(printLhs)
+    {
+        instructionString += inst.getName().str() + " = ";
+    }
 
     if(llvm::BranchInst* branchOp = llvm::dyn_cast<llvm::BranchInst>(&inst)) {
         if(branchOp->isConditional()) {

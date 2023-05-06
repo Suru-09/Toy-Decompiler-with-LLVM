@@ -5,7 +5,7 @@
 #include "codeGen/instructions/Instruction.h"
 #include "codeGen/InstructionInfoRepo.h"
 #include "codeGen/InstructionInfo.h"
-#include "codeGen/LoopGen.h"
+#include "codeGen/LoopHandler.h"
 #include "codeGen/BranchConditionalGen.h"
 #include "codeGen/InstructionExpander.h"
 
@@ -364,7 +364,7 @@ std::string codeGen::GenerateFnBody::generate()
             auto condition = instrInfo.getLoopIfCondition();
             auto indentLevel = instrInfo.getIndentLevel();
             auto loopType = instrInfo.getLoopType();
-            fnBody += codeGen::LoopGen::generateLoop(condition, indentLevel, loopType);
+            fnBody += codeGen::LoopHandler::generateLoop(condition, indentLevel, loopType);
             wasIfOrLoop = true;
             continue;
         }

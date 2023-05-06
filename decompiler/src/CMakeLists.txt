@@ -14,7 +14,7 @@ add_subdirectory(codeGen)
 
 add_executable(${PROJECT_NAME}  
     main.cpp
-)
+        ../include/codeGen/ast/LlvmInstructionNode.h)
 
 # Selecting which libraries of LLVM are being used
 # and then append them to the llvm_libs variable

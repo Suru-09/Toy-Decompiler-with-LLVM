@@ -219,6 +219,8 @@ void udm::IntervalGraph::setBlockLoopType(const std::pair<std::string, std::stri
         auto type = getLoopType(backEdge);
         logger->info("I am setting: <{}> with value: <{}>", backEdge.first, udm::BBInfo::getLoopTypeString(static_cast<size_t>(type)));
         funcInfo[backEdge.first].setLoopType(type);
+        funcInfo[backEdge.first].setIsLoop(true);
+
     }
 }
 
@@ -247,7 +249,14 @@ void udm::IntervalGraph::loopStructure(udm::FuncInfo& funcInfo)
             continue;
         }
 
-        setBlocksInLoop(getBlocksBetweenLatchAndHeader(backEdge), funcInfo);
+        auto blocks = getBlocksBetweenLatchAndHeader(backEdge);
+        setBlocksInLoop(blocks, funcInfo);
+
+        logger->info("getBlocksBetweenLatchAndHeader size: {}", blocks.size());
+        for(const auto& bbName : blocks)
+        {
+            logger->info("getBlocksBetweenLatchAndHeader: <{}>", bbName);
+        }
         setBlockLoopType(backEdge, funcInfo);
         setFollowBlock(backEdge, funcInfo);          
     }
@@ -273,15 +282,22 @@ bool udm::IntervalGraph::isBBlockbeforeInterval(std::string& bbName, udm::Interv
 std::vector<std::string> udm::IntervalGraph::getBlocksBetweenLatchAndHeader(std::pair<std::string, std::string> backEdge)
 {
     bool startAdd = false;
-    std::string stop = backEdge.first;
+    std::string stop = backEdge.second;
     std::vector<std::string> nodesBetweenLatchAndHeader;
+
+    if(backEdge.first == backEdge.second)
+    {
+        nodesBetweenLatchAndHeader.push_back(backEdge.first);
+        return nodesBetweenLatchAndHeader;
+    }
 
     for(auto& interval : intervals)
     {
         for(auto& bb : interval)
         {
             const auto& bbName = bb->getName().str();
-            if(bbName == backEdge.second)
+            logger->info("getBlocksBetweenLatchAndHeader: <{}>", bbName);
+            if(bbName == backEdge.first)
             {
                 startAdd = true;
             }
@@ -342,6 +358,18 @@ udm::BBInfo::LoopType udm::IntervalGraph::getLoopType(std::pair<std::string, std
     if(backEdge.first.empty())
     {
         return udm::BBInfo::LoopType::NONE;
+    }
+
+    const std::string preheader = "preheader";
+    if ( backEdge.first.substr(backEdge.first.length() - preheader.length()) == preheader
+        || backEdge.second.substr(backEdge.second.length() - preheader.length()) == preheader
+        || ( backEdge.first == backEdge.second &&
+            ( backEdge.first.find("ph") != std::string::npos || backEdge.second.find("ph") != std::string::npos )
+        )
+
+    )
+    {
+        return udm::BBInfo::LoopType::WHILE;
     }
 
     auto nBetweenLatchAndHeader = getBlocksBetweenLatchAndHeader(backEdge);

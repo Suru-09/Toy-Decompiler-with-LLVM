@@ -1,10 +1,10 @@
-#include "codeGen/LoopGen.h"
+#include "codeGen/LoopHandler.h"
 #include "utils/CodeGenUtils.h"
 
 #include <iostream>
 #include <memory>
 
-std::string codeGen::LoopGen::generateLoop(const std::string& condition, int numSpaces, udm::BBInfo::LoopType loopType)
+std::string codeGen::LoopHandler::generateLoop(const std::string& condition, int numSpaces, udm::BBInfo::LoopType loopType)
 {
    std::string result = utils::CodeGenUtils::getSpaces(numSpaces);
    

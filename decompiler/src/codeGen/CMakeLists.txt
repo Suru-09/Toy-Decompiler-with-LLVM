@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.22)
 
 add_library(${PROJECT_NAME}-codeGen
     CodeGeneration.cpp
-    LoopGen.cpp
+        LoopHandler.cpp
     BranchConditionalGen.cpp
     GenerateFnBody.cpp
     GenerateFnHeader.cpp
@@ -19,6 +19,11 @@ add_library(${PROJECT_NAME}-codeGen
     instructions/OtherInstruction.cpp
     instructions/BitwiseBinaryInstruction.cpp
     instructions/ConversionInstruction.cpp
+    ast/HllAstNode.cpp
+    ast/LlvmInstructionNode.cpp
+    ast/LlvmFunctionNode.cpp
+    ast/LlvmBasicBlockNode.cpp
+    ast/GenerateFileVisitor.cpp
 )
 
 target_include_directories(${PROJECT_NAME}-codeGen

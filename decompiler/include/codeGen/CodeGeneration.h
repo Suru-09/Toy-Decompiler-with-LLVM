@@ -14,6 +14,7 @@
 #include "llvm/IR/Function.h"
 #include "llvm/IR/Instruction.h"
 #include "llvm/IR/BasicBlock.h"
+#include "codeGen/ast/LlvmInstructionNode.h"
 
 
 namespace codeGen {
@@ -38,28 +39,8 @@ public:
     void generate();
 private:
     void processFunction(llvm::Function& f, const udm::FuncInfo& funcInfo);
-    void fillInstructionMap(llvm::BasicBlock* bb, int numSpaces);
-    /**
-     * @param f Function to be processed
-     * @brief Change names of values that are reloaded from stack 
-     * in order to avoid having multiple variables which could merge into 1.
-     * 
-    */
-    void changeReloadedValuesNames(llvm::Function& f);
 
-    std::unordered_map<std::string, uint64_t> noOfUses(llvm::Function& f);
-    std::string generateConditionalBranch(llvm::BasicBlock* bb, int numSpaces, const udm::FuncInfo& funcInfo);
-    std::string generateLoop(llvm::BasicBlock* bb, int numSpaces, const udm::FuncInfo& funcInfo);
-
-    //helper functions
-    std::pair<std::string, std::string> instructionMapping(llvm::Instruction* instr);
-    bool isValueSubstring(const std::string& value);
-    std::string generateFnHeader(llvm::Function& f);
-    std::string expandInstruction(llvm::Instruction* instr, int numSpaces);
-    codeGen::GeneratedInstrType getInstrTypeToGenerate(llvm::Instruction* instr);
-    std::string generateInstruction(const std::string& key, const std::pair<std::string, GeneratedInstrType>& instrPair,
-        const std::unordered_map<std::string, uint64_t>& noOfUses
-    );
+    void fillInstructionNode(llvm::Instruction* instr, std::shared_ptr<ast::LlvmInstructionNode> root);
 
     // received in c-tor
     std::string irFile;
