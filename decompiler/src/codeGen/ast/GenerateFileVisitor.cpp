@@ -17,11 +17,12 @@ std::pair<std::string, std::string> codeGen::ast::GenerateFileVisitor::visit(std
 
 std::pair<std::string, std::string>
 codeGen::ast::GenerateFileVisitor::visit(std::shared_ptr<LlvmInstructionNode> node) {
+    auto nodeName = node->getName();
     for(auto &child: node->getChildren()) {
         auto childPtr = std::dynamic_pointer_cast<LlvmInstructionNode>(child);
         assert(childPtr != nullptr);
         auto [name, code] = visit(childPtr);
-        logger->info("Instruction name: {}, body: {}", name, childPtr->getInstructionBody());
+        logger->info("[GenerateFileVisistor] Instruction name: {}, body: {}", name, childPtr->getInstructionBody());
 
         if (childPtr->getOpcode() == llvm::Instruction::PHI)
         {
@@ -34,29 +35,60 @@ codeGen::ast::GenerateFileVisitor::visit(std::shared_ptr<LlvmInstructionNode> no
             {
                 auto indentation = utils::CodeGenUtils::getSpaces(indentationLevel);
                 auto strValue = indentation + utils::CodeGenUtils::extractPhiNodeLeftValue(phiNodeStr) + " = " + values[i];
-                logger->info("Label -> {}, Value -> {}", labels[i], strValue);
+                logger->info("[GenerateFileVisistor] Label -> {}, Value -> {}", labels[i], strValue);
                 addPhiNodesValues(std::make_pair<std::string, std::string>(std::move(labels[i]), std::move(strValue)));
             }
             continue;
         }
         auto indentation = utils::CodeGenUtils::getSpaces(indentationLevel);
         output[lastBasicBlockName].push_back(indentation +  childPtr->getInstructionBody());
-
     }
+
+    // same thing as above but only for node
+    logger->info("[GenerateFileVisistor] Instruction name: {}, body: {}", node->getName(), node->getInstructionBody());
+
+    if (node->getOpcode() == llvm::Instruction::PHI)
+    {
+        // Extract the labels and values from the PHI instruction.
+        const std::string phiNodeStr = node->getInstructionBody();
+        auto labels = utils::CodeGenUtils::extractLabelsFromPhiString(phiNodeStr);
+        auto values = utils::CodeGenUtils::extractValuesFromPhiString(phiNodeStr);
+        logger->info("[GenerateFileVisistor] Phi nodes size: {}", labels.size());
+        assert(labels.size() == values.size());
+        for (int i = 0; i < labels.size(); i++)
+        {
+            auto indentation = utils::CodeGenUtils::getSpaces(indentationLevel);
+            auto strValue = indentation + utils::CodeGenUtils::extractPhiNodeLeftValue(phiNodeStr) + " = " + values[i];
+            logger->info("[GenerateFileVisistor] Label -> {}, Value -> {}", labels[i], strValue);
+            addPhiNodesValues(std::make_pair<std::string, std::string>(std::move(labels[i]), std::move(strValue)));
+        }
+    }
+    else {
+        auto indentation = utils::CodeGenUtils::getSpaces(indentationLevel);
+        output[lastBasicBlockName].push_back(indentation +  node->getInstructionBody());
+    }
+
+
     return std::make_pair<std::string, std::string>(node->getName(), "");
 }
 
 std::pair<std::string, std::string> codeGen::ast::GenerateFileVisitor::visit(std::shared_ptr<LlvmBasicBlockNode> node) {
     output.emplace(node->getName(), std::vector<std::string>());
-    logger->info("Basic block being processed: <{}>", node->getName());
+    logger->info("[GenerateFileVisistor] Basic block being processed: <{}>", node->getName());
     lastBasicBlockName = node->getName();
-
     auto bbInfo = funcInfo.getBBInfo(lastBasicBlockName);
+
+    for(auto &child: node->getChildren()) {
+        auto [name, code] = visit(std::dynamic_pointer_cast<LlvmInstructionNode>(child));
+    }
     if (utils::CodeGenUtils::isLoop(funcInfo, lastBasicBlockName))
     {
         // Add the loop header.
+        auto spaces = utils::CodeGenUtils::getSpaces(indentationLevel);
+        auto loopCondition = utils::CodeGenUtils::getLoopCondition(llvmFun, lastBasicBlockName);
+        auto condition = !loopCondition.empty() ? loopCondition : "true";
         output[lastBasicBlockName].push_back(
-                "while(" + utils::CodeGenUtils::getLoopCondition(llvmFun, lastBasicBlockName) + ") {"
+                spaces + "while(" + condition + ") {"
         );
         indentationLevel += 4;
         inLoop = true;
@@ -82,11 +114,6 @@ std::pair<std::string, std::string> codeGen::ast::GenerateFileVisitor::visit(std
                 spaces + "if(" + utils::CodeGenUtils::getLoopCondition(llvmFun, lastBasicBlockName) + ") {"
         );
         indentationLevel += 4;
-    }
-
-
-    for(auto &child: node->getChildren()) {
-        auto [name, code] = visit(std::dynamic_pointer_cast<LlvmInstructionNode>(child));
     }
     return std::make_pair<std::string, std::string>(node->getName(), "");
 }

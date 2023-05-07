@@ -65,6 +65,15 @@ void codeGen::CodeGeneration::generate() {
 
 void codeGen::CodeGeneration::fillInstructionNode(llvm::Instruction* instr, std::shared_ptr<ast::LlvmInstructionNode> root)
 {
+    std::vector<unsigned int> dontAdd = {
+      llvm::Instruction::Br
+    };
+
+    if (std::find(dontAdd.begin(), dontAdd.end(), instr->getOpcode()) != dontAdd.end())
+    {
+        return;
+    }
+
     std::shared_ptr<codeGen::Instruction> instruction = codeGen::Instruction::getInstruction(*instr, 0);
     if(instruction)
     {
@@ -73,37 +82,7 @@ void codeGen::CodeGeneration::fillInstructionNode(llvm::Instruction* instr, std:
     }
     else
     {
-        logger->error("[codeGen::fillInstructionNode] Instruction not found: {}", instr->getOpcodeName());
-    }
-
-    // if instruction is phi rteturn
-    if(instr->getOpcode() == llvm::Instruction::PHI)
-    {
-        return;
-    }
-
-    // see if you can cast operand to instructions
-    for(auto& op: instr->operands())
-    {
-        if(auto* opInstr = llvm::dyn_cast<llvm::Instruction>(&op))
-        {
-            logger->info("Found instruction: {}", opInstr->getOpcodeName());
-            std::shared_ptr<ast::LlvmInstructionNode> opNode = std::make_shared<ast::LlvmInstructionNode>(opInstr->getOpcodeName());
-            opNode->setOpcode(opInstr->getOpcode());
-            auto myInstr = codeGen::Instruction::getInstruction(*opInstr, 0);
-            if(myInstr)
-            {
-                opNode->setInstructionBody(myInstr->toString());
-                opNode->setOpcode(opInstr->getOpcode());
-                root->addChild(opNode);
-//                if(opNode != root)
-//                    fillInstructionNode(opInstr, opNode);
-            }
-            else
-            {
-                logger->error("[codeGen::fillInstructionNode] Instruction not found: {}", opInstr->getOpcodeName());
-            }
-        }
+        logger->error("[CodeGeneration::fillInstructionNode] Instruction not found: {}", instr->getOpcodeName());
     }
 }
 
@@ -129,9 +108,9 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
         std::shared_ptr<ast::LlvmBasicBlockNode> bbNode = std::make_shared<ast::LlvmBasicBlockNode>(bb->getName().str());
         for(auto & inst : *bb)
         {
-            std::shared_ptr<ast::LlvmInstructionNode> instNode = std::make_shared<ast::LlvmInstructionNode>(inst.getName().str());
+            auto instName = inst.getName().str();
+            std::shared_ptr<ast::LlvmInstructionNode> instNode = std::make_shared<ast::LlvmInstructionNode>(instName);
             fillInstructionNode(&inst, instNode);
-
             bbNode->addChild(instNode);
         }
         root->addChild(bbNode);

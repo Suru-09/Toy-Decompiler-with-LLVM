@@ -217,10 +217,37 @@ void udm::IntervalGraph::setBlockLoopType(const std::pair<std::string, std::stri
     if(funcInfo.exists(backEdge.first))
     {
         auto type = getLoopType(backEdge);
-        logger->info("I am setting: <{}> with value: <{}>", backEdge.first, udm::BBInfo::getLoopTypeString(static_cast<size_t>(type)));
-        funcInfo[backEdge.first].setLoopType(type);
-        funcInfo[backEdge.first].setIsLoop(true);
+        auto backEdgeFirst = backEdge.first;
+        logger->info("I am setting: <{}> with value: <{}>", backEdgeFirst, udm::BBInfo::getLoopTypeString(static_cast<size_t>(type)));
+        auto bbBlock = getBB(backEdgeFirst);
+        auto predecessors = utils::UdmUtils::getPredecessors(bbBlock);
 
+        std::string neededPred = "";
+        for(auto& pred : predecessors)
+        {
+            if(pred == backEdgeFirst)
+            {
+                continue;
+            }
+            else {
+                neededPred = pred;
+                break;
+            }
+        }
+
+        if (!neededPred.empty())
+        {
+            if(funcInfo.exists(neededPred))
+            {
+                funcInfo[neededPred].setLoopType(type);
+                funcInfo[neededPred].setIsLoop(true);
+            }
+        }
+        else
+        {
+            funcInfo[backEdge.first].setLoopType(type);
+            funcInfo[backEdge.first].setIsLoop(true);
+        }
     }
 }
 
@@ -251,12 +278,6 @@ void udm::IntervalGraph::loopStructure(udm::FuncInfo& funcInfo)
 
         auto blocks = getBlocksBetweenLatchAndHeader(backEdge);
         setBlocksInLoop(blocks, funcInfo);
-
-        logger->info("getBlocksBetweenLatchAndHeader size: {}", blocks.size());
-        for(const auto& bbName : blocks)
-        {
-            logger->info("getBlocksBetweenLatchAndHeader: <{}>", bbName);
-        }
         setBlockLoopType(backEdge, funcInfo);
         setFollowBlock(backEdge, funcInfo);          
     }

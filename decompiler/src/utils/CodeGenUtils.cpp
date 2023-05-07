@@ -1,4 +1,5 @@
 #include <llvm/IR/Instructions.h>
+#include <regex>
 #include "utils/CodeGenUtils.h"
 
 
@@ -140,31 +141,55 @@ bool utils::CodeGenUtils::canAssignTo(llvm::Instruction *instr) {
     return false;
 }
 
+std::vector<std::string> utils::CodeGenUtils::extractSubstrings(const std::string& input, const std::string& subStr)
+{
+    // create regex pattern for finding substrings
+    std::string pattern = "\\[" + subStr + R"(:\s*\{([^\}]+)\}\])";
+    std::regex re(pattern);
+
+    // find all matches and store in a vector
+    std::vector<std::string> matches;
+    std::smatch sm;
+    std::string::const_iterator it(input.cbegin());
+    std::string::const_iterator end(input.cend());
+    while (std::regex_search(it, end, sm, re)) {
+        matches.push_back(sm[1].str());
+        it = sm.suffix().first;
+    }
+
+    return matches;
+}
+
 std::vector<std::string> utils::CodeGenUtils::extractValuesFromPhiString(const std::string &phiString) {
     std::vector<std::string> values;
     size_t startPos = phiString.find("value:{");
     startPos += 7;
     size_t endPos = phiString.find('}', startPos);
-
+    values.push_back(phiString.substr(startPos, endPos - startPos));
     while((startPos = phiString.find("value:{", endPos)) != std::string::npos)
     {
         startPos += 7;
         endPos = phiString.find('}', startPos);
         values.push_back(phiString.substr(startPos, endPos - startPos));
     }
+    // add last value
     return values;
 }
 
 std::vector<std::string> utils::CodeGenUtils::extractLabelsFromPhiString(const std::string &phiString) {
     std::vector<std::string> labels;
-    size_t startPos = phiString.find("label:{") + 7;
+    std::string findAfter = "label:{";
+    std::size_t searchedLen = findAfter.length();
+    size_t startPos = phiString.find("label:{") + searchedLen;
     size_t endPos = phiString.find('}', startPos);
+    labels.push_back(phiString.substr(startPos, endPos - startPos));
     while((startPos = phiString.find("label:{", endPos)) != std::string::npos)
     {
-        startPos += 7;
+        startPos += searchedLen;
         endPos = phiString.find('}', startPos);
         labels.push_back(phiString.substr(startPos, endPos - startPos));
     }
+    spdlog::error("Extracted end and start: {}, {}", endPos, startPos);
     return labels;
 }
 
