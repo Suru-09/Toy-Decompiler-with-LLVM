@@ -5,6 +5,7 @@
 #include "codeGen/ast/LlvmBasicBlockNode.h"
 #include "codeGen/ast/LlvmInstructionNode.h"
 #include "utils/CodeGenUtils.h"
+#include "codeGen/BracketManager.h"
 
 std::pair<std::string, std::string> codeGen::ast::GenerateFileVisitor::visit(std::shared_ptr<LlvmFunctionNode> node) {
     // Iterate over all basic blocks and instructions and generate the LLVM IR code.
@@ -78,43 +79,46 @@ std::pair<std::string, std::string> codeGen::ast::GenerateFileVisitor::visit(std
     lastBasicBlockName = node->getName();
     auto bbInfo = funcInfo.getBBInfo(lastBasicBlockName);
 
+    while(codeGen::BracketManager::shouldCloseConditional(node->getName(), funcInfo))
+    {
+        indentationLevel -= 4;
+        auto space = utils::CodeGenUtils::getSpaces(indentationLevel);
+        output[lastBasicBlockName].push_back(space + "}");
+    }
+
     for(auto &child: node->getChildren()) {
         auto [name, code] = visit(std::dynamic_pointer_cast<LlvmInstructionNode>(child));
     }
-    if (utils::CodeGenUtils::isLoop(funcInfo, lastBasicBlockName))
+
+    if(codeGen::BracketManager::isLoop(bbInfo) == udm::BBInfo::LoopType::WHILE
+        || codeGen::BracketManager::isLoop(bbInfo) == udm::BBInfo::LoopType::DO_WHILE
+    )
     {
-        // Add the loop header.
-        auto spaces = utils::CodeGenUtils::getSpaces(indentationLevel);
-        auto loopCondition = utils::CodeGenUtils::getLoopCondition(llvmFun, lastBasicBlockName);
-        auto condition = !loopCondition.empty() ? loopCondition : "true";
-        output[lastBasicBlockName].push_back(
-                spaces + "while(" + condition + ") {"
-        );
+        codeGen::BracketManager::addBracket(node->getName(), funcInfo);
+        auto space = utils::CodeGenUtils::getSpaces(indentationLevel);
+        auto condition = utils::CodeGenUtils::getLoopCondition(llvmFun, node->getName());
+        auto condStr = condition.empty() ? "true" : condition;
+        output[lastBasicBlockName].push_back(space + "while (" + condStr + ") {");
         indentationLevel += 4;
-        inLoop = true;
-    }
-    else if(inLoop && !bbInfo.getIsLoop())
-    {
-        inLoop = false;
-        while (indentationLevel > 0)
-        {
-            indentationLevel -= 4;
-            std::string spaces = utils::CodeGenUtils::getSpaces(indentationLevel);
-            output[lastBasicBlockName].push_back( spaces + "}\n");
-        }
-        indentationLevel = 0;
     }
 
-    // check for IF statements
-    if(!bbInfo.getFollowNode().empty() && bbInfo.getLoopType() == udm::BBInfo::LoopType::NONE)
+    if(codeGen::BracketManager::isConditional(bbInfo))
     {
-        // Add the if statement.
-        std::string spaces = utils::CodeGenUtils::getSpaces(indentationLevel);
-        output[lastBasicBlockName].push_back(
-                spaces + "if(" + utils::CodeGenUtils::getLoopCondition(llvmFun, lastBasicBlockName) + ") {"
-        );
+        codeGen::BracketManager::addBracket(node->getName(), funcInfo);
+        auto space = utils::CodeGenUtils::getSpaces(indentationLevel);
+        auto condition = utils::CodeGenUtils::getLoopCondition(llvmFun, node->getName());
+        auto condStr = condition.empty() ? "true" : condition;
+        output[lastBasicBlockName].push_back(space + "if (" + condStr + ") {");
         indentationLevel += 4;
     }
+
+    while(codeGen::BracketManager::shouldCloseLoop(node->getName(), funcInfo))
+    {
+        indentationLevel -= 4;
+        auto space = utils::CodeGenUtils::getSpaces(indentationLevel);
+        output[lastBasicBlockName].push_back(space + "}");
+    }
+
     return std::make_pair<std::string, std::string>(node->getName(), "");
 }
 
@@ -150,6 +154,19 @@ void codeGen::ast::GenerateFileVisitor::addPhiNodesValues(const std::pair<std::s
     {
         return;
     }
-    output[bbStr].push_back(value);
+    std::string space = utils::CodeGenUtils::getSpaces(0);
+    if (!output[bbStr].empty())
+    {
+        auto copyFirstStrFromOutput = output[bbStr].front();
+        logger->info("[GenerateFileVisistor::addPhiNodesValues] Label: {}", bbStr);
+        logger->info("[GenerateFileVisistor::addPhiNodesValues] Copy first str from output: {}", copyFirstStrFromOutput);
+        std::size_t pos = copyFirstStrFromOutput.find_first_not_of(" \t");
+        if (pos != std::string::npos)
+        {
+            space = utils::CodeGenUtils::getSpaces(pos);
+        }
+    }
+    logger->info("[GenerateFileVisistor::addPhiNodesValues] Adding phi node spaces: {}", space.size());
+    output[bbStr].push_back(space + value);
 }
 

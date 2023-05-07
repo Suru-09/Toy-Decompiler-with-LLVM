@@ -24,6 +24,7 @@ add_library(${PROJECT_NAME}-codeGen
     ast/LlvmFunctionNode.cpp
     ast/LlvmBasicBlockNode.cpp
     ast/GenerateFileVisitor.cpp
+    BracketManager.cpp
 )
 
 target_include_directories(${PROJECT_NAME}-codeGen

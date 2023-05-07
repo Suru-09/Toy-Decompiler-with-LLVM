@@ -98,6 +98,9 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
         return;
     }
 
+    codeGen::RenameVariables renameVariables(f);
+    auto aliasMap = renameVariables.rename();
+
     logger->info("Processing function: " + f.getName().str());
     std::shared_ptr<ast::LlvmFunctionNode> root = std::make_shared<ast::LlvmFunctionNode>(f.getName().str());
 

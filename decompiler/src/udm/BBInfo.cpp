@@ -60,6 +60,7 @@ void udm::BBInfo::print() const
     logger->info("isIfStatement: {}", isIfStatement);
     logger->info("loopType: {}", getLoopTypeString(static_cast<size_t>(loopType)));
     logger->info("followNode: {}", followNode.empty() ? "EMPTY" : followNode);
+    logger->info("Head {} to latch -> {}", headToLatch.first.empty() ? "EMPTY" : headToLatch.first, headToLatch.second.empty() ? "EMPTY" : headToLatch.second);
 }
 
 std::string udm::BBInfo::toString() const
@@ -70,6 +71,7 @@ std::string udm::BBInfo::toString() const
     str += "isIfStatement: " + std::to_string(isIfStatement) + "\n";
     str += "loopType: " + getLoopTypeString(static_cast<size_t>(loopType)) + "\n";
     str += "followNode: " + (followNode.empty() ? "EMPTY" : followNode) + "\n";
+    str += "Head" + (headToLatch.first.empty() ? "EMPTY" : headToLatch.first) + " to latch -> " +  (headToLatch.second.empty() ? "EMPTY" : headToLatch.second) + "\n";
     return str;
 }
 
@@ -98,4 +100,12 @@ void udm::BBInfo::setFollowNode(std::string followNode)
 std::string udm::BBInfo::getFollowNode() const
 {
     return followNode;
+}
+
+void udm::BBInfo::setHeadToLatch(std::pair<std::string, std::string> headToLatch) {
+    this->headToLatch = std::move(headToLatch);
+}
+
+std::pair<std::string, std::string> udm::BBInfo::getHeadToLatch() const {
+    return headToLatch;
 }

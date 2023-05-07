@@ -222,14 +222,18 @@ void udm::IntervalGraph::setBlockLoopType(const std::pair<std::string, std::stri
         auto bbBlock = getBB(backEdgeFirst);
         auto predecessors = utils::UdmUtils::getPredecessors(bbBlock);
 
+        // !!! neededPred fix for setting the preheader to start the loop, instead of the first
+        // !!! basic block in the loop
         std::string neededPred = "";
+        bool isPointingToItself = false;
         for(auto& pred : predecessors)
         {
             if(pred == backEdgeFirst)
             {
+                isPointingToItself = true;
                 continue;
             }
-            else {
+            else if(isPointingToItself) {
                 neededPred = pred;
                 break;
             }
@@ -241,12 +245,14 @@ void udm::IntervalGraph::setBlockLoopType(const std::pair<std::string, std::stri
             {
                 funcInfo[neededPred].setLoopType(type);
                 funcInfo[neededPred].setIsLoop(true);
+                funcInfo[neededPred].setHeadToLatch(std::make_pair(neededPred, backEdge.second));
             }
         }
         else
         {
             funcInfo[backEdge.first].setLoopType(type);
             funcInfo[backEdge.first].setIsLoop(true);
+            funcInfo[backEdge.first].setHeadToLatch(backEdge);
         }
     }
 }
