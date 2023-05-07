@@ -10,13 +10,13 @@ echo "Found the folowing arch: <$MACHINE_TYPE>"
 
 if [ "${MACHINE_TYPE}" == "arm64" ]
 then
-    cmake ../ -DOPENSSL_ROOT_DIR=/opt/homebrew/opt/openssl@1.1/ -DOPENSSL_INCLUDE_DIR=/opt/homebrew/opt/openssl@1.1/include/    \
+    cmake ../ -G Ninja -DOPENSSL_ROOT_DIR=/opt/homebrew/opt/openssl@1.1/ -DOPENSSL_INCLUDE_DIR=/opt/homebrew/opt/openssl@1.1/include/    \
     -Dcpprestsdk_INCLUDE_DIR=/opt/homebrew/opt/cpprestsdk/include/                \
     -Darch:String="arm64" -DBUILD_SHARED_LIBS:BOOL=OFF;
 elif [ "${MACHINE_TYPE}" == "x86_64" ]
 then
     #cmake ../ -Darch:String="x86" -Dwork:STRING="OFF" -DBUILD_SHARED_LIBS:BOOL=ON;
-    cmake ../ -Darch:String="x86" -Dwork:STRING="ON" -DBUILD_SHARED_LIBS:BOOL=ON;
+    cmake ../ -G Ninja -Darch:String="x86" -Dwork:STRING="ON" -DBUILD_SHARED_LIBS:BOOL=ON;
 fi
 
 CORES=""

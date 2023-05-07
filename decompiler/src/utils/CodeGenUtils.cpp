@@ -165,11 +165,15 @@ std::vector<std::string> utils::CodeGenUtils::extractValuesFromPhiString(const s
     size_t startPos = phiString.find("value:{");
     startPos += 7;
     size_t endPos = phiString.find('}', startPos);
+    if (endPos == std::string::npos || startPos == std::string::npos)
+        return values;
     values.push_back(phiString.substr(startPos, endPos - startPos));
     while((startPos = phiString.find("value:{", endPos)) != std::string::npos)
     {
         startPos += 7;
         endPos = phiString.find('}', startPos);
+        if (endPos == std::string::npos || startPos == std::string::npos)
+            break;
         values.push_back(phiString.substr(startPos, endPos - startPos));
     }
     // add last value
@@ -182,11 +186,15 @@ std::vector<std::string> utils::CodeGenUtils::extractLabelsFromPhiString(const s
     std::size_t searchedLen = findAfter.length();
     size_t startPos = phiString.find("label:{") + searchedLen;
     size_t endPos = phiString.find('}', startPos);
+    if (endPos == std::string::npos || startPos == std::string::npos)
+        return labels;
     labels.push_back(phiString.substr(startPos, endPos - startPos));
     while((startPos = phiString.find("label:{", endPos)) != std::string::npos)
     {
         startPos += searchedLen;
         endPos = phiString.find('}', startPos);
+        if (endPos == std::string::npos || startPos == std::string::npos)
+            break;
         labels.push_back(phiString.substr(startPos, endPos - startPos));
     }
     spdlog::error("Extracted end and start: {}, {}", endPos, startPos);

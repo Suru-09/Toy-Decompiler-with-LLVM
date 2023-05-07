@@ -15,6 +15,15 @@ public:
     explicit RenameVariables(llvm::Function& f);
     ~RenameVariables() = default;
 
+    enum class VariableType {
+        ARG,
+        LOCAL,
+        STACK,
+        GLOBAL,
+        RETURN_VALUE,
+        NONE
+    };
+
     /**
      * @brief Rename variables in function based on their type and index.
      * @return std::unordered_map<std::string, std::string> map of alises for the
@@ -24,7 +33,9 @@ public:
 
 private:
     llvm::Function& fn;
+    // Map of initial variable names to their aliases
     std::unordered_map<std::string, std::string> aliasesMap;
+    std::unordered_map<VariableType, std::pair<std::string, unsigned int>> typesMap;
     std::shared_ptr<spdlog::logger> logger;
 };
 
