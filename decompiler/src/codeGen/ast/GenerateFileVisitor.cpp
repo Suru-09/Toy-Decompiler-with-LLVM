@@ -6,6 +6,7 @@
 #include "codeGen/ast/LlvmInstructionNode.h"
 #include "utils/CodeGenUtils.h"
 #include "codeGen/BracketManager.h"
+#include "codeGen/DefineVariablesHandler.h"
 
 std::pair<std::string, std::string> codeGen::ast::GenerateFileVisitor::visit(std::shared_ptr<LlvmFunctionNode> node) {
     // Iterate over all basic blocks and instructions and generate the LLVM IR code.
@@ -19,35 +20,7 @@ std::pair<std::string, std::string> codeGen::ast::GenerateFileVisitor::visit(std
 std::pair<std::string, std::string>
 codeGen::ast::GenerateFileVisitor::visit(std::shared_ptr<LlvmInstructionNode> node) {
     auto nodeName = node->getName();
-    for(auto &child: node->getChildren()) {
-        auto childPtr = std::dynamic_pointer_cast<LlvmInstructionNode>(child);
-        assert(childPtr != nullptr);
-        auto [name, code] = visit(childPtr);
-        logger->info("[GenerateFileVisistor] Instruction name: {}, body: {}", name, childPtr->getInstructionBody());
-
-        if (childPtr->getOpcode() == llvm::Instruction::PHI)
-        {
-            // Extract the labels and values from the PHI instruction.
-            const std::string phiNodeStr = childPtr->getInstructionBody();
-            auto labels = utils::CodeGenUtils::extractLabelsFromPhiString(phiNodeStr);
-            auto values = utils::CodeGenUtils::extractValuesFromPhiString(phiNodeStr);
-            assert(labels.size() == values.size());
-            for (int i = 0; i < labels.size(); i++)
-            {
-                auto indentation = utils::CodeGenUtils::getSpaces(indentationLevel);
-                auto strValue = indentation + utils::CodeGenUtils::extractPhiNodeLeftValue(phiNodeStr) + " = " + values[i];
-                logger->info("[GenerateFileVisistor] Label -> {}, Value -> {}", labels[i], strValue);
-                addPhiNodesValues(std::make_pair<std::string, std::string>(std::move(labels[i]), std::move(strValue)));
-            }
-            continue;
-        }
-        auto indentation = utils::CodeGenUtils::getSpaces(indentationLevel);
-        output[lastBasicBlockName].push_back(indentation +  childPtr->getInstructionBody());
-    }
-
-    // same thing as above but only for node
     logger->info("[GenerateFileVisistor] Instruction name: {}, body: {}", node->getName(), node->getInstructionBody());
-
     if (node->getOpcode() == llvm::Instruction::PHI)
     {
         // Extract the labels and values from the PHI instruction.
@@ -61,7 +34,7 @@ codeGen::ast::GenerateFileVisitor::visit(std::shared_ptr<LlvmInstructionNode> no
             auto indentation = utils::CodeGenUtils::getSpaces(indentationLevel);
             auto strValue = indentation + utils::CodeGenUtils::extractPhiNodeLeftValue(phiNodeStr) + " = " + values[i];
             logger->info("[GenerateFileVisistor] Label -> {}, Value -> {}", labels[i], strValue);
-            addPhiNodesValues(std::make_pair<std::string, std::string>(std::move(labels[i]), std::move(strValue)));
+//            addPhiNodesValues(std::make_pair<std::string, std::string>(std::move(labels[i]), std::move(strValue)));
         }
     }
     else {
@@ -78,6 +51,12 @@ std::pair<std::string, std::string> codeGen::ast::GenerateFileVisitor::visit(std
     logger->info("[GenerateFileVisistor] Basic block being processed: <{}>", node->getName());
     lastBasicBlockName = node->getName();
     auto bbInfo = funcInfo.getBBInfo(lastBasicBlockName);
+
+    if(!areVariablesDefined)
+    {
+        areVariablesDefined = true;
+        addVariablesDefinitions();
+    }
 
     while(codeGen::BracketManager::shouldCloseConditional(node->getName(), funcInfo))
     {
@@ -122,6 +101,64 @@ std::pair<std::string, std::string> codeGen::ast::GenerateFileVisitor::visit(std
     return std::make_pair<std::string, std::string>(node->getName(), "");
 }
 
+void codeGen::ast::GenerateFileVisitor::addVariablesDefinitions() {
+    for(auto [key, vec]: definedVariables)
+    {
+        auto indentation = utils::CodeGenUtils::getSpaces(indentationLevel);
+        std::string lastType, firstValName, varStr;
+        std::size_t countVars = 0;
+
+        if(!vec.empty())
+        {
+            lastType = vec.front().getType();
+            firstValName = vec.front().getName();
+        }
+
+        for(auto &var: vec)
+        {
+            logger->info("[GenerateFileVisitor::addVariablesDefinitions] Variable name: {}, type: {}, initial value: {}", var.getName(), var.getType(), varStr);
+            // If the type of the variable is different from the last one, then we need to add a new line.
+            if(var.getType() != lastType)
+            {
+                output[lastBasicBlockName].push_back(varStr);
+                varStr = "";
+                lastType = var.getType();
+                countVars = 0;
+            }
+
+            // If the variable is the first one, then we need to add the type.
+            if(countVars == 0)
+            {
+                varStr += indentation + var.getType() + " " + var.getName() + " = " + var.getInitialValue();
+                countVars++;
+                lastType = var.getType();
+                continue;
+            }
+
+            // If the variable is not the first one, then we need to add a comma.
+            varStr += ", " + var.getName() + " = " + var.getInitialValue();
+            countVars++;
+            lastType = var.getType();
+
+
+            //  If we have 2 variables in the same line, then we need to add a new line.
+            if(countVars > 4 || varStr.size() > 45)
+            {
+                output[lastBasicBlockName].push_back(varStr);
+                varStr = "";
+                lastType = var.getType();
+                countVars = 0;
+            }
+        }
+
+        // if we have a build up string that was not added, now it is the time to do it.
+        if(!varStr.empty())
+        {
+            output[lastBasicBlockName].push_back(varStr);
+        }
+    }
+}
+
 void codeGen::ast::GenerateFileVisitor::setOutputFilename(const std::string &filename) {
     outputFilename = filename;
 }
@@ -131,8 +168,12 @@ std::string codeGen::ast::GenerateFileVisitor::getOutputFilename() const {
 }
 
 codeGen::ast::GenerateFileVisitor::GenerateFileVisitor(llvm::Function& fun)
-: indentationLevel(0), llvmFun(fun)
+: indentationLevel(0),
+llvmFun(fun),
+defVarHandler(fun),
+areVariablesDefined(false)
 {
+    definedVariables = defVarHandler.handle();
     logger = logger::LoggerManager::getInstance()->getLogger("codeGen");
 }
 

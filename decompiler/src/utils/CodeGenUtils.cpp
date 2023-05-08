@@ -56,6 +56,9 @@ std::string utils::CodeGenUtils::typeToString(llvm::Type* type)
     if(type->isIntegerTy())
     {
         llvm::IntegerType* intType = llvm::dyn_cast<llvm::IntegerType>(type);
+        std::size_t bitWidth = intType->getBitWidth();
+        if(bitWidth == 1)
+            return "bool";
         return "i" + std::to_string(intType->getBitWidth());
     }
 

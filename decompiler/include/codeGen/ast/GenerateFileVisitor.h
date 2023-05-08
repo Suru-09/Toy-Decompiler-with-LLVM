@@ -6,6 +6,7 @@
 #include <spdlog/spdlog.h>
 
 #include "codeGen/ast/HllAstNodeVisitor.h"
+#include "codeGen/DefineVariablesHandler.h"
 #include "udm/FuncInfo.h"
 
 namespace codeGen::ast {
@@ -33,6 +34,9 @@ public:
     std::unordered_map<std::string, std::vector<std::string>> getOutput() const;
 private:
     std::unordered_map<std::string, std::vector<std::string>> output;
+    codeGen::DefineVariablesHandler defVarHandler;
+    std::map<std::string, std::vector<codeGen::Variable>> definedVariables;
+    bool areVariablesDefined;
     std::string outputFilename;
     std::string lastBasicBlockName;
     unsigned int indentationLevel;
@@ -43,6 +47,8 @@ private:
 private:
     bool writeToFile(const std::string& filename);
     void addPhiNodesValues(const std::pair<std::string, std::string>& phiNode);
+
+    void addVariablesDefinitions();
 };
 
 }   // namespace codeGen::ast
