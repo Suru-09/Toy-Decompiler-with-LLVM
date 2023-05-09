@@ -25,6 +25,8 @@ public:
     static bool isLoop(const udm::FuncInfo& funcInfo, const std::string& bbLabel);
     static std::string getLoopCondition(llvm::Function& func, const std::string& bbLabel);
     static std::vector<std::string> extractSubstrings(const std::string& input, const std::string& substr);
+    static std::string getInstructionValue(llvm::Instruction* instr);
+    static std::string llvmValueToString(llvm::Value* value);
 };
 
 }   // namespace utils

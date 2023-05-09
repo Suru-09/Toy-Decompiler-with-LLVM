@@ -231,4 +231,56 @@ std::string utils::CodeGenUtils::getLoopCondition(llvm::Function &func, const st
     return std::string{};
 }
 
+std::string utils::CodeGenUtils::getInstructionValue(llvm::Instruction *instr) {
+    std::string value;
+
+    if(instr->hasName())
+    {
+        return instr->getName().str();
+    }
+    // check if constant (int, float, string, etc.)
+    if(instr->getOpcode() == llvm::Instruction::ConstantFPVal)
+    {
+        auto constant = llvm::dyn_cast<llvm::ConstantFP>(instr);
+        value = std::to_string(constant->getValueAPF().convertToFloat());
+    }
+    else if(instr->getOpcode() == llvm::Instruction::ConstantIntVal)
+    {
+        auto constant = llvm::dyn_cast<llvm::ConstantInt>(instr);
+        value = std::to_string(constant->getSExtValue());
+    }
+    else if(instr->getOpcode() == llvm::Instruction::ConstantDataArrayVal)
+    {
+        auto constant = llvm::dyn_cast<llvm::ConstantDataArray>(instr);
+        value = constant->getAsString().str();
+    }
+    else if(instr->getOpcode() == llvm::Instruction::ConstantDataVectorVal)
+    {
+        auto constant = llvm::dyn_cast<llvm::ConstantDataVector>(instr);
+        value = constant->getAsString().str();
+    }
+
+    return value;
+}
+
+std::string utils::CodeGenUtils::llvmValueToString(llvm::Value *value) {
+    auto llvmValueToString = [](llvm::Value* value){
+        std::string str;
+        if(auto* constInt = llvm::dyn_cast<llvm::ConstantInt>(value))
+        {
+            str += std::to_string(constInt->getSExtValue());
+        }
+        else if(auto* constFP = llvm::dyn_cast<llvm::ConstantFP>(value))
+        {
+            str += std::to_string(constFP->getValueAPF().convertToDouble());
+        }
+        else
+        {
+            str += value->getName().str();
+        }
+        return str;
+    };
+    return llvmValueToString(value);
+}
+
 

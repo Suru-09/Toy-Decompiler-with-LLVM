@@ -7,6 +7,7 @@
 
 #include "codeGen/ast/HllAstNodeVisitor.h"
 #include "codeGen/DefineVariablesHandler.h"
+#include "codeGen/ast/PHINodeHandler.h"
 #include "udm/FuncInfo.h"
 
 namespace codeGen::ast {
@@ -47,6 +48,8 @@ private:
 private:
     bool writeToFile(const std::string& filename);
     void addPhiNodesValues(const std::pair<std::string, std::string>& phiNode);
+    void replaceStackVarWithAlias(const std::vector<codeGen::ast::StackVarAlias> &aliases);
+    void replaceOneStackVarWithAlias(const codeGen::ast::StackVarAlias& alias);
 
     void addVariablesDefinitions();
 };

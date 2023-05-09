@@ -39,7 +39,7 @@ int main(int argc, char** argv) {
       else if(argv[i][0] == '-' && argv[i][1] == 'c')
          codegenSettings->parseCodegenSettings(argv[i]);
    }
-   std::string testing_file = "../testing_files/elfC/loops";
+   std::string testing_file = "../testing_files/elfC/test";
    lifterSettings->setBinaryPath(testing_file);
    lifterSettings->setServerUrl("http://145.14.158.175:29200");
    

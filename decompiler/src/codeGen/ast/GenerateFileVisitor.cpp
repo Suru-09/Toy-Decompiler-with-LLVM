@@ -14,6 +14,9 @@ std::pair<std::string, std::string> codeGen::ast::GenerateFileVisitor::visit(std
         auto [name, code] = visit(std::dynamic_pointer_cast<LlvmBasicBlockNode>(child));
         logger->info("Basic block name: {}", name);
     }
+
+    // !!!!! Replace stack variables with their aliases at the end of everything.
+    replaceStackVarWithAlias(PHINodeHandler{llvmFun}.getPHINodeAliases());
     return std::make_pair<std::string, std::string>(node->getName(), "");
 }
 
@@ -209,5 +212,38 @@ void codeGen::ast::GenerateFileVisitor::addPhiNodesValues(const std::pair<std::s
     }
     logger->info("[GenerateFileVisistor::addPhiNodesValues] Adding phi node spaces: {}", space.size());
     output[bbStr].push_back(space + value);
+}
+
+void codeGen::ast::GenerateFileVisitor::replaceStackVarWithAlias(const std::vector<codeGen::ast::StackVarAlias> &aliases)
+{
+    for(const auto& alias: aliases)
+    {
+        logger->info("[GenerateFileVisitor::replaceStackVarWithAlias] Looking for stack var: {} in basic block: {}", alias.getStackVarName(), alias.getBasicBlockName());
+        replaceOneStackVarWithAlias(alias);
+    }
+}
+
+void codeGen::ast::GenerateFileVisitor::replaceOneStackVarWithAlias(const codeGen::ast::StackVarAlias &alias)
+{
+    for(const auto& [bbKey, vec]: output)
+    {
+        logger->info("[GenerateFileVisitor::replaceOneStackVarWithAlias] In basic block: {}", bbKey);
+        for(std::size_t i = 0;  i < vec.size(); ++i)
+        {
+            logger->info("[GenerateFileVisitor::replaceOneStackVarWithAlias] In line: {}", vec[i]);
+            if(bbKey == alias.getBasicBlockName())
+            {
+                std::string line = vec[i];
+                std::size_t pos = line.find(alias.getStackVarName());
+                if(pos != std::string::npos)
+                {
+                    std::string oldVal = line.substr(pos, alias.getStackVarName().size());
+                    logger->info("[GenerateFileVisitor::replaceOneStackVarWithAlias] Found stack var: {} in line: {}, replacing old value: {}", alias.getStackVarName(), line, oldVal);
+                    line.replace(pos, alias.getStackVarName().size(), alias.getLocalVar());
+                    output[bbKey][i] = line;
+                }
+            }
+        }
+    }
 }
 

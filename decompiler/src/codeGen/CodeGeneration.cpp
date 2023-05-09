@@ -143,6 +143,7 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
             decompiledFunction += + "\t" + el + "\n";
         }
     }
+    decompiledFunction += "}\n";
 
 
     logger->error("Decompiled function: {}", decompiledFunction);

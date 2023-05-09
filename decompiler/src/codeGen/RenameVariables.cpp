@@ -30,14 +30,14 @@ std::unordered_map<std::string, std::string> codeGen::RenameVariables::rename()
                 continue;
             }
 
-            if( auto* retInst = llvm::dyn_cast<llvm::ReturnInst>(&inst) )
-            {
-                auto instrType = RenameVariables::VariableType::RETURN_VALUE;
-                auto instrAlias = typesMap[instrType].first + std::to_string(typesMap[instrType].second);
-                inst.setName(instrAlias);
-                typesMap[instrType].second++;
-                continue;
-            }
+//            if( auto* retInst = llvm::dyn_cast<llvm::ReturnInst>(&inst) )
+//            {
+//                auto instrType = RenameVariables::VariableType::RETURN_VALUE;
+//                auto instrAlias = typesMap[instrType].first + std::to_string(typesMap[instrType].second);
+//                inst.setName(instrAlias);
+//                typesMap[instrType].second++;
+//                continue;
+//            }
 
             // check if instruction is a phi node
             if( auto* phiNode =  llvm::dyn_cast<llvm::PHINode>(&inst))
