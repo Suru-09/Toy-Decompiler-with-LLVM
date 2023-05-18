@@ -227,10 +227,8 @@ void codeGen::ast::GenerateFileVisitor::replaceOneStackVarWithAlias(const codeGe
 {
     for(const auto& [bbKey, vec]: output)
     {
-        logger->info("[GenerateFileVisitor::replaceOneStackVarWithAlias] In basic block: {}", bbKey);
         for(std::size_t i = 0;  i < vec.size(); ++i)
         {
-            logger->info("[GenerateFileVisitor::replaceOneStackVarWithAlias] In line: {}", vec[i]);
             if(bbKey == alias.getBasicBlockName())
             {
                 std::string line = vec[i];

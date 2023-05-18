@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <memory>
+#include <unordered_map>
 
 #include "codeGen/instructions/Instruction.h"
 
@@ -14,6 +15,7 @@ public:
     ~BranchConditionalGen() = default;
     
     static std::string generateConditional(const std::string& condition, int numSpaces, bool isElseIf = false);
+    [[nodiscard]] static std::unordered_map<std::string, std::string> collectExpansionRequiredTerminatorInstructions(const llvm::Function& func);
 };
 
 }   // namespace codeGen

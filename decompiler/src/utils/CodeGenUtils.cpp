@@ -231,7 +231,7 @@ std::string utils::CodeGenUtils::getLoopCondition(llvm::Function &func, const st
     return std::string{};
 }
 
-std::string utils::CodeGenUtils::getInstructionValue(llvm::Instruction *instr) {
+std::string utils::CodeGenUtils::getInstructionValue(const llvm::Instruction *instr) {
     std::string value;
 
     if(instr->hasName())
@@ -281,6 +281,11 @@ std::string utils::CodeGenUtils::llvmValueToString(llvm::Value *value) {
         return str;
     };
     return llvmValueToString(value);
+}
+
+
+bool utils::CodeGenUtils::doesInstructionHaveSingleUse(const llvm::Instruction *instr) {
+    return instr->hasOneUse();
 }
 
 

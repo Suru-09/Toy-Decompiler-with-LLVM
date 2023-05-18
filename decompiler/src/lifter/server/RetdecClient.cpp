@@ -2,9 +2,11 @@
 #include "logger/LoggerManager.h"
 
 #include <iostream>
-#include <curl/curl.h>
-#include <boost/property_tree/json_parser.hpp>
+#include <fstream>
 #include <filesystem>
+
+#include <boost/property_tree/json_parser.hpp>
+#include <curl/curl.h>
 
 server::RetdecClient::RetdecClient(const std::string& serverUrl) 
 : m_serverUrl(serverUrl) 
@@ -113,17 +115,26 @@ bool server::RetdecClient::convertJsonIRToPlainText(const std::string& llvmIRPat
         return false;
     }
 
-    boost::property_tree::ptree pt;
-    boost::property_tree::read_json(jsonFile, pt);
-    const auto llvmIR = pt.get<std::string>("message");
-    if(llvmIR.empty()) {
-        logger->error("[RetdecClient::convertJsonIRToPlainText] Failed to get llvm IR from json file: {}", llvmIRPath);
+    try {
+        boost::property_tree::ptree pt;
+        boost::property_tree::read_json(jsonFile, pt);
+        const auto llvmIR = pt.get<std::string>("message");
+
+        if(llvmIR.empty()) {
+            logger->error("[RetdecClient::convertJsonIRToPlainText] Failed to get llvm IR from json file: {}", llvmIRPath);
+            return false;
+        }
+        std::ofstream llvmIRFile(llvmIRPath );
+        llvmIRFile << llvmIR;
+        llvmIRFile.close();
+        return true;
+    }
+    catch (const boost::property_tree::ptree_error& e) {
+        logger->error("[RetdecClient::convertJsonIRToPlainText] Exception occured, fsailed to parse json file: {}", llvmIRPath);
         return false;
     }
-    std::ofstream llvmIRFile(llvmIRPath );
-    llvmIRFile << llvmIR;
-    llvmIRFile.close();
-    return true;
+
+    return false;
 }
 
 CURLcode server::RetdecClient::downloadIR(const std::string& binaryPath) {
@@ -159,6 +170,7 @@ CURLcode server::RetdecClient::downloadIR(const std::string& binaryPath) {
      CURLcode res = curl_easy_perform(curl);
      if(res != CURLE_OK) {
          logger->error("[RetdecClient::downloadIR] Failed to download IR from server {}", curl_easy_strerror(res));
+         fclose(irFile);
          return CURLE_UPLOAD_FAILED;
      }
 

@@ -36,4 +36,4 @@ echo "Build failed, operation will be aborted!";
 exit
 fi
 
-./src/Reverse-Engineering-Tool
+./Reverse-Engineering-Tool
