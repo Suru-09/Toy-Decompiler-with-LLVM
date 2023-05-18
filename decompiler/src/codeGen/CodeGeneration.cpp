@@ -107,7 +107,7 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
     llvm::ReversePostOrderTraversal<llvm::Function*> rpot(&f);
     for(auto &bb: rpot)
     {
-        spdlog::error("Basic block: {}", bb->getName().str());
+//        spdlog::error("Basic block: {}", bb->getName().str());
         std::shared_ptr<ast::LlvmBasicBlockNode> bbNode = std::make_shared<ast::LlvmBasicBlockNode>(bb->getName().str());
         for(auto & inst : *bb)
         {

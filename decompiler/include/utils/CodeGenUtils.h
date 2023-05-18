@@ -23,11 +23,19 @@ public:
     static std::vector<std::string> extractValuesFromPhiString(const std::string& phiString);
     static std::string extractPhiNodeLeftValue(const std::string& phiString);
     static bool isLoop(const udm::FuncInfo& funcInfo, const std::string& bbLabel);
-    static std::string getLoopCondition(llvm::Function& func, const std::string& bbLabel);
+    static std::string getTerminatorCondition(llvm::Function& func, const std::string& bbLabel);
     static std::vector<std::string> extractSubstrings(const std::string& input, const std::string& substr);
     static std::string getInstructionValue(const llvm::Instruction* instr);
     static std::string llvmValueToString(llvm::Value* value);
-    [[nodiscard]] static bool doesInstructionHaveSingleUse(const llvm::Instruction* instr);
+    static bool doesInstructionHaveSingleUse(const llvm::Instruction* instr);
+
+    [[nodiscard("Possible nullptr returned!")]]
+        static llvm::BasicBlock* getBBAfterLabel(llvm::Function& func, const std::string& bbLabel);
+
+    [[nodiscard("Possible nullptr returned!")]]
+    static llvm::Instruction* getInstructionAfterLabel(llvm::Function& func, const std::string& instrLabel);
+
+    static std::string getTerminatorAlias(llvm::Function& func, const llvm::Instruction* instr);
 };
 
 }   // namespace utils

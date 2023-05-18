@@ -136,7 +136,7 @@ std::string codeGen::GenerateFnBody::getLoopCondition(llvm::BasicBlock* bb, int6
                 loopCondition = expanded;
             }
         }
-        logger->error("[getLoopCondition] instruction: {} for: [{}]", loopCondition, bb->back().getName().str());
+        logger->error("[getTerminatorCondition] instruction: {} for: [{}]", loopCondition, bb->back().getName().str());
     }
     return loopCondition;
 }

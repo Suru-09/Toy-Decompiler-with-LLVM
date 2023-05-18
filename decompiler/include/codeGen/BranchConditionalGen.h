@@ -15,7 +15,7 @@ public:
     ~BranchConditionalGen() = default;
     
     static std::string generateConditional(const std::string& condition, int numSpaces, bool isElseIf = false);
-    [[nodiscard]] static std::unordered_map<std::string, std::string> collectExpansionRequiredTerminatorInstructions(const llvm::Function& func);
+    [[nodiscard]] static bool shouldTerminatorBeExpanded(const llvm::BasicBlock* bb);
 };
 
 }   // namespace codeGen

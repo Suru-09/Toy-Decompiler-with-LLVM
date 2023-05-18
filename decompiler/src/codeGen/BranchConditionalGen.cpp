@@ -21,16 +21,7 @@ std::string codeGen::BranchConditionalGen::generateConditional(const std::string
    return result;
 }
 
-std::unordered_map<std::string, std::string>
-codeGen::BranchConditionalGen::collectExpansionRequiredTerminatorInstructions(const llvm::Function &func) {
-    std::unordered_map<std::string, std::string> expansionRequired;
-    llvm::ReversePostOrderTraversal<const llvm::Function*> rpot(&func);
-    for(auto bb: rpot) {
-        auto terminator = bb->getTerminator();
-        if (utils::CodeGenUtils::doesInstructionHaveSingleUse(terminator))
-        {
-            expansionRequired[terminator->getName().str()] = utils::CodeGenUtils::getInstructionValue(terminator);
-        }
-    }
-    return expansionRequired;
+bool codeGen::BranchConditionalGen::shouldTerminatorBeExpanded(const llvm::BasicBlock *bb) {
+    return utils::CodeGenUtils::doesInstructionHaveSingleUse(bb->getTerminator());
 }
+

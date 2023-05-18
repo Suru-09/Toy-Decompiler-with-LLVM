@@ -4,9 +4,12 @@
 #include "codeGen/ast/LlvmFunctionNode.h"
 #include "codeGen/ast/LlvmBasicBlockNode.h"
 #include "codeGen/ast/LlvmInstructionNode.h"
-#include "utils/CodeGenUtils.h"
 #include "codeGen/BracketManager.h"
 #include "codeGen/DefineVariablesHandler.h"
+#include "codeGen/BranchConditionalGen.h"
+
+#include "utils/CodeGenUtils.h"
+
 
 std::pair<std::string, std::string> codeGen::ast::GenerateFileVisitor::visit(std::shared_ptr<LlvmFunctionNode> node) {
     // Iterate over all basic blocks and instructions and generate the LLVM IR code.
@@ -24,27 +27,34 @@ std::pair<std::string, std::string>
 codeGen::ast::GenerateFileVisitor::visit(std::shared_ptr<LlvmInstructionNode> node) {
     auto nodeName = node->getName();
     logger->info("[GenerateFileVisistor] Instruction name: {}, body: {}", node->getName(), node->getInstructionBody());
-    if (node->getOpcode() == llvm::Instruction::PHI)
+
+    auto instr = utils::CodeGenUtils::getInstructionAfterLabel(llvmFun, nodeName);
+    if(!instr)
     {
-        // Extract the labels and values from the PHI instruction.
-        const std::string phiNodeStr = node->getInstructionBody();
-        auto labels = utils::CodeGenUtils::extractLabelsFromPhiString(phiNodeStr);
-        auto values = utils::CodeGenUtils::extractValuesFromPhiString(phiNodeStr);
-        logger->info("[GenerateFileVisistor] Phi nodes size: {}", labels.size());
-        assert(labels.size() == values.size());
-        for (int i = 0; i < labels.size(); i++)
-        {
-            auto indentation = utils::CodeGenUtils::getSpaces(indentationLevel);
-            auto strValue = indentation + utils::CodeGenUtils::extractPhiNodeLeftValue(phiNodeStr) + " = " + values[i];
-            logger->info("[GenerateFileVisistor] Label -> {}, Value -> {}", labels[i], strValue);
-//            addPhiNodesValues(std::make_pair<std::string, std::string>(std::move(labels[i]), std::move(strValue)));
-        }
-    }
-    else {
-        auto indentation = utils::CodeGenUtils::getSpaces(indentationLevel);
-        output[lastBasicBlockName].push_back(indentation +  node->getInstructionBody());
+        logger->error("[GenerateFileVisistor] Failed to get LLVM instruction after label: {}", nodeName);
+        return std::make_pair<std::string, std::string>(node->getName(), "");
     }
 
+    // ignore phi nodes instructions, they are handled separately.
+    if(instr->getOpcode() == llvm::Instruction::PHI)
+    {
+        logger->info("[GenerateFileVisistor] Skipping PHI node instruction: {}", nodeName);
+        return std::make_pair<std::string, std::string>(node->getName(), "");
+    }
+
+    // Only print terminator instructions if they have multiple uses.
+    // Why? Because they are usually conditions for loops/ifs and there is no need
+    // to print them twice if they are not used anywhere else.
+    auto terminatorName = utils::CodeGenUtils::getTerminatorAlias(llvmFun, instr);
+    logger->info("[GenerateFileVisistor] Terminator name: {} and node name: {}", terminatorName, nodeName);
+    if(nodeName == terminatorName && utils::CodeGenUtils::doesInstructionHaveSingleUse(instr))
+    {
+        logger->info("[GenerateFileVisistor] Skipping printing for the node: {}", nodeName);
+        return std::make_pair<std::string, std::string>(node->getName(), "");
+    }
+
+    auto indentation = utils::CodeGenUtils::getSpaces(indentationLevel);
+    output[lastBasicBlockName].push_back(indentation +  node->getInstructionBody());
 
     return std::make_pair<std::string, std::string>(node->getName(), "");
 }
@@ -72,14 +82,25 @@ std::pair<std::string, std::string> codeGen::ast::GenerateFileVisitor::visit(std
         auto [name, code] = visit(std::dynamic_pointer_cast<LlvmInstructionNode>(child));
     }
 
+    auto searchInstrValue = [&](const std::string& instrName){
+        logger->info("[GenerateFileVisitor] Searching for instruction: {}", instrName);
+        auto val = std::dynamic_pointer_cast<LlvmInstructionNode> (node->getChildren().front());
+        if(val)
+        {
+            logger->info("[GenerateFileVisitor] Found instruction: {}, with value: {}", val->getName(), val->getInstructionBody());
+            return val->getInstructionBody();
+        }
+        return std::string();
+    };
+
     if(codeGen::BracketManager::isLoop(bbInfo) == udm::BBInfo::LoopType::WHILE
         || codeGen::BracketManager::isLoop(bbInfo) == udm::BBInfo::LoopType::DO_WHILE
     )
     {
         codeGen::BracketManager::addBracket(node->getName(), funcInfo);
         auto space = utils::CodeGenUtils::getSpaces(indentationLevel);
-        auto condition = utils::CodeGenUtils::getLoopCondition(llvmFun, node->getName());
-        auto condStr = condition.empty() ? "true" : condition;
+        auto condition = utils::CodeGenUtils::getTerminatorCondition(llvmFun, node->getName());
+        auto condStr = searchInstrValue(condition).empty() ? "true" : searchInstrValue(condition);
         output[lastBasicBlockName].push_back(space + "while (" + condStr + ") {");
         indentationLevel += 4;
     }
@@ -88,8 +109,8 @@ std::pair<std::string, std::string> codeGen::ast::GenerateFileVisitor::visit(std
     {
         codeGen::BracketManager::addBracket(node->getName(), funcInfo);
         auto space = utils::CodeGenUtils::getSpaces(indentationLevel);
-        auto condition = utils::CodeGenUtils::getLoopCondition(llvmFun, node->getName());
-        auto condStr = condition.empty() ? "true" : condition;
+        auto condition = utils::CodeGenUtils::getTerminatorCondition(llvmFun, node->getName());
+        auto condStr = searchInstrValue(condition).empty()  ? "true" : searchInstrValue(condition);
         output[lastBasicBlockName].push_back(space + "if (" + condStr + ") {");
         indentationLevel += 4;
     }

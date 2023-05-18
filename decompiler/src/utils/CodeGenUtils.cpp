@@ -5,6 +5,9 @@
 
 #include "llvm/IR/Type.h"
 #include "llvm/IR/DerivedTypes.h"
+#include <llvm/IR/Value.h>
+#include "llvm/IR/Type.h"
+#include "llvm/Support/Casting.h"
 
 
 std::string utils::CodeGenUtils::getSpaces(int numSpaces)
@@ -200,7 +203,6 @@ std::vector<std::string> utils::CodeGenUtils::extractLabelsFromPhiString(const s
             break;
         labels.push_back(phiString.substr(startPos, endPos - startPos));
     }
-    spdlog::error("Extracted end and start: {}, {}", endPos, startPos);
     return labels;
 }
 
@@ -215,17 +217,29 @@ bool utils::CodeGenUtils::isLoop(const udm::FuncInfo& funcInfo, const std::strin
     return bbInfo.getIsLoop() && bbInfo.getLoopType() != udm::BBInfo::LoopType::NONE;
 }
 
-std::string utils::CodeGenUtils::getLoopCondition(llvm::Function &func, const std::string &bbLabel) {
+std::string utils::CodeGenUtils::getTerminatorCondition(llvm::Function &func, const std::string &bbLabel) {
     for(auto& bb : func)
     {
-        if(bb.getName() == bbLabel)
+        if(bb.getName().str() != bbLabel)
         {
-           auto terminator = bb.getTerminator();
-              if(terminator->getNumSuccessors() == 2)
-              {
-                auto cond = llvm::dyn_cast<llvm::BranchInst>(terminator)->getCondition();
-                return cond->getName().str();
-              }
+            continue;
+        }
+
+
+        auto terminator = bb.getTerminator();
+        // if terminator has 2 successors, it is a conditional jump(might be a loop/if).
+        // if it is an unconditional jump we don't care about it and return empty string
+        if(auto branchInstr = llvm::dyn_cast<llvm::BranchInst>(terminator))
+        {
+            if(branchInstr->isConditional())
+            {
+                spdlog::error("Found conditional jump in bb: {}", llvmValueToString(branchInstr->getCondition()));
+                return llvmValueToString(branchInstr->getCondition());
+            }
+            else
+            {
+                spdlog::error("Found unconditional jump in bb: {}", bbLabel);
+            }
         }
     }
     return std::string{};
@@ -286,6 +300,49 @@ std::string utils::CodeGenUtils::llvmValueToString(llvm::Value *value) {
 
 bool utils::CodeGenUtils::doesInstructionHaveSingleUse(const llvm::Instruction *instr) {
     return instr->hasOneUse();
+}
+
+llvm::BasicBlock *utils::CodeGenUtils::getBBAfterLabel(llvm::Function &func, const std::string &bbLabel) {
+    for(auto& bb : func)
+    {
+        if(bb.getName() == bbLabel)
+            return &bb;
+    }
+    return nullptr;
+}
+
+llvm::Instruction *utils::CodeGenUtils::getInstructionAfterLabel(llvm::Function &func, const std::string &instrLabel) {
+    for(auto& bb : func)
+    {
+        for(auto& instr : bb)
+        {
+            if(instr.getName() == instrLabel)
+            {
+                return &instr;
+            }
+        }
+    }
+    return nullptr;
+}
+
+std::string utils::CodeGenUtils::getTerminatorAlias(llvm::Function &func, const llvm::Instruction *instr) {
+    auto parentBlock = instr->getParent();
+    if(!parentBlock)
+    {
+        return std::string{};
+    }
+    auto terminator = parentBlock->getTerminator();
+    if(!terminator)
+    {
+        return std::string{};
+    }
+
+    if(auto* branchInstr = llvm::dyn_cast<llvm::BranchInst>(terminator))
+    {
+        return branchInstr->isConditional() ? branchInstr->getCondition()->getName().str() : std::string{};
+    }
+
+    return std::string{};
 }
 
 
