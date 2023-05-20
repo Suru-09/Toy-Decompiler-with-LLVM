@@ -19,13 +19,11 @@ public:
     explicit PHINodeHandler(llvm::Function& llvmFun);
 
     std::vector<StackVarAlias> getPHINodeAliases();
+    std::vector<std::pair<std::string, std::string>> getLabelsAndValueFromPhiNode(llvm::PHINode* phiNode);
 
 private:
     llvm::Function& m_llvmFun;
     std::shared_ptr<spdlog::logger> logger;
-
-private:
-    std::vector<std::pair<std::string, std::string>> getLabelsAndValueFromPhiNode(llvm::PHINode* phiNode);
 };
 
 }   // namespace codeGen, ast

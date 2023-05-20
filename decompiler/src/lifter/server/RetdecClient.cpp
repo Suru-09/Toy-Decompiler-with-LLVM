@@ -133,8 +133,6 @@ bool server::RetdecClient::convertJsonIRToPlainText(const std::string& llvmIRPat
         logger->error("[RetdecClient::convertJsonIRToPlainText] Exception occured, fsailed to parse json file: {}", llvmIRPath);
         return false;
     }
-
-    return false;
 }
 
 CURLcode server::RetdecClient::downloadIR(const std::string& binaryPath) {

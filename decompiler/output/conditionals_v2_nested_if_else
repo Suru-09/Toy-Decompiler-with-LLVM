@@ -1,0 +1,14 @@
+Fn nested_if_else(j: i32, i: i32) -> i32
+{
+	bool lvar_0 = 0, lvar_1 = 0
+	i32 lvar_2 = 0
+	bool lvar_3 = 0
+	i32 lvar_4 = 0, lvar_5 = 0
+	lvar_0 = j > i 
+	lvar_1 = j <  11
+	lvar_2 = lvar_1 ? 5 :  4
+	lvar_3 = i <  11
+	lvar_4 = lvar_3 ? 7 :  6
+	lvar_5 = lvar_0 ?lvar_2  : lvar_4 
+	ret lvar_5
+}

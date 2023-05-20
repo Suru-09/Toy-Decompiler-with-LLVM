@@ -149,6 +149,7 @@ std::pair<std::string, std::string> codeGen::ast::GenerateFileVisitor::visit(std
         indentationLevel += 4;
         if(branchToTerminalBlockResult.isBranchingToTerminalBlock)
         {
+            logger->info("[GenerateFileVisitor::visit(BasicBlock)] Adding return value for conditional block: {}", node->getName());
             addReturnValue(node->getName());
         }
     }

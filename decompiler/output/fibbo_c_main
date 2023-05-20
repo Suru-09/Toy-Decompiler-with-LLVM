@@ -1,0 +1,10 @@
+Fn main() -> i32
+{
+	i32 lvar_0 = 0
+	i64 lvar_1 = 0
+	i32 lvar_2 = 0
+	lvar_0 =  , fibo 
+	lvar_1 =  (i64)lvar_0
+	lvar_2 =  ,  , lvar_1 , printf 
+	ret 
+}

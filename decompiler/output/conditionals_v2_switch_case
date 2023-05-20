@@ -1,0 +1,29 @@
+Fn switch_case(n: i32) -> i32
+{
+	bool lvar_4 = 0
+	i32 lvar_5 = 0
+	bool lvar_6 = 0
+	i32 lvar_7 = 0
+	
+	if (n ==  6) {
+	    return 20
+	}
+	
+	if (n >  6) {
+	    return 4
+	}
+	
+	if (n ==  3) {
+	    return 9
+	}
+	
+	if (n >  3) {
+	    return 4
+	}
+	lvar_4 = n ==  2
+	lvar_5 = lvar_4 ? 15 :  4
+	lvar_6 = n ==  1
+	lvar_7 = lvar_6 ? 3 : lvar_5 
+	
+	ret 20
+}

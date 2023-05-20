@@ -444,23 +444,32 @@ utils::CodeGenUtils::BranchToTerminalBlockResult utils::CodeGenUtils::checkIfCur
 std::string
 utils::CodeGenUtils::returnStringForBranchingToTerminalBlock(llvm::Function &func, const std::string &bbLabel) {
     std::string retStr =  "return ";
-
-    codeGen::ast::PHINodeHandler phiNodeHandler{func};
-    auto phiAliases = phiNodeHandler.getPHINodeAliases();
-    auto foundBBLabel = std::find_if(phiAliases.begin(), phiAliases.end(), [&bbLabel](const auto& stackVar){
-        return stackVar.getStackVarName() == bbLabel;
-    });
-
-    if(foundBBLabel != phiAliases.end())
+    auto& terminalBlock = func.back();
+    for(auto& instr: terminalBlock)
     {
-        retStr += foundBBLabel->getLocalVar();
-    }
-    else
-    {
-        retStr += "0";
+        if(instr.getOpcode() != llvm::Instruction::PHI)
+        {
+            continue;
+        }
+
+        auto* phiInstr = llvm::dyn_cast<llvm::PHINode>(&instr);
+        assert(phiInstr && "Expected phi node");
+
+        codeGen::ast::PHINodeHandler phiNodeHandler{func};
+        auto labelAndValues = phiNodeHandler.getLabelsAndValueFromPhiNode(phiInstr);
+        for(auto& labelAndValue : labelAndValues)
+        {
+            spdlog::info("[CodeGenUtils::returnStringForBranchingToTerminalBlockFound] label: {} and target: {}", labelAndValue.first, bbLabel);
+            if(labelAndValue.first == bbLabel)
+            {
+                spdlog::info("[CodeGenUtils::returnStringForBranchingToTerminalBlockFound] Found label: {} and value: {}", labelAndValue.first, labelAndValue.second);
+                retStr += labelAndValue.second;
+                return retStr;
+            }
+        }
     }
 
-    return retStr;
+    return "return 0";
 }
 
 

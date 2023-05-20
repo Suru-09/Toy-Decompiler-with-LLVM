@@ -57,6 +57,11 @@ std::vector<std::pair<std::string, std::string>> codeGen::ast::PHINodeHandler::g
              std::string label = incomingBlock->getName().str();
              labelsAndValues.emplace_back(label, value);
          }
+         else {
+            value = utils::CodeGenUtils::llvmValueToString(incomingValue);
+             std::string label = incomingBlock->getName().str();
+             labelsAndValues.emplace_back(label, value);
+         }
     }
     return labelsAndValues;
 }
