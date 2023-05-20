@@ -78,7 +78,7 @@ router.post('/decompile', (req, res) => {
     var pathToRetdec = "../../binary/retdec/bin/retdec-decompiler";
     var uploadsPath = "../../uploads/";
     var binaryPath = path_1.default.join(__dirname, pathToRetdec);
-    var filePath = path_1.default.join(__dirname, '../../uploads/loops');
+    var filePath = path_1.default.join(__dirname, '../../uploads/' + executable);
     console.log("Binary path: " + binaryPath);
     const args = [filePath];
     // TODO: add WSL support for Windows
@@ -108,8 +108,8 @@ router.post('/decompile', (req, res) => {
             });
         }
         console.log("File gen was created/already existed.");
-        const oldPath = path_1.default.join(__dirname, "../../uploads/" + "loops" + ".ll");
-        const newPath = path_1.default.join(__dirname, "../../gen/" + "loops" + ".ll");
+        const oldPath = path_1.default.join(__dirname, "../../uploads/" + executable + ".ll");
+        const newPath = path_1.default.join(__dirname, "../../gen/" + executable + ".ll");
         console.log("Old path: " + oldPath);
         console.log("New path: " + newPath);
         try {
@@ -129,9 +129,9 @@ router.post('/decompile', (req, res) => {
     // childProcess.stdout.on('data', (data) => {
     //   console.log(`Decompile stdout: ${data}`);
     // });
-    childProcess.stderr.on('data', (data) => {
-        console.error(`Decompile stderr: ${data}`);
-    });
+    // childProcess.stderr.on('data', (data) => {
+    //   console.error(`Decompile stderr: ${data}`);
+    // });
 });
 // ASK IF IR FILE HAS BEEN CREATED
 router.get('/ir-exist', (req, res) => {
@@ -156,6 +156,9 @@ router.get('/ir', (req, res) => {
     }
     const filePath = path_1.default.join(__dirname, "../../gen/" + file + ".ll");
     console.log("File path for reading the generated file: " + filePath);
+    if (!fs_1.default.existsSync(filePath)) {
+        return res.status(400).json({ message: `File ${filePath} does not exist` });
+    }
     const fileContents = fs_1.default.readFileSync(filePath, 'utf8');
     return res.status(200).json({ message: fileContents });
 });

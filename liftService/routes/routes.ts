@@ -88,7 +88,7 @@ router.post('/decompile', (req: Request, res: Response) => {
     var pathToRetdec: string = "../../binary/retdec/bin/retdec-decompiler";
     var uploadsPath: string = "../../uploads/";
     var binaryPath: string = path.join(__dirname, pathToRetdec);
-    var filePath: string = path.join(__dirname, '../../uploads/loops');
+    var filePath: string = path.join(__dirname, '../../uploads/' + executable);
 
     console.log("Binary path: " + binaryPath);
     const args: string[] = [filePath];
@@ -124,8 +124,8 @@ router.post('/decompile', (req: Request, res: Response) => {
         });
       }	      
       console.log("File gen was created/already existed.");
-      const oldPath: string = path.join(__dirname, "../../uploads/" + "loops" + ".ll");
-      const newPath: string  = path.join(__dirname, "../../gen/" + "loops" + ".ll");
+      const oldPath: string = path.join(__dirname, "../../uploads/" + executable + ".ll");
+      const newPath: string  = path.join(__dirname, "../../gen/" + executable + ".ll");
       console.log("Old path: " + oldPath);
       console.log("New path: " + newPath);
       try {
@@ -149,9 +149,9 @@ router.post('/decompile', (req: Request, res: Response) => {
     //   console.log(`Decompile stdout: ${data}`);
     // });
     
-    childProcess.stderr.on('data', (data) => {
-      console.error(`Decompile stderr: ${data}`);
-    });
+    // childProcess.stderr.on('data', (data) => {
+    //   console.error(`Decompile stderr: ${data}`);
+    // });
 });
 
 // ASK IF IR FILE HAS BEEN CREATED
@@ -180,8 +180,11 @@ router.get('/ir', (req: Request, res: Response) => {
 
     const filePath: string = path.join(__dirname, "../../gen/" + file + ".ll");
     console.log("File path for reading the generated file: " + filePath);
+    if(!fs.existsSync(filePath)) {
+      return res.status(400).json({ message: `File ${filePath} does not exist` });
+  }
+    
     const fileContents = fs.readFileSync(filePath, 'utf8');
-
     return res.status(200).json({ message: fileContents });
 });
 
