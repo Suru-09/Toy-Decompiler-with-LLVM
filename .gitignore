@@ -37,6 +37,9 @@ cmake-build-debug/
 logs/*
 *.log
 
+# Ignore output from decompiler
+output/*
+
 
 # TS server
 liftService/node_modules

@@ -21,11 +21,30 @@ std::map<std::string, std::vector<codeGen::Variable>> codeGen::DefineVariablesHa
     llvm::ReversePostOrderTraversal<const llvm::Function*> rpot(&llvmFn);
     for(auto bb: rpot)
     {
+        auto terminator = bb->getTerminator();
+        std::string branchCondition;
+        if(auto* branchInstr = llvm::dyn_cast<llvm::BranchInst>(terminator))
+        {
+            if(branchInstr->isConditional())
+            {
+                branchCondition = branchInstr->getCondition()->getName().str();
+            }
+        }
+
         for(auto& instr: *bb)
         {
             // !!!! --- phi nodes symbolize variables that are saved on the stack,
             // which will later be replaced by the local variables for simplicity.
             if(instr.getOpcode() == llvm::Instruction::PHI || instr.getName().empty())
+            {
+                continue;
+            }
+
+            // check if variable has single use && is it only used in branch condition
+            // this was added once I made the decision not to print if and while loops
+            // conditions as separate variables, instead I print them directly in the
+            // if and while loops headers.
+            if(utils::CodeGenUtils::doesInstructionHaveSingleUse(&instr) && branchCondition == instr.getName().str())
             {
                 continue;
             }

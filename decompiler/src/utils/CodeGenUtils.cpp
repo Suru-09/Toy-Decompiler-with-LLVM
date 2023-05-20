@@ -1,14 +1,15 @@
 #include <llvm/IR/Instructions.h>
 #include <regex>
-#include "utils/CodeGenUtils.h"
 
+#include "utils/CodeGenUtils.h"
+#include "codeGen/instructions/Instruction.h"
+#include "codeGen/ast/PHINodeHandler.h"
 
 #include "llvm/IR/Type.h"
 #include "llvm/IR/DerivedTypes.h"
 #include <llvm/IR/Value.h>
 #include "llvm/IR/Type.h"
 #include "llvm/Support/Casting.h"
-
 
 std::string utils::CodeGenUtils::getSpaces(int numSpaces)
 {
@@ -217,7 +218,20 @@ bool utils::CodeGenUtils::isLoop(const udm::FuncInfo& funcInfo, const std::strin
     return bbInfo.getIsLoop() && bbInfo.getLoopType() != udm::BBInfo::LoopType::NONE;
 }
 
-std::string utils::CodeGenUtils::getTerminatorCondition(llvm::Function &func, const std::string &bbLabel) {
+std::pair<std::string, std::string> utils::CodeGenUtils::getTerminatorCondition(llvm::Function &func, const std::string &bbLabel) {
+    auto extractValueFromTerminator = [](llvm::Instruction* terminator) -> std::string
+    {
+        if(auto branchInstr = llvm::dyn_cast<llvm::BranchInst>(terminator))
+        {
+            if(branchInstr->isConditional())
+            {
+                spdlog::error("Found conditional jump in bb: {}, with value: {}", llvmValueToString(branchInstr->getCondition()));
+                return llvmValueToString(branchInstr->getCondition());
+            }
+        }
+        return std::string{};
+    };
+
     for(auto& bb : func)
     {
         if(bb.getName().str() != bbLabel)
@@ -229,20 +243,23 @@ std::string utils::CodeGenUtils::getTerminatorCondition(llvm::Function &func, co
         auto terminator = bb.getTerminator();
         // if terminator has 2 successors, it is a conditional jump(might be a loop/if).
         // if it is an unconditional jump we don't care about it and return empty string
-        if(auto branchInstr = llvm::dyn_cast<llvm::BranchInst>(terminator))
+        auto branchCondition = std::make_pair(bb.getName().str(), extractValueFromTerminator(terminator));
+        // in this case for a while loop we might an optimization with an empty preheader
+        // so will we will check the next bb and see if we have the loop body.
+        if(branchCondition.second.empty())
         {
-            if(branchInstr->isConditional())
+            auto nextBB = bb.getNextNode();
+            if(nextBB == nullptr)
             {
-                spdlog::error("Found conditional jump in bb: {}", llvmValueToString(branchInstr->getCondition()));
-                return llvmValueToString(branchInstr->getCondition());
+                spdlog::error("Could not find next bb for bb: {}", bbLabel);
+                return std::pair<std::string, std::string>{};
             }
-            else
-            {
-                spdlog::error("Found unconditional jump in bb: {}", bbLabel);
-            }
+            auto nextBBTerminator = nextBB->getTerminator();
+            branchCondition = std::make_pair(nextBB->getName().str(), extractValueFromTerminator(nextBBTerminator));
         }
+        return branchCondition;
     }
-    return std::string{};
+    return std::pair<std::string, std::string>{};
 }
 
 std::string utils::CodeGenUtils::getInstructionValue(const llvm::Instruction *instr) {
@@ -343,6 +360,107 @@ std::string utils::CodeGenUtils::getTerminatorAlias(llvm::Function &func, const 
     }
 
     return std::string{};
+}
+
+std::string utils::CodeGenUtils::getBranchInstrBodyGivenBlock(llvm::Function &func, const std::string &bbLabel) {
+    std::map<std::string, std::string> instructions;
+    for(auto& bb : func)
+    {
+        if(bb.getName() != bbLabel)
+        {
+           continue;
+        }
+
+        for(auto& instr : bb)
+        {
+           auto myInstr = codeGen::Instruction::getInstruction(instr, 0);
+           instructions.insert_or_assign(instr.getName().str(), myInstr->toString());
+        }
+
+        auto terminator = bb.getTerminator();
+        spdlog::info("Found terminator: {}", bb.getName().str());
+        if(auto branchInstr = llvm::dyn_cast<llvm::BranchInst>(terminator))
+        {
+            if(branchInstr->isConditional())
+            {
+                spdlog::error("Found Conditional with condition: {}", branchInstr->getCondition()->getName().str());
+                auto it = instructions.find(branchInstr->getCondition()->getName().str());
+                if(it != instructions.end())
+                {
+                    spdlog::info("Found branch instr: {}", it->second);
+                    return it->second;
+                }
+            }
+        }
+    }
+    return std::string{};
+}
+
+std::string utils::CodeGenUtils::extractLHSFromInstructionBody(const std::string &instrBody) {
+    // if I find ' var1 = i > j' I will return i > j
+    auto equalPos = instrBody.find(" = ");
+    if(equalPos == std::string::npos)
+    {
+        return instrBody;
+    }
+    return instrBody.substr(equalPos + 3);
+}
+
+utils::CodeGenUtils::BranchToTerminalBlockResult utils::CodeGenUtils::checkIfCurrentBlockBranchesToTerminalBlock(llvm::Function &func, const std::string &bbLabel) {
+    auto terminalBlockName = func.back().getName().str();
+
+    auto targetBB  = getBBAfterLabel(func, bbLabel);
+    if(!targetBB)
+    {
+        return BranchToTerminalBlockResult{false, false};
+    }
+
+    auto terminator = targetBB->getTerminator();
+    if(!terminator)
+    {
+        return BranchToTerminalBlockResult{false, false};
+    }
+
+    if(auto branchInstr = llvm::dyn_cast<llvm::BranchInst>(terminator))
+    {
+        if(!branchInstr->isConditional()) {
+            // unconditional branch probably means is a preheader / loop end
+            // just ignore it
+            return BranchToTerminalBlockResult{false, false};
+        }
+
+        auto leftBranch = branchInstr->getSuccessor(0)->getName().str();
+        auto rightBranch = branchInstr->getSuccessor(1)->getName().str();
+
+        if(leftBranch == terminalBlockName || rightBranch == terminalBlockName)
+        {
+            return leftBranch == terminalBlockName ? BranchToTerminalBlockResult{true, false} : BranchToTerminalBlockResult{true, true};
+        }
+    }
+
+    return BranchToTerminalBlockResult{false, false};
+}
+
+std::string
+utils::CodeGenUtils::returnStringForBranchingToTerminalBlock(llvm::Function &func, const std::string &bbLabel) {
+    std::string retStr =  "return ";
+
+    codeGen::ast::PHINodeHandler phiNodeHandler{func};
+    auto phiAliases = phiNodeHandler.getPHINodeAliases();
+    auto foundBBLabel = std::find_if(phiAliases.begin(), phiAliases.end(), [&bbLabel](const auto& stackVar){
+        return stackVar.getStackVarName() == bbLabel;
+    });
+
+    if(foundBBLabel != phiAliases.end())
+    {
+        retStr += foundBBLabel->getLocalVar();
+    }
+    else
+    {
+        retStr += "0";
+    }
+
+    return retStr;
 }
 
 

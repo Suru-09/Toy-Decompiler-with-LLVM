@@ -1,3 +1,4 @@
+
 #include "codeGen/ast/GenerateFileVisitor.h"
 #include "logger/LoggerManager.h"
 
@@ -7,8 +8,15 @@
 #include "codeGen/BracketManager.h"
 #include "codeGen/DefineVariablesHandler.h"
 #include "codeGen/BranchConditionalGen.h"
-
+#include "settings/CodegenSettings.h"
 #include "utils/CodeGenUtils.h"
+#include "codeGen/GenerateFnHeader.h"
+
+#include <llvm/ADT/PostOrderIterator.h>
+#include <llvm/Analysis/PostDominators.h>
+
+#include <filesystem>
+#include <fstream>
 
 
 std::pair<std::string, std::string> codeGen::ast::GenerateFileVisitor::visit(std::shared_ptr<LlvmFunctionNode> node) {
@@ -76,22 +84,20 @@ std::pair<std::string, std::string> codeGen::ast::GenerateFileVisitor::visit(std
         indentationLevel -= 4;
         auto space = utils::CodeGenUtils::getSpaces(indentationLevel);
         output[lastBasicBlockName].push_back(space + "}");
+        logger->info("[GenerateFileVisitor::visit(BasicBlock)] Closing conditional for basic block: {}", node->getName());
+    }
+
+    while(codeGen::BracketManager::shouldCloseReturn(node->getName(), funcInfo))
+    {
+        indentationLevel -= 4;
+        auto space = utils::CodeGenUtils::getSpaces(indentationLevel);
+        output[lastBasicBlockName].push_back(space + "}");
+        logger->info("[GenerateFileVisitor::visit(BasicBlock)] Closing return for basic block: {}", node->getName());
     }
 
     for(auto &child: node->getChildren()) {
         auto [name, code] = visit(std::dynamic_pointer_cast<LlvmInstructionNode>(child));
     }
-
-    auto searchInstrValue = [&](const std::string& instrName){
-        logger->info("[GenerateFileVisitor] Searching for instruction: {}", instrName);
-        auto val = std::dynamic_pointer_cast<LlvmInstructionNode> (node->getChildren().front());
-        if(val)
-        {
-            logger->info("[GenerateFileVisitor] Found instruction: {}, with value: {}", val->getName(), val->getInstructionBody());
-            return val->getInstructionBody();
-        }
-        return std::string();
-    };
 
     if(codeGen::BracketManager::isLoop(bbInfo) == udm::BBInfo::LoopType::WHILE
         || codeGen::BracketManager::isLoop(bbInfo) == udm::BBInfo::LoopType::DO_WHILE
@@ -99,8 +105,22 @@ std::pair<std::string, std::string> codeGen::ast::GenerateFileVisitor::visit(std
     {
         codeGen::BracketManager::addBracket(node->getName(), funcInfo);
         auto space = utils::CodeGenUtils::getSpaces(indentationLevel);
+
+        auto branchingToTerminalBlock = utils::CodeGenUtils::checkIfCurrentBlockBranchesToTerminalBlock(llvmFun, node->getName());
+        logger->info("[GenerateFileVisitor::visit(BasicBlock)] Branching to terminal block result: <{}, {}>", branchingToTerminalBlock.isBranchingToTerminalBlock, branchingToTerminalBlock.isConditionReversed);
+        if (branchingToTerminalBlock.isBranchingToTerminalBlock)
+        {
+            //codeGen::BracketManager::handleBracketsWhenAddingReturn(node->getName(), funcInfo, llvmFun);
+        }
+
         auto condition = utils::CodeGenUtils::getTerminatorCondition(llvmFun, node->getName());
-        auto condStr = searchInstrValue(condition).empty() ? "true" : searchInstrValue(condition);
+        auto conditionBody = utils::CodeGenUtils::getBranchInstrBodyGivenBlock(llvmFun, condition.first);
+        conditionBody = utils::CodeGenUtils::extractLHSFromInstructionBody(conditionBody);\
+        // really ugly hack to handle the case when the condition is reversed.
+        //conditionBody = !conditionBody.empty() && branchingToTerminalBlock.isConditionReversed ? "!(" + conditionBody + ")" : conditionBody;
+
+        auto condStr = conditionBody.empty()  ? "true" : conditionBody;
+
         output[lastBasicBlockName].push_back(space + "while (" + condStr + ") {");
         indentationLevel += 4;
     }
@@ -109,10 +129,28 @@ std::pair<std::string, std::string> codeGen::ast::GenerateFileVisitor::visit(std
     {
         codeGen::BracketManager::addBracket(node->getName(), funcInfo);
         auto space = utils::CodeGenUtils::getSpaces(indentationLevel);
+
+        auto branchToTerminalBlockResult = utils::CodeGenUtils::checkIfCurrentBlockBranchesToTerminalBlock(llvmFun, node->getName());
+        logger->info("[GenerateFileVisitor::visit(BasicBlock)] Branching to terminal block result: <{}, {}>", branchToTerminalBlockResult.isBranchingToTerminalBlock, branchToTerminalBlockResult.isConditionReversed);
+        if (branchToTerminalBlockResult.isBranchingToTerminalBlock)
+        {
+            codeGen::BracketManager::handleBracketsWhenAddingReturn(node->getName(), funcInfo, llvmFun);
+        }
+
         auto condition = utils::CodeGenUtils::getTerminatorCondition(llvmFun, node->getName());
-        auto condStr = searchInstrValue(condition).empty()  ? "true" : searchInstrValue(condition);
+        auto conditionBody = utils::CodeGenUtils::getBranchInstrBodyGivenBlock(llvmFun, condition.first);
+        conditionBody = utils::CodeGenUtils::extractLHSFromInstructionBody(conditionBody);
+        // really ugly hack to handle the case when the condition is reversed.
+        conditionBody = !conditionBody.empty() && branchToTerminalBlockResult.isConditionReversed ? "!(" + conditionBody + ")" : conditionBody;
+
+        auto condStr = conditionBody.empty()  ? "true" : conditionBody;
+
         output[lastBasicBlockName].push_back(space + "if (" + condStr + ") {");
         indentationLevel += 4;
+        if(branchToTerminalBlockResult.isBranchingToTerminalBlock)
+        {
+            addReturnValue(node->getName());
+        }
     }
 
     while(codeGen::BracketManager::shouldCloseLoop(node->getName(), funcInfo))
@@ -181,14 +219,6 @@ void codeGen::ast::GenerateFileVisitor::addVariablesDefinitions() {
             output[lastBasicBlockName].push_back(varStr);
         }
     }
-}
-
-void codeGen::ast::GenerateFileVisitor::setOutputFilename(const std::string &filename) {
-    outputFilename = filename;
-}
-
-std::string codeGen::ast::GenerateFileVisitor::getOutputFilename() const {
-    return outputFilename;
 }
 
 codeGen::ast::GenerateFileVisitor::GenerateFileVisitor(llvm::Function& fun)
@@ -264,5 +294,53 @@ void codeGen::ast::GenerateFileVisitor::replaceOneStackVarWithAlias(const codeGe
             }
         }
     }
+}
+
+void codeGen::ast::GenerateFileVisitor::addReturnValue(const std::string &bbLabel) {
+    auto space = utils::CodeGenUtils::getSpaces(indentationLevel);
+    output[bbLabel].push_back(space + utils::CodeGenUtils::returnStringForBranchingToTerminalBlock(llvmFun, bbLabel));
+}
+
+bool codeGen::ast::GenerateFileVisitor::writeToFile(const std::string &filename) {
+    const std::string& outputPath = settings::CodegenSettings::getInstance()->getOutputFilePath();
+    if (!std::filesystem::exists(outputPath))
+    {
+        if (!std::filesystem::create_directory(outputPath))
+        {
+            logger->error("[GenerateFileVisitor::writeToFile] Could not create directory: {}", outputPath);
+            return false;
+        }
+    }
+
+    const std::string& outputFilePath = outputPath + "/" + filename;
+    std::ofstream outputFile(outputFilePath);
+
+    if(!outputFile.is_open())
+    {
+        logger->error("[GenerateFileVisitor::writeToFile] Could not open file: {}", outputFilePath);
+        return false;
+    }
+
+    codeGen::GenerateFnHeader fnHeaderGenerator(llvmFun);
+    outputFile << fnHeaderGenerator.generate();
+
+    llvm::ReversePostOrderTraversal<llvm::Function*> rpot(&llvmFun);
+    for(auto &bb: rpot)
+    {
+        auto key = bb->getName().str();
+        if (output.find(key) == output.end())
+        {
+            logger->error("[GenerateFileVisitor::writeToFile] Basic block not found: <{}> while printing to file", key);
+            continue;
+        }
+
+        for(const auto& el: output[key])
+        {
+            outputFile << + "\t" + el + "\n";
+        }
+    }
+    outputFile << "}\n";
+    outputFile.close();
+    return true;
 }
 

@@ -7,6 +7,11 @@
 #include "codeGen/instructions/Instruction.h"
 #include "logger/LoggerManager.h"
 #include "utils/CodeGenUtils.h"
+#include "codeGen/ast/LlvmFunctionNode.h"
+#include "codeGen/ast/LlvmBasicBlockNode.h"
+#include "codeGen/ast/LlvmInstructionNode.h"
+#include "codeGen/ast/GenerateFileVisitor.h"
+#include "settings/LifterSettings.h"
 
 
 #include "llvm/IR/LLVMContext.h"
@@ -14,24 +19,13 @@
 #include "llvm/IRReader/IRReader.h"
 #include "llvm/Support/SourceMgr.h"
 #include "llvm/Support/ErrorOr.h"
-#include "llvm/IR/CFG.h"
-#include "llvm/Analysis/PostDominators.h"
 #include "llvm/IR/Function.h"
-#include "llvm/ADT/GraphTraits.h"
 #include "llvm/ADT/PostOrderIterator.h"
 #include <llvm/Analysis/LoopInfo.h>
 #include <llvm/IR/Dominators.h>
-#include <llvm/Pass.h>
 #include "llvm/IR/LegacyPassManager.h"
 #include "llvm/Analysis/LoopPass.h"
-#include "codeGen/ast/LlvmFunctionNode.h"
-#include "codeGen/ast/LlvmBasicBlockNode.h"
-#include "codeGen/ast/LlvmInstructionNode.h"
-#include "codeGen/ast/GenerateFileVisitor.h"
-#include <llvm/ADT/PostOrderIterator.h>
 
-#include <stack>
-#include <map>
 #include <vector>
 
 
@@ -147,23 +141,11 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
 
 
     logger->error("Decompiled function: {}", decompiledFunction);
-
-//
-//    std::string decompiledFunction = "\n";
-//    codeGen::GenerateFnHeader fnHeaderGenerator(f);
-//    decompiledFunction += fnHeaderGenerator.generate();
-//
-//    codeGen::RenameVariables renameVariables(f);
-//    auto aliasMap = renameVariables.rename();
-//
-//    for(const auto& [key, value]: aliasMap)
-//    {
-//        logger->info("Alias Key: {}, Value: {}", key, value);
-//    }
-//
-//    codeGen::GenerateFnBody fnBodyGenerator(f, funcInfo);
-//    auto fnBody = fnBodyGenerator.generate();
-//
-//    decompiledFunction += fnBody;
-//    logger->error("Decompiled function: {}", decompiledFunction);
+    auto extractLastFileFromPath = [](const std::string& path) -> std::string {
+        auto pos = path.find_last_of("/\\");
+        return pos != std::string::npos ? path.substr(pos + 1) : path;
+    };
+    const std::string& path = settings::LifterSettings::getInstance()->getBinaryPath();
+    logger->info("[CodeGeneration::processFunction] Writing output to file: {}", extractLastFileFromPath(path) + "_" + f.getName().str());
+    visitor->writeToFile(extractLastFileFromPath(path) + "_" + f.getName().str());
 }

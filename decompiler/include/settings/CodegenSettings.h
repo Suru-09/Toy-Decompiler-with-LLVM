@@ -35,10 +35,15 @@ static std::once_flag m_flag;
 std::shared_ptr<spdlog::logger> logger;
 
 // codegen variables.
+std::string m_outputFilePath;
 
 public:
 static std::shared_ptr<CodegenSettings> getInstance();
 void parseCodegenSettings(const std::string& setting);
+
+// getters and setters
+const std::string& getOutputFilePath() const;
+void setOutputFilePath(const std::string& outputFilePath);
 
 // dummy constructor
 CodegenSettings(Foo foo) {};

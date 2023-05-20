@@ -39,3 +39,11 @@ void settings::CodegenSettings::parseCodegenSettings(const std::string& setting)
     std::string value = settingCopy.substr(delimiterPos + 1);
 }
 
+const std::string &settings::CodegenSettings::getOutputFilePath() const {
+    return m_outputFilePath;
+}
+
+void settings::CodegenSettings::setOutputFilePath(const std::string &outputFilePath) {
+    m_outputFilePath = outputFilePath;
+}
+

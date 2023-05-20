@@ -27,12 +27,12 @@ public:
     std::pair<std::string, std::string> visit(std::shared_ptr<LlvmInstructionNode> node) override;
     std::pair<std::string, std::string> visit(std::shared_ptr<LlvmBasicBlockNode> node) override;
 
-    void setOutputFilename(const std::string& filename);
     void setFuncInfo(const udm::FuncInfo& funcInfo);
 
     udm::FuncInfo getFuncInfo() const;
-    std::string getOutputFilename() const;
     std::unordered_map<std::string, std::vector<std::string>> getOutput() const;
+
+    bool writeToFile(const std::string& filename);
 private:
     std::unordered_map<std::string, std::vector<std::string>> output;
     codeGen::DefineVariablesHandler defVarHandler;
@@ -46,8 +46,8 @@ private:
     llvm::Function& llvmFun;
     std::shared_ptr<spdlog::logger> logger;
 private:
-    bool writeToFile(const std::string& filename);
     void addPhiNodesValues(const std::pair<std::string, std::string>& phiNode);
+    void addReturnValue(const std::string& bbLabel);
     void replaceStackVarWithAlias(const std::vector<codeGen::ast::StackVarAlias> &aliases);
     void replaceOneStackVarWithAlias(const codeGen::ast::StackVarAlias& alias);
 

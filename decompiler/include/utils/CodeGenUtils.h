@@ -16,6 +16,13 @@ namespace utils
 class CodeGenUtils
 {
 public:
+    struct BranchToTerminalBlockResult
+    {
+        bool isBranchingToTerminalBlock;
+        bool isConditionReversed;
+    };
+
+public:
     static std::string getSpaces(int numSpaces);
     static std::string typeToString(llvm::Type* type);
     static bool canAssignTo(llvm::Instruction* instr);
@@ -23,7 +30,7 @@ public:
     static std::vector<std::string> extractValuesFromPhiString(const std::string& phiString);
     static std::string extractPhiNodeLeftValue(const std::string& phiString);
     static bool isLoop(const udm::FuncInfo& funcInfo, const std::string& bbLabel);
-    static std::string getTerminatorCondition(llvm::Function& func, const std::string& bbLabel);
+    static std::pair<std::string, std::string> getTerminatorCondition(llvm::Function& func, const std::string& bbLabel);
     static std::vector<std::string> extractSubstrings(const std::string& input, const std::string& substr);
     static std::string getInstructionValue(const llvm::Instruction* instr);
     static std::string llvmValueToString(llvm::Value* value);
@@ -36,6 +43,13 @@ public:
     static llvm::Instruction* getInstructionAfterLabel(llvm::Function& func, const std::string& instrLabel);
 
     static std::string getTerminatorAlias(llvm::Function& func, const llvm::Instruction* instr);
+
+    static std::string getBranchInstrBodyGivenBlock(llvm::Function& func, const std::string& bbLabel);
+
+    static std::string extractLHSFromInstructionBody(const std::string& instrBody);
+
+    static BranchToTerminalBlockResult checkIfCurrentBlockBranchesToTerminalBlock(llvm::Function& func, const std::string& bbLabel);
+    static std::string returnStringForBranchingToTerminalBlock(llvm::Function& func, const std::string& bbLabel);
 };
 
 }   // namespace utils
