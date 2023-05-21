@@ -14,6 +14,8 @@
 
 #include <llvm/ADT/PostOrderIterator.h>
 #include <llvm/Analysis/PostDominators.h>
+#include "llvm/IR/Type.h"
+#include "llvm/Support/Casting.h"
 
 #include <filesystem>
 #include <fstream>
@@ -34,19 +36,26 @@ std::pair<std::string, std::string> codeGen::ast::GenerateFileVisitor::visit(std
 std::pair<std::string, std::string>
 codeGen::ast::GenerateFileVisitor::visit(std::shared_ptr<LlvmInstructionNode> node) {
     auto nodeName = node->getName();
-    logger->info("[GenerateFileVisistor] Instruction name: {}, body: {}", node->getName(), node->getInstructionBody());
-
-    auto instr = utils::CodeGenUtils::getInstructionAfterLabel(llvmFun, nodeName);
+    auto instr = utils::CodeGenUtils::getInstructionAfterLabel(llvmFun, nodeName, node->getOpcode() == llvm::Instruction::Ret);
     if(!instr)
     {
-        logger->error("[GenerateFileVisistor] Failed to get LLVM instruction after label: {}", nodeName);
+        logger->error("[GenerateFileVisitor::visit(InstructionNode)] Failed to get LLVM instruction after label: {}", nodeName);
         return std::make_pair<std::string, std::string>(node->getName(), "");
     }
+    logger->info("[GenerateFileVisitor::visit(InstructionNode)] Instruction name: {}, body: {}", instr->hasName() ? nodeName : instr->getOpcodeName(), node->getInstructionBody());
 
     // ignore phi nodes instructions, they are handled separately.
     if(instr->getOpcode() == llvm::Instruction::PHI)
     {
-        logger->info("[GenerateFileVisistor] Skipping PHI node instruction: {}", nodeName);
+        logger->info("[GenerateFileVisitor::visit(InstructionNode)] Skipping PHI node instruction: {}", nodeName);
+        return std::make_pair<std::string, std::string>(node->getName(), "");
+    }
+
+    if(instr->getOpcode() == llvm::Instruction::Ret)
+    {
+        auto returnBody = getFinalReturnBody(lastBasicBlockName);
+        logger->info("[GenerateFileVisitor::visit(InstructionNode)] Found return value from last basic block: {}", nodeName);
+        output[lastBasicBlockName].push_back(utils::CodeGenUtils::getSpaces(indentationLevel) + returnBody);
         return std::make_pair<std::string, std::string>(node->getName(), "");
     }
 
@@ -54,10 +63,10 @@ codeGen::ast::GenerateFileVisitor::visit(std::shared_ptr<LlvmInstructionNode> no
     // Why? Because they are usually conditions for loops/ifs and there is no need
     // to print them twice if they are not used anywhere else.
     auto terminatorName = utils::CodeGenUtils::getTerminatorAlias(llvmFun, instr);
-    logger->info("[GenerateFileVisistor] Terminator name: {} and node name: {}", terminatorName, nodeName);
+    logger->info("[GenerateFileVisitor::visit(InstructionNode)] Terminator name: {} and node name: {}", terminatorName, nodeName);
     if(nodeName == terminatorName && utils::CodeGenUtils::doesInstructionHaveSingleUse(instr))
     {
-        logger->info("[GenerateFileVisistor] Skipping printing for the node: {}", nodeName);
+        logger->info("[GenerateFileVisitor::visit(InstructionNode)] Skipping printing for the node: {}", nodeName);
         return std::make_pair<std::string, std::string>(node->getName(), "");
     }
 
@@ -69,7 +78,7 @@ codeGen::ast::GenerateFileVisitor::visit(std::shared_ptr<LlvmInstructionNode> no
 
 std::pair<std::string, std::string> codeGen::ast::GenerateFileVisitor::visit(std::shared_ptr<LlvmBasicBlockNode> node) {
     output.emplace(node->getName(), std::vector<std::string>());
-    logger->info("[GenerateFileVisistor] Basic block being processed: <{}>", node->getName());
+    logger->info("[GenerateFileVisitor::visit(BasicBlock)] Basic block being processed: <{}>", node->getName());
     lastBasicBlockName = node->getName();
     auto bbInfo = funcInfo.getBBInfo(lastBasicBlockName);
 
@@ -343,5 +352,58 @@ bool codeGen::ast::GenerateFileVisitor::writeToFile(const std::string &filename)
     outputFile << "}\n";
     outputFile.close();
     return true;
+}
+
+std::string codeGen::ast::GenerateFileVisitor::getFinalReturnBody(const std::string &bbLabel) {
+    std::string returnBody = "return ";
+    auto basicBlock = utils::CodeGenUtils::getBBAfterLabel(llvmFun, bbLabel);
+    if(basicBlock == nullptr)
+    {
+        logger->error("[GenerateFileVisitor::getFinalReturnBody] Could not find basic block after label: {}", bbLabel);
+        return returnBody;
+    }
+
+    auto terminator = basicBlock->getTerminator();
+    if(terminator == nullptr)
+    {
+        logger->error("[GenerateFileVisitor::getFinalReturnBody] Could not find terminator in basic block: {}", bbLabel);
+        return returnBody;
+    }
+
+    if(auto* retInst = llvm::dyn_cast<llvm::ReturnInst> (terminator))
+    {
+        auto retVal = retInst->getReturnValue();
+        if(retVal == nullptr)
+        {
+            logger->error("[GenerateFileVisitor::getFinalReturnBody] Could not find return value in basic block: {}", bbLabel);
+            return returnBody;
+        }
+
+        // set return value with the instruction value
+        returnBody += utils::CodeGenUtils::llvmValueToString(retVal);
+
+        // if we are able to find a phi node in the basic block, then we need to replace the return value with the
+        // last phi node value from the last pair <bbLabel, value>.
+        for(auto& inst: *basicBlock)
+        {
+            if(inst.getOpcode() != llvm::Instruction::PHI)
+            {
+                continue;
+            }
+
+            auto* phiNode = llvm::dyn_cast<llvm::PHINode>(&inst);
+            auto phiNodeHandler = codeGen::ast::PHINodeHandler(llvmFun);
+            auto labelAndValuesVec = phiNodeHandler.getLabelsAndValueFromPhiNode(phiNode);
+            if(labelAndValuesVec.empty())
+            {
+                logger->error("[GenerateFileVisitor::getFinalReturnBody] Could not find labels and values from phi node in basic block: {}", bbLabel);
+                return returnBody;
+            }
+
+            returnBody = "return " + labelAndValuesVec.back().second;
+        }
+    }
+
+    return returnBody;
 }
 

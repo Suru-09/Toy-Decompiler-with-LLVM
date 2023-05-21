@@ -4,6 +4,7 @@
 #include <iostream>
 
 #include <llvm/IR/Value.h>
+#include <llvm-14/llvm/IR/Instruction.h>
 #include "llvm/IR/Type.h"
 #include "llvm/IR/User.h"
 #include "llvm/IR/Instruction.h"
@@ -40,7 +41,8 @@ public:
         static llvm::BasicBlock* getBBAfterLabel(llvm::Function& func, const std::string& bbLabel);
 
     [[nodiscard("Possible nullptr returned!")]]
-    static llvm::Instruction* getInstructionAfterLabel(llvm::Function& func, const std::string& instrLabel);
+    static llvm::Instruction *
+    getInstructionAfterLabel(llvm::Function &func, const std::string &instrLabel, bool isReturn);
 
     static std::string getTerminatorAlias(llvm::Function& func, const llvm::Instruction* instr);
 

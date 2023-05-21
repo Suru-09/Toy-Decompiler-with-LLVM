@@ -8,7 +8,7 @@
 #include "llvm/IR/Type.h"
 #include "llvm/IR/DerivedTypes.h"
 #include <llvm/IR/Value.h>
-#include "llvm/IR/Type.h"
+#include <llvm-14/llvm/IR/Instruction.h>
 #include "llvm/Support/Casting.h"
 
 std::string utils::CodeGenUtils::getSpaces(int numSpaces)
@@ -328,11 +328,25 @@ llvm::BasicBlock *utils::CodeGenUtils::getBBAfterLabel(llvm::Function &func, con
     return nullptr;
 }
 
-llvm::Instruction *utils::CodeGenUtils::getInstructionAfterLabel(llvm::Function &func, const std::string &instrLabel) {
+llvm::Instruction *utils::CodeGenUtils::getInstructionAfterLabel(llvm::Function &func, const std::string &instrLabel,
+                                                                 bool isReturn) {
     for(auto& bb : func)
     {
         for(auto& instr : bb)
         {
+            // fix for finding last return
+            // the initial problem is that I am searching for the lhs(the name) of the instruction
+            // but branching/return instruction do not have such a thing.
+            // very hacky, might need to find a better solution.
+            if(isReturn)
+            {
+                if(instr.getOpcode() == llvm::Instruction::Ret)
+                {
+                    return &instr;
+                }
+                continue;
+            }
+
             if(instr.getName() == instrLabel)
             {
                 return &instr;

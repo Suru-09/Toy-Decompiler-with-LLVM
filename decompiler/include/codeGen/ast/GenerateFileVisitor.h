@@ -50,6 +50,7 @@ private:
     void addReturnValue(const std::string& bbLabel);
     void replaceStackVarWithAlias(const std::vector<codeGen::ast::StackVarAlias> &aliases);
     void replaceOneStackVarWithAlias(const codeGen::ast::StackVarAlias& alias);
+    std::string getFinalReturnBody(const std::string& bbLabel);
 
     void addVariablesDefinitions();
 };

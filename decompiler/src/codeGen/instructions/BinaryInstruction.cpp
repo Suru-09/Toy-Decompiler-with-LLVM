@@ -14,7 +14,7 @@ codeGen::BinaryInstruction::BinaryInstruction(llvm::Instruction& inst, int numSp
         instructionString += inst.getName().str() + " = ";
     }
 
-    if(llvm::BinaryOperator* binOp = llvm::dyn_cast<llvm::BinaryOperator>(&inst))
+    if(auto* binOp = llvm::dyn_cast<llvm::BinaryOperator>(&inst))
     {
         bool first = true;
         logger->error("Number of operands: {}", binOp->getNumOperands());

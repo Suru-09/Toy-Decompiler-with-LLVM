@@ -7,10 +7,10 @@ Fn fibo(n: i32) -> i32
 	    return 1
 	}
 	lvar_1 = n + -1
-	lvar_2 = lvar_1 , fibo 
+	lvar_2 = fibo(lvar_1)
 	lvar_3 = n + -2
-	lvar_4 = lvar_3 , fibo 
+	lvar_4 = fibo(lvar_3)
 	lvar_5 = lvar_4 +lvar_2 
 	
-	ret 1
+	return lvar_5
 }

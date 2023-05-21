@@ -6,8 +6,6 @@
 #include <llvm/IR/InstrTypes.h>
 
 #include <iostream>
-#include <vector>
-
 
 codeGen::OtherInstruction::OtherInstruction(llvm::Instruction& inst, int numSpaces) {
     bool printLhs = utils::CodeGenUtils::canAssignTo(&inst);
@@ -183,15 +181,27 @@ std::string codeGen::OtherInstruction::handleSelectInst(llvm::SelectInst* select
 }
 
 std::string codeGen::OtherInstruction::handleCallInst(llvm::CallInst* callInst) {
-    std::string callString = "";
+    std::string callString = callInst->getCalledFunction()->getName().str() + "(";
     bool first = true;
     for(auto& operand : callInst->operands())
     {
+
         std::string name = operand->getName().str();
+        if(name.empty()) {  // might be a value, not an instruction.
+            name = utils::CodeGenUtils::llvmValueToString(operand);
+        }
+
+        // skip the last operand, which is the function name itself.
+        if(name == callInst->getCalledFunction()->getName().str())
+        {
+            continue;
+        }
+
         callString += !first ? ", " : "";
-        callString += name + " ";
+        callString += name;
         first = false;
     }
+    callString += ")";
     return callString;
 }
 
