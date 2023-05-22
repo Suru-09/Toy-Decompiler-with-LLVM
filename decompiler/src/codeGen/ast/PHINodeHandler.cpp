@@ -32,9 +32,9 @@ std::vector<codeGen::ast::StackVarAlias> codeGen::ast::PHINodeHandler::getPHINod
                 for(auto& labelAndValue: labelsAndValues)
                 {
                      std::string rhsLocalVar = labelAndValue.second;
-                     std::string basicBlockName = bb->getName().str();
+                     std::string basicBlockName = labelAndValue.first;
                      aliases.emplace_back(basicBlockName, rhsLocalVar, lhsStackVarName);
-                     logger->info("[PHINodeHandler::getPHINodeAliases] Found alias: lvar: <{}> for stack_var: <{}> in basic block: {}", rhsLocalVar, lhsStackVarName, basicBlockName);
+                     logger->info("[PHINodeHandler::getPHINodeAliases] Found alias: value: <{}> for stack_var: <{}> in basic block: {}", rhsLocalVar, lhsStackVarName, basicBlockName);
                 }
            }
         }
@@ -50,18 +50,10 @@ std::vector<std::pair<std::string, std::string>> codeGen::ast::PHINodeHandler::g
     {
          auto* incomingBlock = phiNode->getIncomingBlock(i);
          auto* incomingValue = phiNode->getIncomingValue(i);
-         std::string value;
-         if(auto* instruction = llvm::dyn_cast<llvm::Instruction>(incomingValue))
-         {
-             value = instruction->getName().str();
-             std::string label = incomingBlock->getName().str();
-             labelsAndValues.emplace_back(label, value);
-         }
-         else {
-            value = utils::CodeGenUtils::llvmValueToString(incomingValue);
-             std::string label = incomingBlock->getName().str();
-             labelsAndValues.emplace_back(label, value);
-         }
+
+         std::string value = utils::CodeGenUtils::llvmValueToString(incomingValue);
+         std::string label = incomingBlock->getName().str();
+         labelsAndValues.emplace_back(label, value);
     }
     return labelsAndValues;
 }

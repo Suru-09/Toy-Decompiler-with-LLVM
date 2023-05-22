@@ -1,8 +1,6 @@
 Fn if_else(n: i32) -> i32
 {
-	bool lvar_0 = 0
 	i32 lvar_1 = 0
-	lvar_0 = n >  4
-	lvar_1 = lvar_0 ? 3 :  2
-	ret lvar_1
+	lvar_1 = n >  4 ? 3 : 2
+	return lvar_1
 }

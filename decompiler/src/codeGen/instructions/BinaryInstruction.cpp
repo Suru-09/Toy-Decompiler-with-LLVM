@@ -17,35 +17,19 @@ codeGen::BinaryInstruction::BinaryInstruction(llvm::Instruction& inst, int numSp
     if(auto* binOp = llvm::dyn_cast<llvm::BinaryOperator>(&inst))
     {
         bool first = true;
-        logger->error("Number of operands: {}", binOp->getNumOperands());
+        logger->info("[BinaryInstruction::BinaryInstruction] Number of operands: {}", binOp->getNumOperands());
         for (auto& operand : binOp->operands()) {
-            logger->error("Operand: {}", operand->getName().str());
-            std::string name = operand->getName().str();
-            instructionString += name + " ";
-            
-            if(name.empty())
-            {
-                if(llvm::ConstantInt* constInt = llvm::dyn_cast<llvm::ConstantInt>(operand))
-                {
-                    instructionString += std::to_string(constInt->getSExtValue());
-                }
-                else if(llvm::ConstantFP* constFP = llvm::dyn_cast<llvm::ConstantFP>(operand))
-                {
-                    instructionString += std::to_string(constFP->getValueAPF().convertToDouble());
-                }
-                else
-                {
-                    logger->error("Unknown operand type");
-                }
-            }
-            
+            logger->info("[BinaryInstruction::BinaryInstruction] Operand: {}", operand->getName().str());
+            instructionString += utils::CodeGenUtils::llvmValueToString(operand) + " ";
+
             if(!first)
             {
                 continue;
             }
 
+            // +, -, *, etc.
             std::string predicate = binOp->getOpcodeName();
-            instructionString += codeGen::TranslateOperator::translateOperator(predicate);
+            instructionString += codeGen::TranslateOperator::translateOperator(predicate) + " ";
             first = false;
         }
     }

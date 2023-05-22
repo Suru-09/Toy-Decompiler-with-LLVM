@@ -1,0 +1,19 @@
+Fn main() -> i32
+{
+	i64 lvar_1 = 0, lvar_4 = 0, lvar_7 = 0, lvar_10 = 0
+	i32 lvar_0 = 0, lvar_2 = 0, lvar_3 = 0, lvar_5 = 0
+	i32 lvar_6 = 0, lvar_8 = 0, lvar_9 = 0, lvar_11 = 0
+	lvar_0 = n_way_conditional_switch(5)
+	lvar_1 =  (i64)lvar_0
+	lvar_2 = printf(, lvar_1)
+	lvar_3 = for_loop(5)
+	lvar_4 =  (i64)lvar_3
+	lvar_5 = printf(, lvar_4)
+	lvar_6 = while_pre_tested_loop(5)
+	lvar_7 =  (i64)lvar_6
+	lvar_8 = printf(, lvar_7)
+	lvar_9 = while_post_tested_loop(5)
+	lvar_10 =  (i64)lvar_9
+	lvar_11 = printf(, lvar_10)
+	return 0
+}

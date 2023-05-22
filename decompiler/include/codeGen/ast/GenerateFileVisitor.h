@@ -35,6 +35,7 @@ public:
     bool writeToFile(const std::string& filename);
 private:
     std::unordered_map<std::string, std::vector<std::string>> output;
+    std::unordered_map<std::string, std::string> singleUseVariables;
     codeGen::DefineVariablesHandler defVarHandler;
     std::map<std::string, std::vector<codeGen::Variable>> definedVariables;
     bool areVariablesDefined;
@@ -53,6 +54,8 @@ private:
     std::string getFinalReturnBody(const std::string& bbLabel);
 
     void addVariablesDefinitions();
+
+    bool checkAndReplaceSingleUseVars(std::shared_ptr<LlvmInstructionNode> &node);
 };
 
 }   // namespace codeGen::ast

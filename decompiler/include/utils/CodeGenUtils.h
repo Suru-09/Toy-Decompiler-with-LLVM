@@ -49,9 +49,12 @@ public:
     static std::string getBranchInstrBodyGivenBlock(llvm::Function& func, const std::string& bbLabel);
 
     static std::string extractLHSFromInstructionBody(const std::string& instrBody);
+    static std::string extractRHSFromInstructionBody(const std::string& instrBody);
 
     static BranchToTerminalBlockResult checkIfCurrentBlockBranchesToTerminalBlock(llvm::Function& func, const std::string& bbLabel);
     static std::string returnStringForBranchingToTerminalBlock(llvm::Function& func, const std::string& bbLabel);
+    static bool isBasicBlockTerminal(llvm::Function& func, const std::string& bbLabel);
+    static bool isInstructionUsedInTernaryOperatorAndHasSingleUse(const llvm::Instruction* instr);
 };
 
 }   // namespace utils

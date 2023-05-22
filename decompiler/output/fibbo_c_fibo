@@ -6,11 +6,11 @@ Fn fibo(n: i32) -> i32
 	if (n <  2) {
 	    return 1
 	}
-	lvar_1 = n + -1
+	lvar_1 = n + (-1) 
 	lvar_2 = fibo(lvar_1)
-	lvar_3 = n + -2
+	lvar_3 = n + (-2) 
 	lvar_4 = fibo(lvar_3)
-	lvar_5 = lvar_4 +lvar_2 
+	lvar_5 = lvar_4 + lvar_2 
 	
 	return lvar_5
 }

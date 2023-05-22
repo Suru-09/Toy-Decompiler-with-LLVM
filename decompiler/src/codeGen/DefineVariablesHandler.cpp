@@ -49,6 +49,13 @@ std::map<std::string, std::vector<codeGen::Variable>> codeGen::DefineVariablesHa
                 continue;
             }
 
+            // check if variable has single use && it is used in a select instruction
+            // makes reading easier if the condition does not have a separate variable
+            if(utils::CodeGenUtils::isInstructionUsedInTernaryOperatorAndHasSingleUse(&instr))
+            {
+                continue;
+            }
+
             // get variable type
             logger->debug("[DefineVariablesHandler::handle] Variable name added for definition: {}", instr.getName().str());
             auto type = utils::CodeGenUtils::typeToString(instr.getType());

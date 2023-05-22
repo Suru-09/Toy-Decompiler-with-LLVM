@@ -51,10 +51,10 @@ codeGen::ast::GenerateFileVisitor::visit(std::shared_ptr<LlvmInstructionNode> no
         return std::make_pair<std::string, std::string>(node->getName(), "");
     }
 
-    if(instr->getOpcode() == llvm::Instruction::Ret)
+    if(instr->getOpcode() == llvm::Instruction::Ret && node->getOpcode() == llvm::Instruction::Ret && utils::CodeGenUtils::isBasicBlockTerminal(llvmFun, lastBasicBlockName))
     {
         auto returnBody = getFinalReturnBody(lastBasicBlockName);
-        logger->info("[GenerateFileVisitor::visit(InstructionNode)] Found return value from last basic block: {}", nodeName);
+        logger->info("[GenerateFileVisitor::visit(InstructionNode)] Found return value from last basic block: {}, with value: {}", nodeName, returnBody);
         output[lastBasicBlockName].push_back(utils::CodeGenUtils::getSpaces(indentationLevel) + returnBody);
         return std::make_pair<std::string, std::string>(node->getName(), "");
     }
@@ -70,10 +70,65 @@ codeGen::ast::GenerateFileVisitor::visit(std::shared_ptr<LlvmInstructionNode> no
         return std::make_pair<std::string, std::string>(node->getName(), "");
     }
 
+    if(utils::CodeGenUtils::isInstructionUsedInTernaryOperatorAndHasSingleUse(instr))
+    {
+        logger->info("[GenerateFileVisitor::visit(InstructionNode)] Skipping printing for the node(condition for select instruction): {}", nodeName);
+        singleUseVariables.emplace(nodeName, node->getInstructionBody());
+        return std::make_pair<std::string, std::string>(node->getName(), "");
+    }
+
+    if(instr->getOpcode() == llvm::Instruction::Select)
+    {
+        // get condition for select and check if it is used in a ternary operator.
+        if(auto* selectInst = llvm::dyn_cast<llvm::SelectInst>(instr))
+        {
+            auto condition = selectInst->getCondition();
+            auto search = std::find_if(singleUseVariables.begin(), singleUseVariables.end(), [&](auto &pair) {
+                return pair.first == condition->getName().str();
+            });
+
+            if(search != singleUseVariables.end())
+            {
+                // search for the single use variable in the instruction body and replace it with its value.
+                auto singleUseVar = search->first;
+                auto singleUseVarValue = search->second;
+                auto selectInstBody = node->getInstructionBody();
+                if(selectInstBody.find(singleUseVar + " ") != std::string::npos)
+                {
+                    auto toReplace = utils::CodeGenUtils::extractLHSFromInstructionBody(singleUseVarValue);
+                    selectInstBody.replace(selectInstBody.find(singleUseVar), singleUseVar.length(), toReplace);
+                    node->setInstructionBody(selectInstBody);
+                }
+            }
+        }
+    }
+
     auto indentation = utils::CodeGenUtils::getSpaces(indentationLevel);
     output[lastBasicBlockName].push_back(indentation +  node->getInstructionBody());
 
     return std::make_pair<std::string, std::string>(node->getName(), "");
+}
+
+bool codeGen::ast::GenerateFileVisitor::checkAndReplaceSingleUseVars(std::shared_ptr<LlvmInstructionNode> &node) {
+    auto doesInstrBodyContainSingleUseVar = std::find_if(singleUseVariables.begin(), singleUseVariables.end(), [&](auto &pair) {
+        return node->getInstructionBody().find(pair.first + " ") != std::string::npos;
+    });
+
+    if(doesInstrBodyContainSingleUseVar != singleUseVariables.end())
+    {
+        // search for the single use variable in the instruction body and replace it with its value.
+        auto singleUseVar = doesInstrBodyContainSingleUseVar->first;
+        auto singleUseVarValue = doesInstrBodyContainSingleUseVar->second;
+        auto instrBody = node->getInstructionBody();
+        auto pos = instrBody.find(singleUseVar + " ");
+        instrBody.replace(pos, singleUseVar.length() + 1, singleUseVarValue);
+
+        node->setInstructionBody(instrBody);
+        // delete the single use variable from the map.
+        singleUseVariables.erase(doesInstrBodyContainSingleUseVar);
+        return true;
+    }
+    return false;
 }
 
 std::pair<std::string, std::string> codeGen::ast::GenerateFileVisitor::visit(std::shared_ptr<LlvmBasicBlockNode> node) {
@@ -174,7 +229,17 @@ std::pair<std::string, std::string> codeGen::ast::GenerateFileVisitor::visit(std
 }
 
 void codeGen::ast::GenerateFileVisitor::addVariablesDefinitions() {
+
+    std::unordered_map<std::string, std::vector<codeGen::Variable>> orderedByTypeVariables;
     for(auto [key, vec]: definedVariables)
+    {
+        for(auto &var: vec)
+        {
+            orderedByTypeVariables[var.getType()].push_back(var);
+        }
+    }
+
+    for(auto& [key, vec] : orderedByTypeVariables)
     {
         auto indentation = utils::CodeGenUtils::getSpaces(indentationLevel);
         std::string lastType, firstValName, varStr;
@@ -297,7 +362,7 @@ void codeGen::ast::GenerateFileVisitor::replaceOneStackVarWithAlias(const codeGe
                 if(pos != std::string::npos)
                 {
                     std::string oldVal = line.substr(pos, alias.getStackVarName().size());
-                    logger->info("[GenerateFileVisitor::replaceOneStackVarWithAlias] Found stack var: {} in line: {}, replacing old value: {}", alias.getStackVarName(), line, oldVal);
+                    logger->info("[GenerateFileVisitor::replaceOneStackVarWithAlias] Found stack var: {} in line: {}, replacing old value: {} with: {}", alias.getStackVarName(), line, oldVal, alias.getLocalVar());
                     line.replace(pos, alias.getStackVarName().size(), alias.getLocalVar());
                     output[bbKey][i] = line;
                 }
@@ -394,12 +459,9 @@ std::string codeGen::ast::GenerateFileVisitor::getFinalReturnBody(const std::str
             auto* phiNode = llvm::dyn_cast<llvm::PHINode>(&inst);
             auto phiNodeHandler = codeGen::ast::PHINodeHandler(llvmFun);
             auto labelAndValuesVec = phiNodeHandler.getLabelsAndValueFromPhiNode(phiNode);
-            if(labelAndValuesVec.empty())
-            {
-                logger->error("[GenerateFileVisitor::getFinalReturnBody] Could not find labels and values from phi node in basic block: {}", bbLabel);
-                return returnBody;
-            }
+            assert(!labelAndValuesVec.empty() && "Phi node should have at least one pair <bbLabel, value> in it");
 
+            logger->info("[GenerateFileVisitor::getFinalReturnBody] Found phi node in last bb for final return with value: {}", labelAndValuesVec.back().second);
             returnBody = "return " + labelAndValuesVec.back().second;
         }
     }

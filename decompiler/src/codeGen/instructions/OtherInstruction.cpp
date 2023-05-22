@@ -156,27 +156,10 @@ std::string codeGen::OtherInstruction::handlePhiNode(llvm::PHINode* phiNode) {
 std::string codeGen::OtherInstruction::handleSelectInst(llvm::SelectInst* selectInst) {
     std::string selectString = "";
 
-    auto handleOperand = [](llvm::Value* operand) {
-        std::string name = operand->getName().str();
-        std::string result = name + " ";
-        if(name.empty())
-        {
-            if(llvm::ConstantInt* constInt = llvm::dyn_cast<llvm::ConstantInt>(operand))
-            {
-                result += std::to_string(constInt->getSExtValue());
-            }
-            else if(llvm::ConstantFP* constFP = llvm::dyn_cast<llvm::ConstantFP>(operand))
-            {
-                result += std::to_string(constFP->getValueAPF().convertToDouble());
-            }
-        }
-        return result;
-    };
-
-    std::string condition = handleOperand(selectInst->getCondition());
-    std::string trueValue = handleOperand(selectInst->getTrueValue());
-    std::string falseValue = handleOperand(selectInst->getFalseValue());
-    selectString += condition + "?" + trueValue + " : " + falseValue;
+    std::string condition = utils::CodeGenUtils::llvmValueToString(selectInst->getCondition());
+    std::string trueValue = utils::CodeGenUtils::llvmValueToString(selectInst->getTrueValue());
+    std::string falseValue = utils::CodeGenUtils::llvmValueToString(selectInst->getFalseValue());
+    selectString += condition + " ? " + trueValue + " : " + falseValue;
     return selectString;
 }
 

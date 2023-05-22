@@ -8,8 +8,10 @@
 #include "llvm/IR/Type.h"
 #include "llvm/IR/DerivedTypes.h"
 #include <llvm/IR/Value.h>
-#include <llvm-14/llvm/IR/Instruction.h>
 #include "llvm/Support/Casting.h"
+#include "llvm/IR/Constants.h"
+#include "llvm/IR/GlobalVariable.h"
+
 
 std::string utils::CodeGenUtils::getSpaces(int numSpaces)
 {
@@ -110,7 +112,7 @@ std::string utils::CodeGenUtils::typeToString(llvm::Type* type)
 
     if(type->isPointerTy())
     {
-        llvm::PointerType* pointerType = llvm::dyn_cast<llvm::PointerType>(type);
+        auto* pointerType = llvm::dyn_cast<llvm::PointerType>(type);
         return "ptr::" + typeToString(pointerType->getContainedType(0));
     }
 
@@ -295,25 +297,42 @@ std::string utils::CodeGenUtils::getInstructionValue(const llvm::Instruction *in
 }
 
 std::string utils::CodeGenUtils::llvmValueToString(llvm::Value *value) {
-    auto llvmValueToString = [](llvm::Value* value){
-        std::string str;
-        if(auto* constInt = llvm::dyn_cast<llvm::ConstantInt>(value))
-        {
-            str += std::to_string(constInt->getSExtValue());
-        }
-        else if(auto* constFP = llvm::dyn_cast<llvm::ConstantFP>(value))
-        {
-            str += std::to_string(constFP->getValueAPF().convertToDouble());
-        }
-        else
-        {
-            str += value->getName().str();
-        }
-        return str;
-    };
-    return llvmValueToString(value);
-}
+    std::string str;
+    if (value->hasName())
+    {
+        str += value->getName().str();
+    }
+    else if(auto* constInt = llvm::dyn_cast<llvm::ConstantInt>(value))
+    {
+        auto val = constInt->getSExtValue();
+        auto valStr = val >= 0 ? std::to_string(val) :  "(" + std::to_string(val) + ")";
+        str += valStr;
+    }
+    else if(auto* constFP = llvm::dyn_cast<llvm::ConstantFP>(value))
+    {
+        auto val = constFP->getValueAPF().convertToDouble();
+        auto valStr = val >= 0 ? std::to_string(val) :  "(" + std::to_string(val) + ")";
+        str += valStr;
+    }
+    else if(auto* constant = llvm::dyn_cast<llvm::Constant>(value))
+    {
+        // if constant is a string, we need to extract it from the global variable
+        auto pointerOperand = constant->getOperand(0);
+        if (auto* globalVar = llvm::dyn_cast<llvm::GlobalVariable>(pointerOperand)) {
+            auto* dataArray = llvm::cast<llvm::ConstantDataArray>(globalVar->getInitializer());
+            std::string extractedString = dataArray->getAsString().str();
+            // replace all \n(1 character) with \\n(2 characters)
+            while(extractedString.find('\n') != std::string::npos)
+                extractedString.replace(extractedString.find('\n'), 1, "\\n");
 
+            // add quotes to string and remove \n, also add \ before newline so that it is printed correctly
+            extractedString = "\"" + extractedString.substr(0, extractedString.size() - 1) + "\"";
+            str += extractedString;
+        }
+    }
+
+    return str;
+}
 
 bool utils::CodeGenUtils::doesInstructionHaveSingleUse(const llvm::Instruction *instr) {
     return instr->hasOneUse();
@@ -438,8 +457,7 @@ utils::CodeGenUtils::BranchToTerminalBlockResult utils::CodeGenUtils::checkIfCur
     if(auto branchInstr = llvm::dyn_cast<llvm::BranchInst>(terminator))
     {
         if(!branchInstr->isConditional()) {
-            // unconditional branch probably means is a preheader / loop end
-            // just ignore it
+            // unconditional branch probably means is a preheader
             return BranchToTerminalBlockResult{false, false};
         }
 
@@ -484,6 +502,47 @@ utils::CodeGenUtils::returnStringForBranchingToTerminalBlock(llvm::Function &fun
     }
 
     return "return 0";
+}
+
+bool utils::CodeGenUtils::isBasicBlockTerminal(llvm::Function &func, const std::string &bbLabel) {
+    auto& lastBlock = func.back();
+    return lastBlock.getName() == bbLabel;
+}
+
+bool
+utils::CodeGenUtils::isInstructionUsedInTernaryOperatorAndHasSingleUse(const llvm::Instruction *instr) {
+    if(!instr)
+    {
+        return false;
+    }
+
+    if(!instr->hasOneUse())
+    {
+        return false;
+    }
+
+    auto* user = instr->user_back();
+    if(!user)
+    {
+        return false;
+    }
+
+    if(auto* selectInst = llvm::dyn_cast<llvm::SelectInst>(user))
+    {
+        return selectInst->getCondition() == instr;
+    }
+
+    return false;
+}
+
+std::string utils::CodeGenUtils::extractRHSFromInstructionBody(const std::string &instrBody) {
+    // if I find ' var1 = i > j' I will return i > j
+    auto equalPos = instrBody.find(" = ");
+    if(equalPos == std::string::npos)
+    {
+        return instrBody;
+    }
+    return instrBody.substr(equalPos + 3);
 }
 
 
