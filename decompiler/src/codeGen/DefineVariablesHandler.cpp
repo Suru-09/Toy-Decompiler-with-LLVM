@@ -35,7 +35,9 @@ std::map<std::string, std::vector<codeGen::Variable>> codeGen::DefineVariablesHa
         {
             // !!!! --- phi nodes symbolize variables that are saved on the stack,
             // which will later be replaced by the local variables for simplicity.
-            if(instr.getOpcode() == llvm::Instruction::PHI || instr.getName().empty())
+            // same goes for cast instructions, they are not needed in the decompiled code,
+            // creating lots of clutter.
+            if(instr.getOpcode() == llvm::Instruction::PHI || instr.getName().empty() || instr.isCast())
             {
                 continue;
             }

@@ -13,37 +13,41 @@ codeGen::OtherInstruction::OtherInstruction(llvm::Instruction& inst, int numSpac
     {
         instructionString += inst.getName().str() + " = ";
     }
-    if(llvm::CmpInst* cmpOp = llvm::dyn_cast<llvm::CmpInst>(&inst))
+    if(auto* cmpOp = llvm::dyn_cast<llvm::CmpInst>(&inst))
     {
         instructionString += handleCmpInst(cmpOp, numSpaces);
     }
 
-    if(llvm::PHINode* phiNode = llvm::dyn_cast<llvm::PHINode>(&inst))
+    if(auto* phiNode = llvm::dyn_cast<llvm::PHINode>(&inst))
     {
         instructionString += handlePhiNode(phiNode);
     }
 
-    if(llvm::SelectInst* selectInst = llvm::dyn_cast<llvm::SelectInst>(&inst))
+    if(auto* selectInst = llvm::dyn_cast<llvm::SelectInst>(&inst))
     {
         instructionString += handleSelectInst(selectInst);
     }
 
-    if(llvm::CallInst* callInst = llvm::dyn_cast<llvm::CallInst>(&inst))
+    if(auto* callInst = llvm::dyn_cast<llvm::CallInst>(&inst))
     {
+        if(utils::CodeGenUtils::doesFunctionCallReturn(callInst))
+        {
+            instructionString = "";
+        }
         instructionString += handleCallInst(callInst);
     }
 
-    if(llvm::AllocaInst* allocaInst = llvm::dyn_cast<llvm::AllocaInst>(&inst))
+    if(auto* allocaInst = llvm::dyn_cast<llvm::AllocaInst>(&inst))
     {
         instructionString += handleAllocaInst(allocaInst);
     }
 
-    if(llvm::StoreInst* storeInst = llvm::dyn_cast<llvm::StoreInst>(&inst))
+    if(auto* storeInst = llvm::dyn_cast<llvm::StoreInst>(&inst))
     {
         instructionString += handleStoreInst(storeInst);
     }
 
-    if(llvm::LoadInst* loadInst = llvm::dyn_cast<llvm::LoadInst>(&inst))
+    if(auto* loadInst = llvm::dyn_cast<llvm::LoadInst>(&inst))
     {
         instructionString += handleLoadInst(loadInst);
     }
@@ -54,7 +58,7 @@ std::string codeGen::OtherInstruction::toString() {
 }
 
 std::string codeGen::OtherInstruction::handleCmpInst(llvm::CmpInst* cmpInst, int numSpaces) {
-    std::string cmpString = "";
+    std::string cmpString;
     if(cmpInst->isIntPredicate())
     {
         cmpString += handleIntCmpInst(cmpInst);

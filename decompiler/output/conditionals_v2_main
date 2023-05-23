@@ -1,16 +1,12 @@
 Fn main() -> i32
 {
-	i64 lvar_1 = 0, lvar_4 = 0, lvar_7 = 0
 	i32 lvar_0 = 0, lvar_2 = 0, lvar_3 = 0, lvar_5 = 0
 	i32 lvar_6 = 0, lvar_8 = 0
 	lvar_0 = if_else(5)
-	lvar_1 =  (i64)lvar_0
-	lvar_2 = printf("If else: %d\n", lvar_1)
+	lvar_2 = printf("If else: %d\n", (i64)lvar_0)
 	lvar_3 = nested_if_else(10, 5)
-	lvar_4 =  (i64)lvar_3
-	lvar_5 = printf("Nested if else: %d\n", lvar_4)
+	lvar_5 = printf("Nested if else: %d\n", (i64)lvar_3)
 	lvar_6 = switch_case(6)
-	lvar_7 =  (i64)lvar_6
-	lvar_8 = printf("Switch case: %d\n", lvar_7)
+	lvar_8 = printf("Switch case: %d\n", (i64)lvar_6)
 	return 0
 }

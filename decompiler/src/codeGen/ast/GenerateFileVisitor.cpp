@@ -19,6 +19,8 @@
 
 #include <filesystem>
 #include <fstream>
+#include <functional>
+#include <algorithm>
 
 
 std::pair<std::string, std::string> codeGen::ast::GenerateFileVisitor::visit(std::shared_ptr<LlvmFunctionNode> node) {
@@ -30,6 +32,7 @@ std::pair<std::string, std::string> codeGen::ast::GenerateFileVisitor::visit(std
 
     // !!!!! Replace stack variables with their aliases at the end of everything.
     replaceStackVarWithAlias(PHINodeHandler{llvmFun}.getPHINodeAliases());
+    replaceVarsThatNeedToBeReplacedAtEnd();
     return std::make_pair<std::string, std::string>(node->getName(), "");
 }
 
@@ -56,6 +59,14 @@ codeGen::ast::GenerateFileVisitor::visit(std::shared_ptr<LlvmInstructionNode> no
         auto returnBody = getFinalReturnBody(lastBasicBlockName);
         logger->info("[GenerateFileVisitor::visit(InstructionNode)] Found return value from last basic block: {}, with value: {}", nodeName, returnBody);
         output[lastBasicBlockName].push_back(utils::CodeGenUtils::getSpaces(indentationLevel) + returnBody);
+        return std::make_pair<std::string, std::string>(node->getName(), "");
+    }
+
+    if(instr->isCast())
+    {
+        logger->info("[GenerateFileVisitor::visit(InstructionNode)] Skipping cast instruction: {}", nodeName);
+        node->setInstructionBody(utils::CodeGenUtils::extractRHSFromInstructionBody(node->getInstructionBody()));
+        variablesToBeReplacedAtTheEnd.emplace(nodeName, node->getInstructionBody());
         return std::make_pair<std::string, std::string>(node->getName(), "");
     }
 
@@ -179,7 +190,7 @@ std::pair<std::string, std::string> codeGen::ast::GenerateFileVisitor::visit(std
 
         auto condition = utils::CodeGenUtils::getTerminatorCondition(llvmFun, node->getName());
         auto conditionBody = utils::CodeGenUtils::getBranchInstrBodyGivenBlock(llvmFun, condition.first);
-        conditionBody = utils::CodeGenUtils::extractLHSFromInstructionBody(conditionBody);\
+        conditionBody = utils::CodeGenUtils::extractLHSFromInstructionBody(conditionBody);
         // really ugly hack to handle the case when the condition is reversed.
         //conditionBody = !conditionBody.empty() && branchingToTerminalBlock.isConditionReversed ? "!(" + conditionBody + ")" : conditionBody;
 
@@ -467,5 +478,25 @@ std::string codeGen::ast::GenerateFileVisitor::getFinalReturnBody(const std::str
     }
 
     return returnBody;
+}
+
+void codeGen::ast::GenerateFileVisitor::replaceVarsThatNeedToBeReplacedAtEnd() {
+    std::for_each(variablesToBeReplacedAtTheEnd.begin(), variablesToBeReplacedAtTheEnd.end(), [this](auto& pLabelAndValue){
+        auto& [instrLabel, value] = pLabelAndValue;
+        // replace all occurrences of the variable in the output
+        for(auto& [bbLabel, vec]: output)
+        {
+            for(auto& line: vec)
+            {
+                // we need to add a space before the variable name to avoid replacing variables that are substrings of other variables
+                // e.g. we want to replace "lvar1" with "lvar2" but we don't want to replace "lvar11" with "lvar2"
+                std::size_t pos = line.find(" " + instrLabel);
+                if(pos != std::string::npos)
+                {
+                    line.replace(pos, instrLabel.size() + 1, value);
+                }
+            }
+        }
+    });
 }
 

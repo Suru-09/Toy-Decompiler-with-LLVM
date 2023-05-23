@@ -55,6 +55,8 @@ public:
     static std::string returnStringForBranchingToTerminalBlock(llvm::Function& func, const std::string& bbLabel);
     static bool isBasicBlockTerminal(llvm::Function& func, const std::string& bbLabel);
     static bool isInstructionUsedInTernaryOperatorAndHasSingleUse(const llvm::Instruction* instr);
+
+    static bool doesFunctionCallReturn(const llvm::CallInst* callInst);
 };
 
 }   // namespace utils

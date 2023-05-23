@@ -545,4 +545,19 @@ std::string utils::CodeGenUtils::extractRHSFromInstructionBody(const std::string
     return instrBody.substr(equalPos + 3);
 }
 
+bool utils::CodeGenUtils::doesFunctionCallReturn(const llvm::CallInst *callInst) {
+    if(!callInst)
+    {
+        return false;
+    }
+
+    auto* calledFunction = callInst->getCalledFunction();
+    if(!calledFunction)
+    {
+        return false;
+    }
+
+    return calledFunction->getReturnType()->isVoidTy();
+}
+
 

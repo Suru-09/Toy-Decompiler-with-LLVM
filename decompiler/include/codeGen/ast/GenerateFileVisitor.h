@@ -36,6 +36,7 @@ public:
 private:
     std::unordered_map<std::string, std::vector<std::string>> output;
     std::unordered_map<std::string, std::string> singleUseVariables;
+    std::unordered_map<std::string, std::string> variablesToBeReplacedAtTheEnd;
     codeGen::DefineVariablesHandler defVarHandler;
     std::map<std::string, std::vector<codeGen::Variable>> definedVariables;
     bool areVariablesDefined;
@@ -51,6 +52,7 @@ private:
     void addReturnValue(const std::string& bbLabel);
     void replaceStackVarWithAlias(const std::vector<codeGen::ast::StackVarAlias> &aliases);
     void replaceOneStackVarWithAlias(const codeGen::ast::StackVarAlias& alias);
+    void replaceVarsThatNeedToBeReplacedAtEnd();
     std::string getFinalReturnBody(const std::string& bbLabel);
 
     void addVariablesDefinitions();
