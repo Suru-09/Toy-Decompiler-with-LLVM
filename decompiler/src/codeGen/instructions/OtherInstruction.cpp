@@ -8,7 +8,7 @@
 #include <iostream>
 
 codeGen::OtherInstruction::OtherInstruction(llvm::Instruction& inst, int numSpaces) {
-    bool printLhs = utils::CodeGenUtils::canAssignTo(&inst);
+    bool printLhs = utils::CodeGenUtils::canAssignTo(&inst) && inst.getNumUses() > 0;
     if(printLhs)
     {
         instructionString += inst.getName().str() + " = ";
@@ -30,7 +30,10 @@ codeGen::OtherInstruction::OtherInstruction(llvm::Instruction& inst, int numSpac
 
     if(auto* callInst = llvm::dyn_cast<llvm::CallInst>(&inst))
     {
-        if(utils::CodeGenUtils::doesFunctionCallReturn(callInst))
+        // If the function call returns a value, then we need to print the lhs
+        // Otherwise, we don't need to print the lhs, because the function call
+        // is a void function.
+        if(!utils::CodeGenUtils::doesFunctionCallReturn(callInst))
         {
             instructionString = "";
         }

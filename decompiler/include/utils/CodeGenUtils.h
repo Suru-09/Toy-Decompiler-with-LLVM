@@ -57,6 +57,7 @@ public:
     static bool isInstructionUsedInTernaryOperatorAndHasSingleUse(const llvm::Instruction* instr);
 
     static bool doesFunctionCallReturn(const llvm::CallInst* callInst);
+    static bool isInstructionAnArgumentToTheLLVMFunction(const llvm::Function& func, const std::string& instrLabel);
 };
 
 }   // namespace utils

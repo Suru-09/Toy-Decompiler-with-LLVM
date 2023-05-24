@@ -27,10 +27,6 @@ private:
     const llvm::Function& llvmFn;
     std::map<std::string, std::vector<codeGen::Variable>> variables;
     std::shared_ptr<spdlog::logger> logger;
-private:
-    std::string getFirstBBFromVector(const std::vector<std::string>& bbs);
-    std::vector<std::string> constructBBsVector(const llvm::PHINode* phiNode);
-    bool  checkIfBBIsFirstOfHasNoIntructions(const llvm::BasicBlock& bb);
 };
 
 

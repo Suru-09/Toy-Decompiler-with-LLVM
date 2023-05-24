@@ -1,0 +1,16 @@
+Fn main() -> i32
+{
+	i32 lvar_1 = 0
+	printf("Did you pick a number between 1 and 100?")
+	lvar_1 = getchar()
+	
+	if (lvar_1 ==  89) {
+	    return 0
+	    printf("\n Game over")
+	    
+	}
+	guess(1, 100)
+	
+	getchar()
+	return 0
+}

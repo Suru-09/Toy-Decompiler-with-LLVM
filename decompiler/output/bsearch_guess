@@ -1,0 +1,28 @@
+Fn guess(s: i32, d: i32) -> void
+{
+	bool lvar_9 = 0
+	i32 lvar_1 = 0, lvar_2 = 0, lvar_3 = 0, lvar_4 = 0
+	i32 lvar_8 = 0, lvar_10 = 0, s = 0, d = 0
+	
+	if (!(s < d )) {
+	    return s
+	}
+	
+	while (s < d ) {
+	    lvar_1 = d + s 
+	    lvar_2 = lvar_1 lshr 31 
+	    lvar_3 = lvar_2 + lvar_1 
+	    lvar_4 = lvar_3 >> 1 
+	    printf("Is your number greater than %d ? [Y/N]", (i64)lvar_4)
+	    getchar()
+	    lvar_8 = getchar()
+	    lvar_9 = lvar_8 ==  89
+	    lvar_10 = lvar_4 + 1 
+	    s = lvar_9 ? lvar_10 : s
+	    d = lvar_9 ? d : lvar_4
+	    
+	}
+	
+	printf("\nYour number is : %d \n", (i64)svar_2)
+	return 
+}

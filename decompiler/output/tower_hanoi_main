@@ -1,0 +1,43 @@
+Fn main() -> i32
+{
+	ptr::struct::_IO_FILE(i32) lvar_3 = 0
+	i64 lvar_2 = 0, lvar_13 = 0, lvar_14 = 0, lvar_15 = 0
+	i64 lvar_17 = 0, lvar_18 = 0, lvar_23 = 0, lvar_25 = 0
+	ptr::i32 lvar_1 = 0, lvar_11 = 0, lvar_20 = 0
+	ptr::ptr::i32 lvar_0 = 0
+	lvar_0 = lvar_0
+	lvar_1 = lvar_1
+	lvar_2 = __readfsqword(40)
+	lvar_3 = fopen("out.svg", "w")
+	
+	if (lvar_3 ==  ) {
+	    printf("Enter the number of disks you want , it is not recommended to go for more than 5 tho' : ")
+	    scanf("%d", lvar_0)
+	    putchar(10)
+	    lvar_11 = lvar_0
+	    lvar_13 = (i64)lvar_11 << 32 
+	    lvar_14 = lvar_13 >> 30 
+	    lvar_15 = lvar_14 + 15 
+	    lvar_17 = lvar_15 and (-16) 
+	    lvar_18 = (i64)lvar_1 - lvar_17 
+	    initializeaza_caramida(lvar_19, (i32)lvar_12)
+	    svg_first_thing(lvar_3)
+	    lvar_20 = lvar_0
+	    lvar_23 = lvar_18 + (-16) 
+	    (i64)lvar_3
+	    tower_hanoi(lvar_22, (i32)lvar_21, 0, 2, 1, (ptr::i32)lvar_18, )
+	    svg_body(lvar_3, (i32)lvar_12, (ptr::i32)lvar_18)
+	    svg_final(lvar_3)
+	    
+	    puts("I couldn't open the file :( ")
+	    
+	}
+	lvar_25 = __readfsqword(40)
+	
+	if (lvar_2 == lvar_25 ) {
+	    return 0
+	}
+	__stack_chk_fail()
+	
+	return 
+}

@@ -84,7 +84,8 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
 {
     std::vector<std::string> functionNames = {"calc_sum",
                                               "fibo", "main", "n_way_conditional_switch", "while_pre_tested_loop",
-                                              "while_post_tested_loop", "two_way", "for_loop", "if_else", "nested_if_else", "switch_case"
+                                              "while_post_tested_loop", "two_way", "for_loop", "if_else", "nested_if_else", "switch_case",
+                                              "guess"
     };
 
     if(std::find(functionNames.begin(), functionNames.end(), f.getName().str()) == functionNames.end())

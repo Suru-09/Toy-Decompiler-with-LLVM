@@ -318,16 +318,19 @@ std::string utils::CodeGenUtils::llvmValueToString(llvm::Value *value) {
     {
         // if constant is a string, we need to extract it from the global variable
         auto pointerOperand = constant->getOperand(0);
-        if (auto* globalVar = llvm::dyn_cast<llvm::GlobalVariable>(pointerOperand)) {
-            auto* dataArray = llvm::cast<llvm::ConstantDataArray>(globalVar->getInitializer());
-            std::string extractedString = dataArray->getAsString().str();
-            // replace all \n(1 character) with \\n(2 characters)
-            while(extractedString.find('\n') != std::string::npos)
-                extractedString.replace(extractedString.find('\n'), 1, "\\n");
+        if (auto* globalVar = llvm::dyn_cast<llvm::GlobalVariable>(pointerOperand)) {\
+            if(globalVar->hasInitializer())
+            {
+                auto* dataArray = llvm::cast<llvm::ConstantDataArray>(globalVar->getInitializer());
+                std::string extractedString = dataArray->getAsString().str();
+                // replace all \n(1 character) with \\n(2 characters)
+                while(extractedString.find('\n') != std::string::npos)
+                    extractedString.replace(extractedString.find('\n'), 1, "\\n");
 
-            // add quotes to string and remove \n, also add \ before newline so that it is printed correctly
-            extractedString = "\"" + extractedString.substr(0, extractedString.size() - 1) + "\"";
-            str += extractedString;
+                // add quotes to string and remove \n, also add \ before newline so that it is printed correctly
+                extractedString = "\"" + extractedString.substr(0, extractedString.size() - 1) + "\"";
+                str += extractedString;
+            }
         }
     }
 
@@ -456,9 +459,10 @@ utils::CodeGenUtils::BranchToTerminalBlockResult utils::CodeGenUtils::checkIfCur
 
     if(auto branchInstr = llvm::dyn_cast<llvm::BranchInst>(terminator))
     {
-        if(!branchInstr->isConditional()) {
-            // unconditional branch probably means is a preheader
-            return BranchToTerminalBlockResult{false, false};
+        if(branchInstr->isUnconditional()) {
+            // if it jumps to the terminal block, then it is a branch to terminal block
+            auto branchTarget = branchInstr->getSuccessor(0)->getName().str();
+            return BranchToTerminalBlockResult{branchTarget == terminalBlockName, false};
         }
 
         auto leftBranch = branchInstr->getSuccessor(0)->getName().str();
@@ -467,6 +471,20 @@ utils::CodeGenUtils::BranchToTerminalBlockResult utils::CodeGenUtils::checkIfCur
         if(leftBranch == terminalBlockName || rightBranch == terminalBlockName)
         {
             return leftBranch == terminalBlockName ? BranchToTerminalBlockResult{true, false} : BranchToTerminalBlockResult{true, true};
+        }
+
+        // check the same thing for left and right branch
+        auto leftBranchResult = checkIfCurrentBlockBranchesToTerminalBlock(func, leftBranch);
+        auto rightBranchResult = checkIfCurrentBlockBranchesToTerminalBlock(func, rightBranch);
+
+        if(leftBranchResult.isBranchingToTerminalBlock)
+        {
+            return leftBranchResult;
+        }
+
+        if(rightBranchResult.isBranchingToTerminalBlock)
+        {
+            return rightBranchResult;
         }
     }
 
@@ -557,7 +575,15 @@ bool utils::CodeGenUtils::doesFunctionCallReturn(const llvm::CallInst *callInst)
         return false;
     }
 
-    return calledFunction->getReturnType()->isVoidTy();
+    spdlog::error("Called function: {}, with return type: {}", calledFunction->getName().str(), typeToString(calledFunction->getReturnType()));
+    return !calledFunction->getReturnType()->isVoidTy();
+}
+
+bool utils::CodeGenUtils::isInstructionAnArgumentToTheLLVMFunction(const llvm::Function &func,
+                                                                   const std::string &instrLabel) {
+    return std::any_of(func.arg_begin(), func.arg_end(), [&instrLabel](const llvm::Argument& arg){
+        return arg.getName().str() == instrLabel;
+    });
 }
 
 

@@ -42,6 +42,13 @@ std::map<std::string, std::vector<codeGen::Variable>> codeGen::DefineVariablesHa
                 continue;
             }
 
+            // check if variable has no uses && is it only used by as lhs for the function call
+            // this was added once I made the decision not to print function calls
+            if(instr.getNumUses() == 0 && instr.getOpcode() == llvm::Instruction::Call)
+            {
+                continue;
+            }
+
             // check if variable has single use && is it only used in branch condition
             // this was added once I made the decision not to print if and while loops
             // conditions as separate variables, instead I print them directly in the
@@ -59,7 +66,7 @@ std::map<std::string, std::vector<codeGen::Variable>> codeGen::DefineVariablesHa
             }
 
             // get variable type
-            logger->debug("[DefineVariablesHandler::handle] Variable name added for definition: {}", instr.getName().str());
+            logger->info("[DefineVariablesHandler::handle] Variable name added for definition: {}, for type: {}", instr.getName().str(), instr.getOpcodeName());
             auto type = utils::CodeGenUtils::typeToString(instr.getType());
             auto initialValue = "0";
             Variable var = Variable(instr.getName().str(), type, initialValue);
@@ -74,52 +81,4 @@ std::map<std::string, std::vector<codeGen::Variable>> codeGen::DefineVariablesHa
         }
     }
     return variables;
-}
-
-
-
-bool codeGen::DefineVariablesHandler::checkIfBBIsFirstOfHasNoIntructions(const llvm::BasicBlock &bb) {
-    bool isFirst = false, hasNoInstructions = false;
-    if(bb.getSinglePredecessor() == nullptr)
-    {
-        isFirst = true;
-    }
-    std::size_t instrCount = 0;
-    for(auto& instr: bb)
-    {
-        if(!instr.isTerminator())
-        {
-            ++instrCount;
-        }
-    }
-    instrCount == 0 ? hasNoInstructions = true : hasNoInstructions = false;
-    return isFirst || hasNoInstructions;
-}
-
-std::string codeGen::DefineVariablesHandler::getFirstBBFromVector(const std::vector<std::string> &bbs) {
-    llvm::ReversePostOrderTraversal<const llvm::Function*> rpot(&llvmFn);
-    if(bbs.empty())
-    {
-        return "";
-    }
-    for(auto bb: rpot)
-    {
-        auto found = std::find(bbs.begin(), bbs.end(), bb->getName().str());
-        if(found != bbs.end())
-        {
-            return bb->getName().str();
-        }
-    }
-
-    return bbs.front();
-}
-
-std::vector<std::string> codeGen::DefineVariablesHandler::constructBBsVector(const llvm::PHINode* phiNode) {
-    std::vector<std::string> bbs;
-    for(std::size_t i = 0; i < phiNode->getNumIncomingValues(); ++i)
-    {
-        auto incoming = phiNode->getIncomingBlock(i);
-        bbs.push_back(incoming->getName().str());
-    }
-    return bbs;
 }

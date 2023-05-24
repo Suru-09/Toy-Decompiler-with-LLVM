@@ -64,7 +64,7 @@ codeGen::ast::GenerateFileVisitor::visit(std::shared_ptr<LlvmInstructionNode> no
 
     if(instr->isCast())
     {
-        logger->info("[GenerateFileVisitor::visit(InstructionNode)] Skipping cast instruction: {}", nodeName);
+        logger->info("[GenerateFileVisitor::visit(InstructionNode)] Skipping cast instruction: {}, with body: {}", nodeName, node->getInstructionBody());
         node->setInstructionBody(utils::CodeGenUtils::extractRHSFromInstructionBody(node->getInstructionBody()));
         variablesToBeReplacedAtTheEnd.emplace(nodeName, node->getInstructionBody());
         return std::make_pair<std::string, std::string>(node->getName(), "");
@@ -366,7 +366,7 @@ void codeGen::ast::GenerateFileVisitor::replaceOneStackVarWithAlias(const codeGe
     {
         for(std::size_t i = 0;  i < vec.size(); ++i)
         {
-            if(bbKey == alias.getBasicBlockName())
+            if(bbKey == alias.getBasicBlockName() || alias.getBasicBlockName() == "global")
             {
                 std::string line = vec[i];
                 std::size_t pos = line.find(alias.getStackVarName());
@@ -491,6 +491,19 @@ void codeGen::ast::GenerateFileVisitor::replaceVarsThatNeedToBeReplacedAtEnd() {
                 // we need to add a space before the variable name to avoid replacing variables that are substrings of other variables
                 // e.g. we want to replace "lvar1" with "lvar2" but we don't want to replace "lvar11" with "lvar2"
                 std::size_t pos = line.find(" " + instrLabel);
+                if(pos != std::string::npos)
+                {
+                    if(line.size() > pos + 1 + instrLabel.size())
+                    {
+                        auto nextChar = line[pos + 1 + instrLabel.size()];
+                        if(std::isdigit(nextChar))
+                        {
+                            continue;
+                        }
+                    }
+
+                }
+                // add check for lvar11 found while looking for lvar1
                 if(pos != std::string::npos)
                 {
                     line.replace(pos, instrLabel.size() + 1, value);
