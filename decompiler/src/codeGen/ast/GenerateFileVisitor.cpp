@@ -29,8 +29,9 @@ std::pair<std::string, std::string> codeGen::ast::GenerateFileVisitor::visit(std
     }
 
     // !!!!! Replace stack variables with their aliases at the end of everything.
-    replaceStackVarWithAlias(PHINodeHandler{llvmFun}.getPHINodeAliases());
     replaceVarsThatNeedToBeReplacedAtEnd();
+    replaceStackVarWithAlias(PHINodeHandler{llvmFun}.getPHINodeAliases());
+
     sanitizeReturnValuesForVoidTypeFunctions();
     return std::make_pair<std::string, std::string>(node->getName(), "");
 }
@@ -332,7 +333,7 @@ void codeGen::ast::GenerateFileVisitor::addVariablesDefinitions() {
 
 
             //  If we have 2 variables in the same line, then we need to add a new line.
-            if(countVars > 4 || varStr.size() > 45)
+            if(countVars > 2 || varStr.size() > 25)
             {
                 output[lastBasicBlockName].push_back(varStr);
                 varStr = "";
@@ -397,7 +398,7 @@ void codeGen::ast::GenerateFileVisitor::replaceStackVarWithAlias(const std::vect
 {
     for(const auto& alias: aliases)
     {
-        logger->info("[GenerateFileVisitor::replaceStackVarWithAlias] Looking for stack var: {} in basic block: {}", alias.getStackVarName(), alias.getBasicBlockName());
+        logger->info("[GenerateFileVisitor::replaceStackVarWithAlias] Looking for stack var: {} in basic block: {}, to be replaced with: {}", alias.getStackVarName(), alias.getBasicBlockName(), alias.getLocalVar());
         replaceOneStackVarWithAlias(alias);
     }
 }
@@ -406,19 +407,26 @@ void codeGen::ast::GenerateFileVisitor::replaceOneStackVarWithAlias(const codeGe
 {
     for(const auto& [bbKey, vec]: output)
     {
+        if(bbKey != alias.getBasicBlockName() && alias.getBasicBlockName() != "global")
+        {
+            continue;
+        }
+
         for(std::size_t i = 0;  i < vec.size(); ++i)
         {
-            if(bbKey == alias.getBasicBlockName() || alias.getBasicBlockName() == "global")
+            std::string line = vec[i];
+            std::size_t pos = line.find(alias.getStackVarName());
+            if(pos != std::string::npos) {
+                std::string oldVal = line.substr(pos, alias.getStackVarName().size());
+                logger->info(
+                        "[GenerateFileVisitor::replaceOneStackVarWithAlias] Found stack var: {} in line: {}, replacing old value: {} with: {}",
+                        alias.getStackVarName(), line, oldVal, alias.getLocalVar());
+                line.replace(pos, alias.getStackVarName().size(), alias.getLocalVar());
+                output[bbKey][i] = line;
+            }
+            else
             {
-                std::string line = vec[i];
-                std::size_t pos = line.find(alias.getStackVarName());
-                if(pos != std::string::npos)
-                {
-                    std::string oldVal = line.substr(pos, alias.getStackVarName().size());
-                    logger->info("[GenerateFileVisitor::replaceOneStackVarWithAlias] Found stack var: {} in line: {}, replacing old value: {} with: {}", alias.getStackVarName(), line, oldVal, alias.getLocalVar());
-                    line.replace(pos, alias.getStackVarName().size(), alias.getLocalVar());
-                    output[bbKey][i] = line;
-                }
+                logger->info("[GenerateFileVisitor::replaceOneStackVarWithAlias] Did not find stack var: {} in line: {}", alias.getStackVarName(), line);
             }
         }
     }

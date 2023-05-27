@@ -1,0 +1,10 @@
+Fn while_post_tested_loop_not_infinite(flag: i32) -> i32
+{
+	i32 lvar_0 = 0, lvar_2 = 0
+	i32 lvar_3 = 0, lvar_4 = 0
+	lvar_0 = flag + 1 
+	lvar_2 = lvar_0 >  16 ? lvar_0 : 16
+	lvar_3 = lvar_2 - flag 
+	lvar_4 = lvar_3 * 7 
+	return lvar_4
+}

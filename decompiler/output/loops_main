@@ -1,6 +1,7 @@
 Fn main() -> i32
 {
-	i32 lvar_0 = 0, lvar_3 = 0, lvar_6 = 0, lvar_9 = 0
+	i32 lvar_0 = 0, lvar_3 = 0
+	i32 lvar_6 = 0, lvar_9 = 0
 	lvar_0 = n_way_conditional_switch(5)
 	printf("%d\n", (i64)lvar_0)
 	lvar_3 = for_loop(5)

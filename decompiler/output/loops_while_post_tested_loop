@@ -1,7 +1,7 @@
 Fn while_post_tested_loop(flag: i32) -> i32
 {
 	i32 lvar_1 = 0
-	bool lvar_0 = 0
+	bool lvar_0 = false
 	lvar_0 = flag <  16
 	
 	do {

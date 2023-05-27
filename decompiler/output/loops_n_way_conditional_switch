@@ -1,6 +1,6 @@
 Fn n_way_conditional_switch(n: i32) -> i32
 {
-	i32 lvar_5 = 0, lvar_7 = 0
+	i32 lvar_5 = 0, lvar_7 = 5
 	
 	if (n ==  5) {
 	    return 5

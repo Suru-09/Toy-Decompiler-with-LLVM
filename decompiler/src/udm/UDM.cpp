@@ -48,6 +48,7 @@ void udm::UDM::cfgAnalysis(std::unique_ptr<llvm::Module> module)
         if(f.getName() == "calc_sum" || f.getName() == "fibo" || f.getName() =="main" || f.getName() == "n_way_conditional_switch"
             || f.getName() == "while_pre_tested_loop" || f.getName() == "while_post_tested_loop" || f.getName() == "two_way" || f.getName() == "for_loop"
             || f.getName() == "if_else" || f.getName() == "nest_if_else" || f.getName() == "switch_case" || f.getName() == "guess"
+            || f.getName() == "nested_for" || f.getName() == "while_post_tested_loop_not_infinite"
             )
         {
         }

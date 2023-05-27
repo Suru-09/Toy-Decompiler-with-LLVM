@@ -38,6 +38,15 @@ std::vector<codeGen::ast::StackVarAlias> codeGen::ast::PHINodeHandler::getPHINod
                      logger->info("[PHINodeHandler::getPHINodeAliases] Found alias: value: <{}> for stack_var: <{}> in basic block: {}", rhsLocalVar, lhsStackVarName, basicBlockName);
                 }
 
+                // if current basic block is not in the labelAndValues vector, then add it with the value of the last labelAndValue pair.
+                if(std::find_if(labelsAndValues.begin(), labelsAndValues.end(), [&bb](const auto& labelAndValue){
+                    return labelAndValue.first == bb->getName().str();
+                }) == labelsAndValues.end())
+                {
+                    logger->info("[PHINodeHandler::getPHINodeAliases] Adding alias for current basic block: <{}> with localVar: {} and stackVarName: {}", bb->getName().str(), labelsAndValues.back().second, lhsStackVarName);
+                    aliases.emplace_back(bb->getName().str(), labelsAndValues.back().second, lhsStackVarName);
+                }
+
            }
         }
     }

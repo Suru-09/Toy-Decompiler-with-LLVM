@@ -19,14 +19,16 @@ namespace codeGen {
  */
 class DefineVariablesHandler {
 public:
-    explicit DefineVariablesHandler(const llvm::Function &llvmFn);
+    explicit DefineVariablesHandler(llvm::Function &llvmFn);
     ~DefineVariablesHandler() = default;
 
     std::map<std::string, std::vector<codeGen::Variable>>  handle();
 private:
-    const llvm::Function& llvmFn;
+    llvm::Function& llvmFn;
     std::map<std::string, std::vector<codeGen::Variable>> variables;
     std::shared_ptr<spdlog::logger> logger;
+
+    std::string getVariableInitialValue(const llvm::Instruction& instr);
 };
 
 

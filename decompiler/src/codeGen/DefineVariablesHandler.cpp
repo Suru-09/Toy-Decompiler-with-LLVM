@@ -3,13 +3,14 @@
 #include "logger/LoggerManager.h"
 #include "codeGen/Variable.h"
 #include "utils/CodeGenUtils.h"
+#include "codeGen/ast/PHINodeHandler.h"
 
 
 #include <llvm/IR/CFG.h>
 #include <llvm/ADT/PostOrderIterator.h>
 #include <llvm/IR/Instructions.h>
 
-codeGen::DefineVariablesHandler::DefineVariablesHandler(const llvm::Function &llvmFn)
+codeGen::DefineVariablesHandler::DefineVariablesHandler(llvm::Function &llvmFn)
 : llvmFn(llvmFn)
 {
     logger = logger::LoggerManager::getInstance()->getLogger("codeGen");
@@ -68,7 +69,7 @@ std::map<std::string, std::vector<codeGen::Variable>> codeGen::DefineVariablesHa
             // get variable type
             logger->info("[DefineVariablesHandler::handle] Variable name added for definition: {}, for type: {}", instr.getName().str(), instr.getOpcodeName());
             auto type = utils::CodeGenUtils::typeToString(instr.getType());
-            auto initialValue = "0";
+            auto initialValue = getVariableInitialValue(instr);
             Variable var = Variable(instr.getName().str(), type, initialValue);
             if(variables.find(bb->getName().str()) != variables.end())
             {
@@ -81,4 +82,50 @@ std::map<std::string, std::vector<codeGen::Variable>> codeGen::DefineVariablesHa
         }
     }
     return variables;
+}
+
+std::string codeGen::DefineVariablesHandler::getVariableInitialValue(const llvm::Instruction &instr) {
+    //  Add support for instruction that are mentioned in a PHI node.
+    auto instrName = instr.getName().str();
+    auto phiNodeHandler = codeGen::ast::PHINodeHandler(llvmFn);
+    for(auto& bb: llvmFn)
+    {
+        for(auto& localInstr: bb)
+        {
+            if(localInstr.getOpcode() == llvm::Instruction::PHI)
+            {
+                auto phiNode = llvm::dyn_cast<llvm::PHINode>(&localInstr);
+                if(phiNode)
+                {
+                    auto labelsAndValues = phiNodeHandler.getLabelsAndValueFromPhiNode(phiNode);
+                    auto findInstr = std::find_if(labelsAndValues.begin(), labelsAndValues.end(), [&instrName](auto& labelAndValue){
+                        return labelAndValue.second == instrName;
+                    });
+
+                    if(findInstr != labelsAndValues.end())
+                    {
+                        return labelsAndValues.front().second;
+                    }
+                }
+            }
+        }
+    }
+
+    auto type = utils::CodeGenUtils::typeToString(instr.getType());
+    if(type.find('i') != std::string::npos)
+    {
+        return "0";
+    }
+
+    if(type.find('f') != std::string::npos)
+    {
+        return "0.0";
+    }
+
+    if(type.find("bool") != std::string::npos)
+    {
+        return "false";
+    }
+
+    return "0";
 }
