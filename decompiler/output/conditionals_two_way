@@ -12,7 +12,7 @@ Fn two_way(n: i32) -> i32
 	    return 6
 	}
 	
-	if (!(n <  16)) {
+	if (n >=  16) {
 	    return 4
 	}
 	lvar_6 = n <  11 ? 6 : 5

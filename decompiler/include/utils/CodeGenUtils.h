@@ -24,7 +24,7 @@ public:
     };
 
 public:
-    static std::string getSpaces(int numSpaces);
+    static std::string getSpaces(std::size_t numSpaces);
     static std::string typeToString(llvm::Type* type);
     static bool canAssignTo(llvm::Instruction* instr);
     static std::vector<std::string> extractLabelsFromPhiString(const std::string& phiString);
@@ -58,6 +58,8 @@ public:
 
     static bool doesFunctionCallReturn(const llvm::CallInst* callInst);
     static bool isInstructionAnArgumentToTheLLVMFunction(const llvm::Function& func, const std::string& instrLabel);
+    static bool isLoopConditionReversed(const std::string& loopBasicBlockLabel, llvm::Function& func);
+    static bool isFirstBlockBeforeSecondBlock(const std::string& firstBlockLabel, const std::string& secondBlockLabel, llvm::Function& func);
 };
 
 }   // namespace utils

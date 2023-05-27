@@ -6,7 +6,7 @@ Fn while_pre_tested_loop(flag_2: i32) -> i32
 	    return 0
 	}
 	
-	while (lvar_2 > flag_2 ) {
+	while (lvar_2 <= flag_2 ) {
 	    lvar_1 = lvar_1 + 7 
 	    lvar_2 = lvar_2 + 1 
 	    

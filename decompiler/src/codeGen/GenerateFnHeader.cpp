@@ -31,6 +31,6 @@ std::string codeGen::GenerateFnHeader::generate()
     std::string returnType = utils::CodeGenUtils::typeToString(fn.getReturnType());
     result += ") -> " + returnType + "\n{\n";
 
-    logger->info("Function header: {}", result);
+    //logger->info("Function header: {}", result);
     return result;
 }

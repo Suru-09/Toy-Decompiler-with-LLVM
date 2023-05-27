@@ -10,6 +10,7 @@
 #include <llvm/IR/Function.h>
 #include <llvm/IR/BasicBlock.h>
 #include <llvm/ADT/PostOrderIterator.h>
+#include <llvm/IR/Instructions.h>
 
 #include <spdlog/spdlog.h>
 
@@ -259,12 +260,57 @@ void udm::IntervalGraph::setBlockLoopType(const std::pair<std::string, std::stri
 
 void udm::IntervalGraph::setFollowBlock(const std::pair<std::string, std::string>& backEdge, udm::FuncInfo& funcInfo)
 {
-    if(funcInfo.exists(backEdge.first))
+    if(!funcInfo.exists(backEdge.first))
     {
-        auto follow = getFollowBlock(backEdge);
-        logger->info("Follow node for backedge: <{}> -> <{}> is: <{}>", backEdge.first, backEdge.second, follow);
-        funcInfo[backEdge.first].setFollowNode(follow);
+        return;
     }
+
+    auto follow = getFollowBlock(backEdge);
+    logger->info("[IntervalGraph::setFollowBlock] Follow node for backedge: <{}> -> <{}> where follow node is: <{}>", backEdge.first, backEdge.second, follow);
+    funcInfo[backEdge.first].setFollowNode(follow);
+
+    // if follow node has exactly 2 predecessors & they are unconditional branches
+    //  then set the conditional type as ConditionalType::ELSE
+    auto bbFollow = getBB(follow);
+    if(!bbFollow) {
+        return;
+    }
+
+    auto pred = utils::UdmUtils::getPredecessors(bbFollow);
+    bool condition = isConditionalSimpleELSE(pred);
+    if(condition)
+    {
+        logger->info("[IntervalGraph::setFollowBlock] Setting conditional type as ELSE for: <{}>", backEdge.first);
+        funcInfo[backEdge.first].setConditionalType(udm::BBInfo::ConditionalType::ELSE);
+    }
+
+}
+
+bool udm::IntervalGraph::isConditionalSimpleELSE(std::vector<std::string> &pred) {
+    if(pred.size() != 2)
+    {
+        logger->info("[IntervalGraph::isConditionalSimpleELSE] Size of predecessors not 2: <{}>", pred.size());
+        return false;
+    }
+
+    auto condition = std::all_of(pred.begin(), pred.end(), [this](std::string& predName) {
+        auto bbPred = getBB(predName);
+        if(!bbPred) {
+            return false;
+        }
+        const auto terminator = bbPred->getTerminator();
+        if(!terminator)
+        {
+            return false;
+        }
+        if( auto* branchInst = llvm::dyn_cast<llvm::BranchInst>(terminator) )
+        {
+            logger->info("[IntervalGraph::isConditionalSimpleELSE] Branch instruction is unconditional: <{}> for pred: {}", branchInst->isUnconditional(), predName);
+            return branchInst->isUnconditional();
+        }
+        return false;
+    });
+    return condition;
 }
 
 void udm::IntervalGraph::loopStructure(udm::FuncInfo& funcInfo)
@@ -407,14 +453,13 @@ udm::BBInfo::LoopType udm::IntervalGraph::getLoopType(std::pair<std::string, std
     {
         std::vector<std::string> preds = utils::UdmUtils::getPredecessors(getBB(backEdge.first));
         logger->critical("[getLoopType] Node header: <{}>, preds size: <{}>", preds.front(), preds.size());
-        auto found = std::find(preds.begin(), preds.end(), "preheader");
-        if(found != preds.end())
+        for(auto& pred : preds)
         {
-            return udm::BBInfo::LoopType::WHILE;
-        }
-        else
-        {
-            return udm::BBInfo::LoopType::DO_WHILE;
+            logger->critical("[getLoopType] Node pred: <{}>", pred);
+            if(pred.find(preheader) != std::string::npos || pred.find("ph") != std::string::npos)
+            {
+                return udm::BBInfo::LoopType::WHILE;
+            }
         }
     }
 
@@ -574,9 +619,24 @@ void udm::IntervalGraph::twoWayConditionalBranch(udm::FuncInfo& funcInfo)
 
                 if(getNumPredecessors(imed) >= 2)
                 {
+                    // if all predecessprs are a unconditional branch
+                    auto bbPred = utils::UdmUtils::getPredecessors(getBB(imed));
+                    bool condition = isConditionalSimpleELSE(bbPred);
+                    if(condition)
+                    {
+                        funcInfo[bb].setConditionalType(udm::BBInfo::ConditionalType::ELSE);
+                    }
+                    logger->info("Adding follow node: <{}>", imed);
                     funcInfo[bb].setFollowNode(imed);
                     for(const auto& notSolved: unresolved)
                     {
+//                        condition = false;
+//                        auto notSolvedPreds = utils::UdmUtils::getPredecessors(getBB(notSolved));
+//                        condition = isConditionalSimpleELSE(notSolvedPreds);
+                        if(condition)
+                        {
+                            funcInfo[bb].setConditionalType(udm::BBInfo::ConditionalType::ELSE);
+                        }
                         funcInfo[notSolved].setFollowNode(imed);
                     }
                 }

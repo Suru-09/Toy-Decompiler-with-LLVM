@@ -19,11 +19,12 @@ public:
     static udm::BBInfo::LoopType isLoop(const udm::BBInfo& bbInfo);
     static bool isConditional(const udm::BBInfo& bbInfo);
 
-    static void addBracket(const std::string& bbName, const udm::FuncInfo& funcInfo);
+    static void addBracket(const std::string &bbName, const udm::FuncInfo &funcInfo, llvm::Function &llvmFunc);
 
-    static bool shouldCloseConditional(const std::string& bbName, const udm::FuncInfo& funcInfo);
-    static bool shouldCloseLoop(const std::string& bbName, const udm::FuncInfo& funcInfo);
+    static udm::BBInfo::ConditionalType shouldCloseConditional(const std::string& bbName, const udm::FuncInfo& funcInfo);
+    static udm::BBInfo::LoopType shouldCloseLoop(const std::string& bbName, const udm::FuncInfo& funcInfo);
     static bool shouldCloseReturn(const std::string& bbName, const udm::FuncInfo& funcInfo);
+    static bool shouldCloseElse(const std::string& bbName, const udm::FuncInfo& funcInfo, llvm::Function &llvmFunc);
 
     /*
      * @param returnBBName: the name of the basic block that we are adding a return value to (practically the place where
@@ -47,7 +48,7 @@ private:
      *  @structure: key -> pair<basic block, latchOrFollowNode> value -> number of brackets to be closed when
      *  reaching the basic block.
      */
-    static std::map<std::pair<std::string, std::string> , unsigned int> bracketMap;
+    inline static std::map<std::pair<std::string, std::string> , unsigned int> bracketMap{};
     static std::shared_ptr<spdlog::logger> logger;
 };
 

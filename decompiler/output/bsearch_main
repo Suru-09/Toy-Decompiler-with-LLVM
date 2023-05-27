@@ -5,12 +5,12 @@ Fn main() -> i32
 	lvar_1 = getchar()
 	
 	if (lvar_1 ==  89) {
-	    return 0
+	    guess(1, 100)
+	    
+	} else {
 	    printf("\n Game over")
 	    
 	}
-	guess(1, 100)
-	
 	getchar()
 	return 0
 }

@@ -29,34 +29,15 @@ std::vector<codeGen::ast::StackVarAlias> codeGen::ast::PHINodeHandler::getPHINod
 
                std::string lhsStackVarName = phiPtr->getName().str();
                std::vector<std::pair<std::string, std::string>> labelsAndValues = getLabelsAndValueFromPhiNode(phiPtr);
-               bool isArgumentToFunction = false;
-               std::string savedArgument;
                 for(auto& labelAndValue: labelsAndValues)
                 {
                      std::string rhsLocalVar = labelAndValue.second;
                      std::string basicBlockName = labelAndValue.first;
 
-                     if(!isArgumentToFunction)
-                     {
-                        isArgumentToFunction = utils::CodeGenUtils::isInstructionAnArgumentToTheLLVMFunction(m_llvmFun, rhsLocalVar);
-                        savedArgument = rhsLocalVar;
-                     }
-
                      aliases.emplace_back(basicBlockName, rhsLocalVar, lhsStackVarName);
                      logger->info("[PHINodeHandler::getPHINodeAliases] Found alias: value: <{}> for stack_var: <{}> in basic block: {}", rhsLocalVar, lhsStackVarName, basicBlockName);
                 }
 
-                // if we saved an we replace the stack variable name with the argument name
-                std::vector<StackVarAlias> newAliases;
-               std::for_each(aliases.begin(), aliases.end(), [&savedArgument, &inst, &newAliases](StackVarAlias& alias){
-                   if(alias.getStackVarName() == inst.getName().str() && !savedArgument.empty())
-                   {
-                       newAliases.emplace_back("global", savedArgument, alias.getLocalVar());
-                       alias.setLocalVar(savedArgument);
-                   }
-               });
-
-                aliases.insert(aliases.end(), newAliases.begin(), newAliases.end());
            }
         }
     }
@@ -76,6 +57,12 @@ std::vector<std::pair<std::string, std::string>> codeGen::ast::PHINodeHandler::g
          std::string label = incomingBlock->getName().str();
          labelsAndValues.emplace_back(label, value);
     }
+
+    // before returning, sort the labelsAndValues vector by the order of the block in the function.
+    std::sort(labelsAndValues.begin(), labelsAndValues.end(), [this](const std::pair<std::string, std::string>& lhs, const std::pair<std::string, std::string>& rhs) {
+        return utils::CodeGenUtils::isFirstBlockBeforeSecondBlock(lhs.first, rhs.first, m_llvmFun);
+    });
+
     return labelsAndValues;
 }
 

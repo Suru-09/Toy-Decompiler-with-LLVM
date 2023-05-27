@@ -99,12 +99,10 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
     logger->info("Processing function: " + f.getName().str());
     std::shared_ptr<ast::LlvmFunctionNode> root = std::make_shared<ast::LlvmFunctionNode>(f.getName().str());
 
-    llvm::ReversePostOrderTraversal<llvm::Function*> rpot(&f);
-    for(auto &bb: rpot)
+    for(auto &bb: f)
     {
-//        spdlog::error("Basic block: {}", bb->getName().str());
-        std::shared_ptr<ast::LlvmBasicBlockNode> bbNode = std::make_shared<ast::LlvmBasicBlockNode>(bb->getName().str());
-        for(auto & inst : *bb)
+        std::shared_ptr<ast::LlvmBasicBlockNode> bbNode = std::make_shared<ast::LlvmBasicBlockNode>(bb.getName().str());
+        for(auto & inst : bb)
         {
             auto instName = inst.getName().str();
             std::shared_ptr<ast::LlvmInstructionNode> instNode = std::make_shared<ast::LlvmInstructionNode>(instName);
@@ -123,9 +121,9 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
     decompiledFunction += fnHeaderGenerator.generate();
     auto output = visitor->getOutput();
 
-    for(auto &bb: rpot)
+    for(auto &bb: f)
     {
-        auto key = bb->getName().str();
+        auto key = bb.getName().str();
         if (output.find(key) == output.end())
         {
             logger->error("Basic block not found: <{}>", key);

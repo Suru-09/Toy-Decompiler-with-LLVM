@@ -8,7 +8,8 @@ isHeader(false),
 isLoop(false),
 isIfStatement(false),
 loopType(LoopType::NONE),
-followNode("")
+followNode(""),
+conditionalType(ConditionalType::NONE)
 {
     logger = logger::LoggerManager::getInstance()->getLogger("udm");
 }
@@ -61,6 +62,7 @@ void udm::BBInfo::print() const
     logger->info("loopType: {}", getLoopTypeString(static_cast<size_t>(loopType)));
     logger->info("followNode: {}", followNode.empty() ? "EMPTY" : followNode);
     logger->info("Head {} to latch -> {}", headToLatch.first.empty() ? "EMPTY" : headToLatch.first, headToLatch.second.empty() ? "EMPTY" : headToLatch.second);
+    logger->info("ConditionalType: {}", getConditionalTypeString(static_cast<size_t>(conditionalType)));
 }
 
 std::string udm::BBInfo::toString() const
@@ -72,6 +74,7 @@ std::string udm::BBInfo::toString() const
     str += "loopType: " + getLoopTypeString(static_cast<size_t>(loopType)) + "\n";
     str += "followNode: " + (followNode.empty() ? "EMPTY" : followNode) + "\n";
     str += "Head" + (headToLatch.first.empty() ? "EMPTY" : headToLatch.first) + " to latch -> " +  (headToLatch.second.empty() ? "EMPTY" : headToLatch.second) + "\n";
+    str += "ConditionalType: " + getConditionalTypeString(static_cast<size_t>(conditionalType)) + "\n";
     return str;
 }
 
@@ -108,4 +111,25 @@ void udm::BBInfo::setHeadToLatch(std::pair<std::string, std::string> headToLatch
 
 std::pair<std::string, std::string> udm::BBInfo::getHeadToLatch() const {
     return headToLatch;
+}
+
+udm::BBInfo::ConditionalType udm::BBInfo::getConditionalType() const {
+    return conditionalType;
+}
+
+void udm::BBInfo::setConditionalType(udm::BBInfo::ConditionalType type) {
+    this->conditionalType = type;
+}
+
+std::string udm::BBInfo::getConditionalTypeString(size_t condT) {
+    switch (condT) {
+        case 2:
+            return "IF";
+        case 1:
+            return "ELSE_IF";
+        case 0:
+            return "ELSE";
+        default:
+            return "NONE";
+    }
 }

@@ -2,7 +2,7 @@ Fn for_loop(j: i32) -> i32
 {
 	i32 lvar_1 = 0, lvar_2 = 0
 	
-	if (!(j >  0)) {
+	if (j <=  0) {
 	    return 0
 	}
 	
@@ -12,5 +12,5 @@ Fn for_loop(j: i32) -> i32
 	    
 	}
 	
-	return 0
+	return lvar_1
 }

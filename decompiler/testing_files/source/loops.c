@@ -14,7 +14,6 @@ int n_way_conditional_switch(int n)
         case 3:
             return choice + 11;
         case 5:
-            printf("Found myself!\n");
             return choice;
         default:
             return -1;

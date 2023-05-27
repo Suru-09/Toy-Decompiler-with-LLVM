@@ -52,10 +52,13 @@ private:
     void addReturnValue(const std::string& bbLabel);
     void replaceStackVarWithAlias(const std::vector<codeGen::ast::StackVarAlias> &aliases);
     void replaceOneStackVarWithAlias(const codeGen::ast::StackVarAlias& alias);
-    void replaceVarsThatNeedToBeReplacedAtEnd();
+
     std::string getFinalReturnBody(const std::string& bbLabel);
 
     void addVariablesDefinitions();
+    void replaceVarsThatNeedToBeReplacedAtEnd();
+    void sanitizeReturnValuesForVoidTypeFunctions();
+
 
     bool checkAndReplaceSingleUseVars(std::shared_ptr<LlvmInstructionNode> &node);
 };

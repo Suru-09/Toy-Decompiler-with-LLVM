@@ -13,7 +13,7 @@
 #include "llvm/IR/GlobalVariable.h"
 
 
-std::string utils::CodeGenUtils::getSpaces(int numSpaces)
+std::string utils::CodeGenUtils::getSpaces(std::size_t numSpaces)
 {
    std::string result = "";
    for(int i = 0; i < numSpaces; i++)
@@ -227,7 +227,7 @@ std::pair<std::string, std::string> utils::CodeGenUtils::getTerminatorCondition(
         {
             if(branchInstr->isConditional())
             {
-                spdlog::error("Found conditional jump in bb: {}, with value: {}", llvmValueToString(branchInstr->getCondition()));
+                //spdlog::error("Found conditional jump in bb: {}, with value: {}", llvmValueToString(branchInstr->getCondition()));
                 return llvmValueToString(branchInstr->getCondition());
             }
         }
@@ -253,7 +253,7 @@ std::pair<std::string, std::string> utils::CodeGenUtils::getTerminatorCondition(
             auto nextBB = bb.getNextNode();
             if(nextBB == nullptr)
             {
-                spdlog::error("Could not find next bb for bb: {}", bbLabel);
+//                spdlog::error("Could not find next bb for bb: {}", bbLabel);
                 return std::pair<std::string, std::string>{};
             }
             auto nextBBTerminator = nextBB->getTerminator();
@@ -414,16 +414,16 @@ std::string utils::CodeGenUtils::getBranchInstrBodyGivenBlock(llvm::Function &fu
         }
 
         auto terminator = bb.getTerminator();
-        spdlog::info("Found terminator: {}", bb.getName().str());
+//        spdlog::info("Found terminator: {}", bb.getName().str());
         if(auto branchInstr = llvm::dyn_cast<llvm::BranchInst>(terminator))
         {
             if(branchInstr->isConditional())
             {
-                spdlog::error("Found Conditional with condition: {}", branchInstr->getCondition()->getName().str());
+//                spdlog::error("Found Conditional with condition: {}", branchInstr->getCondition()->getName().str());
                 auto it = instructions.find(branchInstr->getCondition()->getName().str());
                 if(it != instructions.end())
                 {
-                    spdlog::info("Found branch instr: {}", it->second);
+//                    spdlog::info("Found branch instr: {}", it->second);
                     return it->second;
                 }
             }
@@ -474,18 +474,18 @@ utils::CodeGenUtils::BranchToTerminalBlockResult utils::CodeGenUtils::checkIfCur
         }
 
         // check the same thing for left and right branch
-        auto leftBranchResult = checkIfCurrentBlockBranchesToTerminalBlock(func, leftBranch);
-        auto rightBranchResult = checkIfCurrentBlockBranchesToTerminalBlock(func, rightBranch);
-
-        if(leftBranchResult.isBranchingToTerminalBlock)
-        {
-            return leftBranchResult;
-        }
-
-        if(rightBranchResult.isBranchingToTerminalBlock)
-        {
-            return rightBranchResult;
-        }
+//        auto leftBranchResult = checkIfCurrentBlockBranchesToTerminalBlock(func, leftBranch);
+//        auto rightBranchResult = checkIfCurrentBlockBranchesToTerminalBlock(func, rightBranch);
+//
+//        if(leftBranchResult.isBranchingToTerminalBlock)
+//        {
+//            return leftBranchResult;
+//        }
+//
+//        if(rightBranchResult.isBranchingToTerminalBlock)
+//        {
+//            return rightBranchResult;
+//        }
     }
 
     return BranchToTerminalBlockResult{false, false};
@@ -509,10 +509,10 @@ utils::CodeGenUtils::returnStringForBranchingToTerminalBlock(llvm::Function &fun
         auto labelAndValues = phiNodeHandler.getLabelsAndValueFromPhiNode(phiInstr);
         for(auto& labelAndValue : labelAndValues)
         {
-            spdlog::info("[CodeGenUtils::returnStringForBranchingToTerminalBlockFound] label: {} and target: {}", labelAndValue.first, bbLabel);
+//            spdlog::info("[CodeGenUtils::returnStringForBranchingToTerminalBlockFound] label: {} and target: {}", labelAndValue.first, bbLabel);
             if(labelAndValue.first == bbLabel)
             {
-                spdlog::info("[CodeGenUtils::returnStringForBranchingToTerminalBlockFound] Found label: {} and value: {}", labelAndValue.first, labelAndValue.second);
+//                spdlog::info("[CodeGenUtils::returnStringForBranchingToTerminalBlockFound] Found label: {} and value: {}", labelAndValue.first, labelAndValue.second);
                 retStr += labelAndValue.second;
                 return retStr;
             }
@@ -575,7 +575,7 @@ bool utils::CodeGenUtils::doesFunctionCallReturn(const llvm::CallInst *callInst)
         return false;
     }
 
-    spdlog::error("Called function: {}, with return type: {}", calledFunction->getName().str(), typeToString(calledFunction->getReturnType()));
+//    spdlog::error("Called function: {}, with return type: {}", calledFunction->getName().str(), typeToString(calledFunction->getReturnType()));
     return !calledFunction->getReturnType()->isVoidTy();
 }
 
@@ -584,6 +584,68 @@ bool utils::CodeGenUtils::isInstructionAnArgumentToTheLLVMFunction(const llvm::F
     return std::any_of(func.arg_begin(), func.arg_end(), [&instrLabel](const llvm::Argument& arg){
         return arg.getName().str() == instrLabel;
     });
+}
+
+bool utils::CodeGenUtils::isLoopConditionReversed(const std::string &loopBasicBlockLabel, llvm::Function &func) {
+    auto* loopBB = getBBAfterLabel(func, loopBasicBlockLabel);
+    if(!loopBB)
+    {
+        return false;
+    }
+
+    auto* terminator = loopBB->getTerminator();
+    if(!terminator)
+    {
+        return false;
+    }
+
+    if(auto* branchInstr = llvm::dyn_cast<llvm::BranchInst>(terminator))
+    {
+        if(branchInstr->isUnconditional())
+        {
+            return false;
+        }
+
+        auto* leftBranch = branchInstr->getSuccessor(0);
+        auto* rightBranch = branchInstr->getSuccessor(1);
+
+        if(!leftBranch || !rightBranch)
+        {
+            return false;
+        }
+
+        const auto& leftBranchLabel = leftBranch->getName().str();
+        if(leftBranchLabel.find("loopexit") != std::string::npos)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool utils::CodeGenUtils::isFirstBlockBeforeSecondBlock(const std::string &firstBlockLabel,
+                                                        const std::string &secondBlockLabel, llvm::Function &func) {
+    auto* firstBlock = getBBAfterLabel(func, firstBlockLabel);
+    auto* secondBlock = getBBAfterLabel(func, secondBlockLabel);
+
+    if(!firstBlock || !secondBlock)
+    {
+        return false;
+    }
+
+    for(auto& bb : func)
+    {
+        if(&bb == firstBlock)
+        {
+            return true;
+        }
+
+        if(&bb == secondBlock)
+        {
+            return false;
+        }
+    }
 }
 
 

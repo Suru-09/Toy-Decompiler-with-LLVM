@@ -175,6 +175,7 @@ private:
     llvm::PostDominatorTree& dt;
     std::shared_ptr<spdlog::logger> logger;
 
+    bool isConditionalSimpleELSE(std::vector<std::string> &pred);
 };
 
 }  // namespace udm
