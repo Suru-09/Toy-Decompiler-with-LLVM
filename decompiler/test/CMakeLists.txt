@@ -37,6 +37,7 @@ target_link_libraries(${PROJECT_NAME}-test
         CURL::libcurl 
         gtest
         gtest_main
+        Qt6::Core Qt6::Gui Qt6::Widgets
 )
 
 target_include_directories(${PROJECT_NAME}-test

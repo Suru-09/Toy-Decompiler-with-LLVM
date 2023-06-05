@@ -131,7 +131,7 @@ std::vector<udm::Interval> udm::IntervalGraph::intervalsGraph(llvm::Function& f,
     llvm::ReversePostOrderTraversal<llvm::Function*> rpot(&f);
     udm::Interval headers;
     udm::Interval interval;
-    std::vector<udm::Interval> intervals;
+    std::vector<udm::Interval> intervalsVec;
 
     for(auto& bb : rpot)
     {
@@ -143,23 +143,34 @@ std::vector<udm::Interval> udm::IntervalGraph::intervalsGraph(llvm::Function& f,
         interval.addBlock(bb);
 
         auto predecessors = utils::UdmUtils::getPredecessors(bb);
-        logger->debug("Size of predecessors: <{}>", predecessors.size());
-        if(interval.containsBlocks(predecessors))
+        logger->info("Size of predecessors: <{}>", predecessors.size());
+        if(!std::any_of(predecessors.begin(), predecessors.end(), [&interval](auto& bbName) {
+            return interval.containsBlock(bbName);
+        }))
         {
            interval.addBlock(bb);
            continue; 
         }
 
         headers.addBlock(bb);
-        intervals.emplace_back(interval);
+        intervalsVec.emplace_back(interval);
         interval.clear();
     }
-    intervals.emplace_back(interval);
+    intervalsVec.emplace_back(interval);
     
     //add info about headers in function information
     setHeadersOfIntervals(headers, funcInfo);
 
-    return intervals;
+    // print intervals
+    std::size_t idx = 0;
+    std::for_each(intervalsVec.begin(), intervalsVec.end(), [&idx, this](const udm::Interval& i) {
+        logger->info("Interval number <{}>", ++idx);
+        std::for_each(i.cbegin(), i.cend(), [this](const llvm::BasicBlock* bb) {
+            logger->info("BB: <{}>", bb->getName().str());
+        });
+    });
+
+    return intervalsVec;
 }
 
 std::pair<std::string, std::string> udm::IntervalGraph::backEdgeToPreviousInterval(udm::Interval interval)

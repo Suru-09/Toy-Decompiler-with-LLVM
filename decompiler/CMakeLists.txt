@@ -86,12 +86,32 @@ endif()
 
 # SPDLOG DEPENDECIES ----- END --------
 
-# GOOGLE TEST DEPENDECIES ----- START --------
+# GOOGLE TEST DEPENDENCIES ----- START --------
 
 find_package(GTest REQUIRED)
 message(STATUS "=====================================")
 
-# GOOGLE TEST DEPENDECIES ----- END --------
+# GOOGLE TEST DEPENDENCIES ----- END --------
+
+# QT DEPENDENCIES ----- START --------
+
+find_package(Qt6 COMPONENTS Core Gui Widgets REQUIRED)
+
+if(Qt6_FOUND)
+    message(STATUS "=====================================")
+    message(STATUS "Qt6_DIR          : ${Qt6_DIR}")
+    message(STATUS "Qt6_VERSION      : ${Qt6_VERSION}")
+    message(STATUS "Qt6Core_DIR      : ${Qt6Core_DIR}")
+    message(STATUS "Qt6Core_VERSION  : ${Qt6Core_VERSION}")
+    message(STATUS "Qt6Widgets_DIR   : ${Qt6Widgets_DIR}")
+    message(STATUS "Qt6Widgets_VERSION: ${Qt6Widgets_VERSION}")
+    message(STATUS "=====================================")
+
+    #include_directories(${Qt6Core_INCLUDE_DIRS})
+    #include_directories(${Qt6Widgets_INCLUDE_DIRS})
+endif(Qt6_FOUND)
+
+# QT DEPENDENCIES ----- END --------
 
 # Include dirs for C++ files
 set(INCL_DIR
@@ -107,6 +127,8 @@ set(INCL_DIR
     ${OPENSSL_INCLUDE_DIR}
     ${CURL_INCLUDE_DIR}
     $<$<STREQUAL:"${arch}","arm64">:${fmt_INCLUDE_DIRS}>
+    ${Qt6Widgets_INCLUDE_DIRS}
+    ${Qt6Core_INCLUDE_DIRS}
 )
 
 # compiling flags

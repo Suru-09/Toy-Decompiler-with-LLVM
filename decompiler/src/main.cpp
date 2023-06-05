@@ -12,6 +12,17 @@
 
 #include <curl/curl.h>
 
+#include <QApplication>
+#include <QFileDialog>
+#include <QPlainTextEdit>
+#include <QVBoxLayout>
+#include <QPushButton>
+#include <QListWidget>
+#include <QSplitter>
+#include <QDir>
+#include <QSyntaxHighlighter>
+#include <QMainWindow>
+
 
 int main(int argc, char** argv) {
    // initialize libcurl
@@ -65,5 +76,11 @@ int main(int argc, char** argv) {
 
    // cleanup libcurl
    curl_global_cleanup();
-   return 0;
+
+    QApplication app(argc, argv);
+
+    QMainWindow window;
+    window.show();
+
+    return app.exec();
 }

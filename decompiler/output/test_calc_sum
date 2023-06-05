@@ -1,24 +1,26 @@
 Fn calc_sum(n: i32) -> i32
 {
-	bool lvar_3 = 0
-	i32 lvar_4 = 0, lvar_5 = 0, lvar_6 = 0, lvar_7 = 0
-	i32 lvar_13 = 0, lvar_1 = 0, lvar_10 = 0
+	bool lvar_3 = false
+	i32 lvar_4 = 0, lvar_5 = 0
+	i32 lvar_6 = lvar_6, lvar_7 = lvar_7
+	i32 lvar_13 = 0, lvar_1 = 0
+	i32 lvar_10 = 0
 	
 	if (n <=  0) {
-	    return svar_2
+	    return 0
 	}
 	lvar_1 = n >> 1 
 	lvar_3 = n ==  1
 	
-	lvar_4 = 0 + lvar_13 
+	lvar_4 = lvar_7 + lvar_13 
 	lvar_5 = lvar_12 ? 0 : lvar_4
-	lvar_6 = lvar_5 + svar_4 
-	lvar_7 = 0 + 1 
+	lvar_6 = lvar_5 + lvar_6 
+	lvar_7 = lvar_7 + 1 
 	
 	while (lvar_8 < (i64)lvar_1 ) {
 	}
 	
-	lvar_10 = 0 + 1 
+	lvar_10 = lvar_10 + 1 
 	
 	
 	while (true) {

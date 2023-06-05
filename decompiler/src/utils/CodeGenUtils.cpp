@@ -646,6 +646,7 @@ bool utils::CodeGenUtils::isFirstBlockBeforeSecondBlock(const std::string &first
             return false;
         }
     }
+    return false;
 }
 
 

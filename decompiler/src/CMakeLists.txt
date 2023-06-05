@@ -36,6 +36,7 @@ target_link_libraries(${PROJECT_NAME}
         spdlog::spdlog
         OpenSSL::SSL
         cpprestsdk::cpprest
+        Qt6::Core Qt6::Gui Qt6::Widgets
 )
 
 target_include_directories(${PROJECT_NAME}
