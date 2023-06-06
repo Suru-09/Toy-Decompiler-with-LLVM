@@ -1,7 +1,0 @@
-Fn main() -> i32
-{
-	i32 lvar_0 = 0
-	lvar_0 = calc_sum(10)
-	printf("Value of sum: <%d>\n", (i64)lvar_0)
-	return 0
-}

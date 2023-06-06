@@ -39,7 +39,6 @@ public:
     void generate();
 private:
     void processFunction(llvm::Function& f, const udm::FuncInfo& funcInfo);
-
     void fillInstructionNode(llvm::Instruction* instr, std::shared_ptr<ast::LlvmInstructionNode> root);
 
     // received in c-tor

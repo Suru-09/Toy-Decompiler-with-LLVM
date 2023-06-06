@@ -12,18 +12,7 @@
 
 #include <curl/curl.h>
 
-#include <QApplication>
-#include <QFileDialog>
-#include <QPlainTextEdit>
-#include <QVBoxLayout>
-#include <QPushButton>
-#include <QListWidget>
-#include <QSplitter>
-#include <QDir>
-#include <QSyntaxHighlighter>
-#include <QMainWindow>
-#include <QLabel>
-
+#include "frontendQT/MainWindowQT.h"
 
 int main(int argc, char** argv) {
    // initialize libcurl
@@ -80,11 +69,10 @@ int main(int argc, char** argv) {
 
     QApplication app(argc, argv);
 
-    QMainWindow window;
-    QLabel label("Hello, World!");
-    window.setCentralWidget(&label);
-    window.show();
-
+    const std::string& outputFilePath = codegenSettings->getFinalOutputFilePath();
+    frontend::MainWindowQT mainWindow;
+    mainWindow.loadDecompiledFiles(QString::fromStdString(outputFilePath));
+    mainWindow.show();
 
     return app.exec();
 }

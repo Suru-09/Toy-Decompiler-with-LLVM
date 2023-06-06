@@ -27,6 +27,7 @@
 #include "llvm/Analysis/LoopPass.h"
 
 #include <vector>
+#include <filesystem>
 
 
 codeGen::CodeGeneration::CodeGeneration(const std::string& irFile, std::unordered_map<std::string, udm::FuncInfo> fnInfoMap) 
@@ -145,6 +146,8 @@ void codeGen::CodeGeneration::processFunction(llvm::Function& f, const udm::Func
         return pos != std::string::npos ? path.substr(pos + 1) : path;
     };
     const std::string& path = settings::LifterSettings::getInstance()->getBinaryPath();
-    logger->info("[CodeGeneration::processFunction] Writing output to file: {}", extractLastFileFromPath(path) + "_" + f.getName().str());
-    visitor->writeToFile(extractLastFileFromPath(path) + "_" + f.getName().str());
+    const std::string outputFilePath = extractLastFileFromPath(path) + "_" + f.getName().str();
+
+    logger->info("[CodeGeneration::processFunction] Writing output to file: {}", outputFilePath);
+    visitor->writeToFile(outputFilePath);
 }

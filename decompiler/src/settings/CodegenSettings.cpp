@@ -1,6 +1,9 @@
 #include "settings/CodegenSettings.h"
 
 #include "logger/LoggerManager.h"
+#include "settings/LifterSettings.h"
+
+#include <filesystem>
 
 std::shared_ptr<settings::CodegenSettings> settings::CodegenSettings::m_instance;
 std::once_flag settings::CodegenSettings::m_flag;
@@ -45,5 +48,34 @@ const std::string &settings::CodegenSettings::getOutputFilePath() const {
 
 void settings::CodegenSettings::setOutputFilePath(const std::string &outputFilePath) {
     m_outputFilePath = outputFilePath;
+}
+
+std::string settings::CodegenSettings::getFinalOutputFilePath() const {
+    // add the folder path to the output file name.
+    std::string binaryPath = settings::LifterSettings::getInstance()->getBinaryPath();
+    // get binary name from the binary path.
+    std::string binaryName = binaryPath.substr(binaryPath.find_last_of("/\\") + 1);
+    auto pos = binaryPath.find_last_of("/\\");
+    if (pos == std::string::npos)
+    {
+        binaryName = binaryPath;
+    }
+    else
+    {
+        binaryName = binaryPath.substr(binaryPath.find_last_of("/\\") + 1);
+    }
+
+    auto finalOutputFilePath = m_outputFilePath + "/" + binaryName;
+    try {
+        if (!std::filesystem::exists(finalOutputFilePath))
+        {
+            std::filesystem::create_directory(finalOutputFilePath);
+        }
+    }
+    catch (std::filesystem::filesystem_error& e) {
+        logger->error("[CodegenSettings::getFinalOutputFilePath] Error creating directory: {}", e.what());
+    }
+
+    return finalOutputFilePath;
 }
 

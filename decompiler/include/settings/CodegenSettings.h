@@ -44,6 +44,7 @@ void parseCodegenSettings(const std::string& setting);
 // getters and setters
 const std::string& getOutputFilePath() const;
 void setOutputFilePath(const std::string& outputFilePath);
+std::string getFinalOutputFilePath() const;
 
 // dummy constructor
 CodegenSettings(Foo foo) {};

@@ -1,7 +1,0 @@
-Fn main() -> i32
-{
-	i32 lvar_0 = 0
-	lvar_0 = fibo(14)
-	printf("Fibonacci of <%d> is : [%d]\n", 15, (i64)lvar_0)
-	return 0
-}

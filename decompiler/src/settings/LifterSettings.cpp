@@ -67,3 +67,4 @@ void settings::LifterSettings::parseLifterSettings(const std::string& setting) {
         return;
     }
 }
+

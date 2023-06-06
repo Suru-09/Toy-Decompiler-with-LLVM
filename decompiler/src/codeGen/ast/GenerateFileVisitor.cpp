@@ -15,6 +15,7 @@
 #include <llvm/ADT/PostOrderIterator.h>
 #include <llvm/Analysis/PostDominators.h>
 #include "llvm/Support/Casting.h"
+#include "settings/LifterSettings.h"
 
 #include <filesystem>
 #include <fstream>
@@ -448,7 +449,21 @@ bool codeGen::ast::GenerateFileVisitor::writeToFile(const std::string &filename)
         }
     }
 
-    const std::string& outputFilePath = outputPath + "/" + filename;
+    // add a directory with the binary name if it does not exist
+    const std::string& binaryName = settings::LifterSettings::getInstance()->getBinaryPath();
+    std::string binaryNameWithoutPath = binaryName.substr(binaryName.find_last_of("/\\") + 1);
+    std::string binaryNameWithoutExtension = binaryNameWithoutPath.substr(0, binaryNameWithoutPath.find_last_of("."));
+    const std::string& binaryOutputPath = outputPath + "/" + binaryNameWithoutExtension;
+    if (!std::filesystem::exists(binaryOutputPath))
+    {
+        if (!std::filesystem::create_directory(binaryOutputPath))
+        {
+            logger->error("[GenerateFileVisitor::writeToFile] Could not create directory: {}", binaryOutputPath);
+            return false;
+        }
+    }
+
+    const std::string& outputFilePath = binaryOutputPath + "/" + filename;
     std::ofstream outputFile(outputFilePath);
 
     if(!outputFile.is_open())

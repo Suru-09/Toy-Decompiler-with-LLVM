@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.22)
 
 project(Reverse-Engineering-Tool)
 
+set(CMAKE_VERBOSE_MAKEFILE ON)
+
 # change from default CLion output directory to my preferred one
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/)
 
@@ -94,8 +96,12 @@ message(STATUS "=====================================")
 # GOOGLE TEST DEPENDENCIES ----- END --------
 
 # QT DEPENDENCIES ----- START --------
-
 find_package(Qt6 COMPONENTS Core Gui Widgets REQUIRED)
+
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
 
 if(Qt6_FOUND)
     message(STATUS "=====================================")
@@ -106,6 +112,8 @@ if(Qt6_FOUND)
     message(STATUS "Qt6Widgets_DIR   : ${Qt6Widgets_DIR}")
     message(STATUS "Qt6Widgets_VERSION: ${Qt6Widgets_VERSION}")
     message(STATUS "=====================================")
+
+
 
     #include_directories(${Qt6Core_INCLUDE_DIRS})
     #include_directories(${Qt6Widgets_INCLUDE_DIRS})
@@ -134,6 +142,7 @@ set(INCL_DIR
 # compiling flags
 set(CXX_FLAGS 
     -O3
+    -Wall
 )
 
 add_subdirectory(src)

@@ -1,20 +1,17 @@
 cmake_minimum_required(VERSION 3.22)
 
-set(CMAKE_CXX_REQUIRED 17)
-SET(CMAKE_CXX_STANDARD 17)
-
-
 add_subdirectory(logger)
 add_subdirectory(settings)
 add_subdirectory(utils)
 add_subdirectory(lifter)
 add_subdirectory(udm)
 add_subdirectory(codeGen)
+add_subdirectory(frontendQT)
 
 
 add_executable(${PROJECT_NAME}  
     main.cpp
-        ../include/codeGen/ast/LlvmInstructionNode.h)
+)
 
 # Selecting which libraries of LLVM are being used
 # and then append them to the llvm_libs variable
@@ -29,6 +26,7 @@ target_link_libraries(${PROJECT_NAME}
         ${PROJECT_NAME}-lifter
         ${PROJECT_NAME}-codeGen
         ${PROJECT_NAME}-settings
+        ${PROJECT_NAME}-frontendQT
         # DO NOT MOVE LLVM UPPER(it will try to link it wrongly 
         # -> linking errors in .txt sections of own libs)
         ${llvm_libs}

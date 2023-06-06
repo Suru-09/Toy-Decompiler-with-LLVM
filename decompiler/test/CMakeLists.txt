@@ -22,6 +22,7 @@ llvm_map_components_to_libnames(llvm_libs support core irreader object analysis)
 # linking the google library
 target_link_libraries(${PROJECT_NAME}-test
     PRIVATE
+        ${PROJECT_NAME}-frontendQT
         ${PROJECT_NAME}-udm
         ${PROJECT_NAME}-logger
         ${PROJECT_NAME}-utils
