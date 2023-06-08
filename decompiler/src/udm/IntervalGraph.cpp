@@ -641,9 +641,6 @@ void udm::IntervalGraph::twoWayConditionalBranch(udm::FuncInfo& funcInfo)
                     funcInfo[bb].setFollowNode(imed);
                     for(const auto& notSolved: unresolved)
                     {
-//                        condition = false;
-//                        auto notSolvedPreds = utils::UdmUtils::getPredecessors(getBB(notSolved));
-//                        condition = isConditionalSimpleELSE(notSolvedPreds);
                         if(condition)
                         {
                             funcInfo[bb].setConditionalType(udm::BBInfo::ConditionalType::ELSE);
