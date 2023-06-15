@@ -35,6 +35,8 @@ public:
 
     static std::shared_ptr<LifterSettings> getInstance();
 
+    std::string getBinaryName() const;
+
     void writeSettingsToFile();
     void readSettingsFromFile();
 

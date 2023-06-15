@@ -4,8 +4,10 @@
 
 #include "lifter/ExecutableType.h"
 #include "lifter/StrategyFactory.h"
-
 #include "settings/LifterSettings.h"
+
+#include <filesystem>
+#include <fstream>
 
 std::unique_ptr<lifter::IArchitectureStrategy> utils::getStrategy() 
 {
@@ -27,4 +29,28 @@ std::shared_ptr<::lifter::LifterContext> utils::getLifterCtx()
     liftertCtx->setStrategy(std::move(strategy));
 
     return liftertCtx;
+}
+
+void utils::cleanDownloadedFiles(std::size_t threshold)
+{
+    // count the number of files in the downloads folder
+    std::size_t count = 0;
+    for (const auto& entry : std::filesystem::directory_iterator("../downloads"))
+        count++;
+
+    // if the number of files is greater than the threshold, delete all files
+    if(count <= threshold)
+        return;
+
+    try
+    {
+        for (const auto& entry : std::filesystem::directory_iterator("../downloads"))
+        {
+            std::filesystem::remove(entry.path());
+        }
+    }
+    catch(const std::exception& e)
+    {
+        spdlog::error("Error while deleting files from downloads folder: {}", e.what());
+    }
 }

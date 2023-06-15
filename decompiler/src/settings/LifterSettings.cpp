@@ -4,8 +4,6 @@
 #include <filesystem>
 #include <fstream>
 
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/json_parser.hpp>
 
 std::shared_ptr<settings::LifterSettings> settings::LifterSettings::m_instance;
 std::once_flag settings::LifterSettings::m_flag;
@@ -15,21 +13,41 @@ settings::LifterSettings::LifterSettings()
 m_binaryPath("")
 {
     logger = logger::LoggerManager::getInstance()->getLogger("lifter");
-
-    if(!std::filesystem::exists("../settings")) {
-        logger->info("[LifterSettings::constructor] creating settings directory");
-        std::filesystem::create_directory("../settings");
-    }
-
-    if(!std::filesystem::exists(m_fileName)) {
-        logger->info("[LifterSettings::constructor] creating LifterSettings file");
-        std::ofstream file(m_fileName);
-        if(!file.is_open()) {
-            logger->error("[LifterSettings::constructor] failed to open a new LifterSettings file");
-            return;
+    try
+    {
+        if(!std::filesystem::exists("../settings"))
+        {
+            logger->info("[LifterSettings::constructor] creating settings directory");
+            std::filesystem::create_directory("../settings");
         }
-        file.close();
+
+        if(!std::filesystem::exists(m_fileName))
+        {
+            logger->info("[LifterSettings::constructor] creating LifterSettings file");
+            std::ofstream file(m_fileName);
+            if(!file.is_open()) {
+                logger->error("[LifterSettings::constructor] failed to open a new LifterSettings file");
+                return;
+            }
+            file.close();
+        }
+        else
+        {
+            logger->info("[LifterSettings::constructor] LifterSettings file already exists, reading from it");
+            readSettingsFromFile();
+        }
     }
+    catch(std::filesystem::filesystem_error& e)
+    {
+        logger->error("[LifterSettings::constructor] failed to create settings directory");
+        return;
+    }
+    catch(std::exception& e)
+    {
+        logger->error("[LifterSettings::constructor] fallback to std::exception to create settings directory");
+        return;
+    }
+
 }
 
 std::shared_ptr<settings::LifterSettings> settings::LifterSettings::getInstance() {
@@ -73,6 +91,17 @@ void settings::LifterSettings::readSettingsFromFile() {
     // set settings
     setServerUrl(settings["serverUrl"]);
     setBinaryPath(settings["binaryPath"]);
+}
+
+std::string settings::LifterSettings::getBinaryName() const {
+    if(m_binaryPath.empty())
+        return "";
+    
+    auto pos = m_binaryPath.find_last_of("/\\");
+    if(pos == std::string::npos)
+        return m_binaryPath;
+    else
+        return m_binaryPath.substr(pos + 1);
 }
 
 

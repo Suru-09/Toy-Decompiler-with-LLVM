@@ -4,13 +4,45 @@
 #include "settings/LifterSettings.h"
 
 #include <filesystem>
+#include <fstream>
 
 std::shared_ptr<settings::CodegenSettings> settings::CodegenSettings::m_instance;
 std::once_flag settings::CodegenSettings::m_flag;
 
 settings::CodegenSettings::CodegenSettings()
 {
-    logger = logger::LoggerManager::getInstance()->getLogger("lifter");    
+    logger = logger::LoggerManager::getInstance()->getLogger("lifter");
+
+    try {
+        if (!std::filesystem::exists("../settings")) {
+            logger->info("[CodegenSettings::constructor] creating settings directory");
+            std::filesystem::create_directory("../settings");
+        }
+
+        if(!std::filesystem::exists(m_fileName))
+        {
+            logger->info("[CodegenSettings::constructor] creating CodegenSettings file");
+            std::ofstream file(m_fileName);
+            if(!file.is_open()) {
+                logger->error("[CodegenSettings::constructor] failed to open a new CodegenSettings file");
+                return;
+            }
+            file.close();
+        }
+        else
+        {
+            logger->info("[CodegenSettings::constructor] CodegenSettings file already exists, reading from it");
+            readSettingsFromFile();
+        }
+    }
+    catch (std::filesystem::filesystem_error& e) {
+        logger->error("[CodegenSettings::constructor] failed to create settings directory");
+        return;
+    }
+    catch (std::exception& e) {
+        logger->error("[CodegenSettings::constructor] fallback to std::exception to create settings directory");
+        return;
+    }
 }
 
 std::shared_ptr<settings::CodegenSettings> settings::CodegenSettings::getInstance() {
@@ -21,26 +53,6 @@ std::shared_ptr<settings::CodegenSettings> settings::CodegenSettings::getInstanc
 void settings::CodegenSettings::initInstance() {
     m_instance = std::make_shared<settings::CodegenSettings>(Foo());
 };
-
-void settings::CodegenSettings::parseCodegenSettings(const std::string& setting) {
-    if (setting.length() < 2 || setting[0] != '-' || setting[1] != 'c') {
-        logger->error("Invalid setting for codegenSettings: {}", setting);
-        return;
-    }
-
-    // create a copy of the setting string and remove the first two characters.
-    std::string settingCopy = setting;
-    settingCopy.erase(0, 2);
-    // break after delimiter '=', if it doesn't exist log an error and return.
-    size_t delimiterPos = settingCopy.find('=');
-    if (delimiterPos == std::string::npos) {
-        logger->error("Setting does not have a delimiter [=]: {}", setting);
-        return;
-    }
-    // get the key and value from the setting string.
-    std::string key = settingCopy.substr(0, delimiterPos);
-    std::string value = settingCopy.substr(delimiterPos + 1);
-}
 
 const std::string &settings::CodegenSettings::getOutputFilePath() const {
     return m_outputFilePath;
@@ -77,5 +89,19 @@ std::string settings::CodegenSettings::getFinalOutputFilePath() const {
     }
 
     return finalOutputFilePath;
+}
+
+void settings::CodegenSettings::writeSettingsToFile() {
+    std::unordered_map<std::string, std::string> settings;
+    settings["outputFilePath"] = m_outputFilePath;
+    // write settings to file
+    writeToFile(m_fileName, settings);
+}
+
+void settings::CodegenSettings::readSettingsFromFile() {
+    auto settings = readFromFile(m_fileName);
+
+    // set settings, add more settings here
+    m_outputFilePath = settings["outputFilePath"];
 }
 

@@ -1,0 +1,12 @@
+Fn main() -> i32
+{
+	i32 lvar_0 = 0, lvar_3 = 0
+	i32 lvar_6 = 0
+	lvar_0 = if_else(5)
+	printf("If else: %d\n", (i64)lvar_0)
+	lvar_3 = nested_if_else(10, 5)
+	printf("Nested if else: %d\n", (i64)lvar_3)
+	lvar_6 = switch_case(6)
+	printf("Switch case: %d\n", (i64)lvar_6)
+	return 0
+}

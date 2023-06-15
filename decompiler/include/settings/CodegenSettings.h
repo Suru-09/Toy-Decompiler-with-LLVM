@@ -1,6 +1,8 @@
 #ifndef _CODEGEN_SETTINGS_H_
 #define _CODEGEN_SETTINGS_H_
 
+#include "JSONFileManager.h"
+
 #include <mutex>
 #include <memory>
 
@@ -21,7 +23,7 @@ namespace settings {
  * that is public, and i am passing a dummy object to the constructor. This is the reason
  * why i am using the Foo class.
  */
-class CodegenSettings {
+class CodegenSettings : public JSONFileManager {
 
 private:
 explicit CodegenSettings();
@@ -36,10 +38,13 @@ std::shared_ptr<spdlog::logger> logger;
 
 // codegen variables.
 std::string m_outputFilePath;
+static inline const std::string m_fileName = "../settings/CodegenSettings.json";
 
 public:
 static std::shared_ptr<CodegenSettings> getInstance();
-void parseCodegenSettings(const std::string& setting);
+
+void writeSettingsToFile();
+void readSettingsFromFile();
 
 // getters and setters
 const std::string& getOutputFilePath() const;

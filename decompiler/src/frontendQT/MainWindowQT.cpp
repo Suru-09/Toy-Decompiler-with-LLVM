@@ -1,81 +1,94 @@
 #include "frontendQT/MainWindowQT.h"
-#include "logger/LoggerManager.h"
+#include "frontendQT/FileSelectorQT.h"
+#include "frontendQT/FileViewerQT.h"
 
-#include "frontendQT/MySyntaxHighlighterQT.h"
+#include "utils/LifterUtils.h"
+#include "logger/LoggerManager.h"
+#include "udm/UDM.h"
+#include "codeGen/CodeGeneration.h"
+#include "settings/LifterSettings.h"
+#include "settings/UdmSettings.h"
+#include "settings/CodegenSettings.h"
+
+#include <iostream>
+#include <memory>
+#include <future>
+#include <thread>
+
+#include <curl/curl.h>
+
 
 frontend::MainWindowQT::MainWindowQT(QMainWindow *parent)
 : QMainWindow(parent)
 {
-    // Get the primary screen
+    // resize screen to 75% of the primary screen size.
     QScreen *primaryScreen = QApplication::primaryScreen();
-
-    // Get the screen geometry
     QRect screenGeometry = primaryScreen->geometry();
-
-    // Calculate the desired size based on the screen resolution
-    int desiredWidth = screenGeometry.width() * 0.6;
-    int desiredHeight = screenGeometry.height() * 0.6;
-
-    // Set the window size
+    int desiredWidth = screenGeometry.width() * 0.75;
+    int desiredHeight = screenGeometry.height() * 0.75;
     resize(desiredWidth, desiredHeight);
 
-    // load the initial widgets and a splitter
-    QWidget* centralWidget = new QWidget(this);
-    QVBoxLayout* layout = new QVBoxLayout(centralWidget);
-    QSplitter* splitter = new QSplitter(Qt::Horizontal, centralWidget);
-    // set the highlighter to the text edit
+    // create the main layout
+    auto dropArea = new frontend::FileSelectorQT(this);
+    setCentralWidget(dropArea);
 
-    layout->addWidget(splitter);
-    m_fileListWidget = new QListWidget(splitter);
-    m_textEdit = new QPlainTextEdit(splitter);
-    auto highlighter = new frontend::MySyntaxHighlighterQT(m_textEdit->document());
-    splitter->addWidget(m_fileListWidget);
-    splitter->addWidget(m_textEdit);
-    splitter->setStretchFactor(0, 1);
-    splitter->setStretchFactor(1, 4);
-    setCentralWidget(centralWidget);
-
-
-    // connect QListWidget's signal to slot openFile
-    connect(m_fileListWidget, &QListWidget::itemClicked, this, &MainWindowQT::openFile);
+    connect(dropArea, &frontend::FileSelectorQT::selectedFile, this, &frontend::MainWindowQT::onFileReceived);
 }
 
-void frontend::MainWindowQT::openFile(QListWidgetItem* item)
-{
-    auto filePath = m_currentFilePath + "/" + item->text();
-    QFile file(filePath);
-    if(file.open(QIODevice::ReadOnly | QIODevice::Text))
+bool frontend::MainWindowQT::decompileFiles(const QString &binPath) {
+    curl_global_init(CURL_GLOBAL_ALL);
+
+    // creating all the singletons first thing.
+    logger::LoggerManager* loggerManager = logger::LoggerManager::getInstance();
+    std::shared_ptr<settings::LifterSettings> lifterSettings = settings::LifterSettings::getInstance();
+    std::shared_ptr<settings::UdmSettings> udmSettings = settings::UdmSettings::getInstance();
+    std::shared_ptr<settings::CodegenSettings> codegenSettings = settings::CodegenSettings::getInstance();
+
+    utils::cleanDownloadedFiles(5);
+
+    lifterSettings->readSettingsFromFile();
+    lifterSettings->setBinaryPath(binPath.toStdString());
+    lifterSettings->writeSettingsToFile();
+
+    const std::string& binaryName = lifterSettings->getBinaryName();
+    const std::string& irFile = "../downloads/" + binaryName + ".ll";
+    const std::string& optimizedIRFile = irFile.size() > 2 ? irFile.substr(0, irFile.size() - 3) + "_optimized.ll" : irFile;
+    udmSettings->readSettingsFromFile();
+    udmSettings->setOptimizedIRPath(optimizedIRFile);
+    udmSettings->writeSettingsToFile();
+
+    codegenSettings->readSettingsFromFile();
+
+    std::shared_ptr<lifter::LifterContext> lifterCtx = utils::getLifterCtx();
+    if(!lifterCtx)
     {
-        QTextStream stream(&file);
-        m_textEdit->setPlainText(stream.readAll());
+        spdlog::critical("Invalid lifterContext created(nullptr)!");
+        return false;
     }
-    m_textEdit->update();
+    lifterCtx->executeStrategy();
+
+    std::unique_ptr<udm::UDM> udm = std::make_unique<udm::UDM>(irFile);
+    udm->execute();
+
+    auto funcInfoMap = udm->getFuncInfoMap();
+
+    std::unique_ptr<codeGen::CodeGeneration> codeGen =
+            std::make_unique<codeGen::CodeGeneration>(optimizedIRFile, funcInfoMap);
+    codeGen->generate();
+
+    // cleanup libcurl
+    curl_global_cleanup();
+
+    return true;
 }
 
-void frontend::MainWindowQT::loadDecompiledFiles(const QString& path)
-{
-    // search for all files in the directory and add them to the list
-    QDir dir(path);
-    m_currentFilePath = path;
-    QStringList files = dir.entryList(QStringList() << "*", QDir::Files);
-    for(const auto& file : files)
-    {
-        m_fileListWidget->addItem(file);
-    }
+void frontend::MainWindowQT::onFileReceived(const QString &filePath) {
+    // decompile file given the binaryPath
+    m_isDecompiled = decompileFiles(filePath);
+    const QString& outputPath = QString::fromStdString(settings::CodegenSettings::getInstance()->getFinalOutputFilePath());
 
-    // set and update the text edit with the first file
-    if(!files.empty())
-    {
-        QString filePath = path + "/" + files.front();
-        QFile file(filePath);
-        if(file.open(QIODevice::ReadOnly | QIODevice::Text))
-        {
-            QTextStream stream(&file);
-            m_textEdit->setPlainText(stream.readAll());
-        }
-    }
-
-    m_textEdit->update();
+    auto fileViewer = new frontend::FileViewerQT(this, outputPath);
+    setCentralWidget(fileViewer);
 }
 
 

@@ -1,0 +1,6 @@
+Fn if_else(n: i32) -> i32
+{
+	i32 lvar_1 = 0
+	lvar_1 = n >  4 ? 3 : 2
+	return lvar_1
+}

@@ -1,6 +1,8 @@
 #ifndef _UDM_SETTINGS_H_
 #define _UDM_SETTINGS_H_
 
+#include "JSONFileManager.h"
+
 #include <mutex>
 #include <memory>
 
@@ -8,7 +10,7 @@
 
 namespace settings {
 
-class UdmSettings {
+class UdmSettings : public JSONFileManager {
 
 private:
 // see the note in CodegenSettings.h for more details.
@@ -21,9 +23,17 @@ static std::shared_ptr<UdmSettings> m_instance;
 static std::once_flag m_flag;
 std::shared_ptr<spdlog::logger> logger;
 
+std::string m_optimizedIRPath;
+static inline const std::string m_fileName = "../settings/UdmSettings.json";
+
 public:
 static std::shared_ptr<UdmSettings> getInstance();
-void parseUdmSettings(const std::string& setting);
+
+void writeSettingsToFile();
+void readSettingsFromFile();
+
+std::string getOptimizedIRPath() const;
+void setOptimizedIRPath(const std::string& optimizedIRPath);
 
 // dummy constructor
 UdmSettings(Foo foo) {};

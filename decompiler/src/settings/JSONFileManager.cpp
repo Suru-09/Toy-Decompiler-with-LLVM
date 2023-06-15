@@ -16,11 +16,10 @@ void settings::JSONFileManager::writeToFile(const std::string &filename,
 {
     try
     {
-        // try to open file
-        std::ofstream file(filename);
-        if (!file.is_open())
+        // check if given file exists
+        if (!std::filesystem::exists(filename))
         {
-            logger->error("[JSONFileManager::writeToFile] failed to open file: {}", filename);
+            logger->error("[JSONFileManager::writeToFile] file: {} does not exist", filename);
             return;
         }
 
@@ -29,10 +28,18 @@ void settings::JSONFileManager::writeToFile(const std::string &filename,
         {
             propertyTree.put(setting.first, setting.second);
         }
+
+        boost::property_tree::write_json(filename, propertyTree);
+    }
+    catch(const boost::property_tree::json_parser_error&)
+    {
+        logger->error("[JSONFileManager::writeToFile] failed to parse json file: {}", filename);
+        return;
     }
     catch (std::exception& e)
     {
         logger->error("[JSONFileManager::writeToFile] failed to write to file: {}", filename);
+        return;
     }
 }
 

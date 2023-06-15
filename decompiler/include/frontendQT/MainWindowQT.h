@@ -24,15 +24,16 @@ public:
     explicit MainWindowQT(QMainWindow *parent = nullptr);
     ~MainWindowQT() override = default;
 
-    void loadDecompiledFiles(const QString& path);
-
 public slots:
-    void openFile(QListWidgetItem* item);
+    void onFileReceived(const QString& filePath);
 
 private:
     QListWidget* m_fileListWidget;
     QPlainTextEdit* m_textEdit;
     QString m_currentFilePath;
+    bool m_isDecompiled;
+
+    bool decompileFiles(const QString &binPath);
 };
 
 }   // end of namespace frontend

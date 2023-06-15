@@ -12,6 +12,7 @@ namespace utils
 
 std::unique_ptr<lifter::IArchitectureStrategy> getStrategy();
 std::shared_ptr<lifter::LifterContext> getLifterCtx();
+void cleanDownloadedFiles(std::size_t threshold = 0);
 
 } // namespace utils
 
