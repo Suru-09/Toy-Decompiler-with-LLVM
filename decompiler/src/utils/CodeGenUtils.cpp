@@ -12,6 +12,8 @@
 #include "llvm/IR/Constants.h"
 #include "llvm/IR/GlobalVariable.h"
 
+#include <map>
+
 
 std::string utils::CodeGenUtils::getSpaces(std::size_t numSpaces)
 {

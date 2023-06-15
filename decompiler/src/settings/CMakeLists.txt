@@ -4,7 +4,7 @@ add_library(${PROJECT_NAME}-settings
     CodegenSettings.cpp
     LifterSettings.cpp
     UdmSettings.cpp
-)
+        ../../include/settings/FileManager.h ../../include/settings/JSONFileManager.h JSONFileManager.cpp)
 
 target_include_directories(${PROJECT_NAME}-settings
     PRIVATE

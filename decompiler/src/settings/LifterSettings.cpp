@@ -1,6 +1,11 @@
 #include "settings/LifterSettings.h"
-
 #include "logger/LoggerManager.h"
+
+#include <filesystem>
+#include <fstream>
+
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
 
 std::shared_ptr<settings::LifterSettings> settings::LifterSettings::m_instance;
 std::once_flag settings::LifterSettings::m_flag;
@@ -10,6 +15,21 @@ settings::LifterSettings::LifterSettings()
 m_binaryPath("")
 {
     logger = logger::LoggerManager::getInstance()->getLogger("lifter");
+
+    if(!std::filesystem::exists("../settings")) {
+        logger->info("[LifterSettings::constructor] creating settings directory");
+        std::filesystem::create_directory("../settings");
+    }
+
+    if(!std::filesystem::exists(m_fileName)) {
+        logger->info("[LifterSettings::constructor] creating LifterSettings file");
+        std::ofstream file(m_fileName);
+        if(!file.is_open()) {
+            logger->error("[LifterSettings::constructor] failed to open a new LifterSettings file");
+            return;
+        }
+        file.close();
+    }
 }
 
 std::shared_ptr<settings::LifterSettings> settings::LifterSettings::getInstance() {
@@ -37,34 +57,23 @@ void settings::LifterSettings::setBinaryPath(const std::string& binaryPath) {
     m_binaryPath = binaryPath;
 }
 
-void settings::LifterSettings::parseLifterSettings(const std::string& setting) {
-    // format of argv is: -lserverUrl=serverUrl -lbinaryPath=binaryPath and use switch case to parse it.
-    // for now, just parse it manually.
-    if (setting.length() < 2 || setting[0] != '-' || setting[1] != 'l') {
-        logger->error("Invalid setting for lifterSettings: {}", setting);
-        return;
-    }
+void settings::LifterSettings::writeSettingsToFile() {
+    // create unordered_map of settings
+    std::unordered_map<std::string, std::string> settings;
+    settings["serverUrl"] = getServerUrl();
+    settings["binaryPath"] = getBinaryPath();
 
-    // create a copy of the setting string and remove the first two characters.
-    std::string settingCopy = setting;
-    settingCopy.erase(0, 2);
-    // break after delimiter '=', if it doesn't exist log an error and return.
-    size_t delimiterPos = settingCopy.find('=');
-    if (delimiterPos == std::string::npos) {
-        logger->error("Setting does not have a delimiter [=]: {}", setting);
-        return;
-    }
-    // get the key and value from the setting string.
-    std::string key = settingCopy.substr(0, delimiterPos);
-    std::string value = settingCopy.substr(delimiterPos + 1);
-
-    if (key == "serverUrl") {
-        setServerUrl(value);
-    } else if (key == "binaryPath") {
-        setBinaryPath(value);
-    } else {
-        logger->error("Invalid key for lifterSettings: {}", key);
-        return;
-    }
+    writeToFile(m_fileName, settings);
 }
+
+void settings::LifterSettings::readSettingsFromFile() {
+    // create unordered_map of settings
+    auto settings = readFromFile(m_fileName);
+
+    // set settings
+    setServerUrl(settings["serverUrl"]);
+    setBinaryPath(settings["binaryPath"]);
+}
+
+
 

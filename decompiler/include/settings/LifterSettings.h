@@ -1,6 +1,8 @@
 #ifndef _LIFTER_SETTINGS_H_
 #define _LIFTER_SETTINGS_H_
 
+#include "JSONFileManager.h"
+
 #include <mutex>
 #include <memory>
 
@@ -10,7 +12,7 @@ namespace settings {
 
 class Foo;
 
-class LifterSettings {
+class LifterSettings : public JSONFileManager {
 
 private:
     // see the note in CodegenSettings.h for more details.
@@ -25,13 +27,16 @@ private:
     // settings variables
     std::string m_serverUrl;
     std::string m_binaryPath;
+    static inline const std::string m_fileName = "../settings/LifterSettings.json";
 
 public:
     // dummy constructor
     explicit LifterSettings(Foo foo) {};
 
     static std::shared_ptr<LifterSettings> getInstance();
-    void parseLifterSettings(const std::string& setting);
+
+    void writeSettingsToFile();
+    void readSettingsFromFile();
 
     // delete copy/move constructors and assignment/move operators.
     LifterSettings(LifterSettings const&) = delete;

@@ -24,26 +24,13 @@ int main(int argc, char** argv) {
    std::shared_ptr<settings::UdmSettings> udmSettings = settings::UdmSettings::getInstance();
    std::shared_ptr<settings::CodegenSettings> codegenSettings = settings::CodegenSettings::getInstance();
 
-   for(size_t i = 1; i < argc; ++i)
-   {
-      spdlog::info("Argument {}: {}", i, argv[i]);
-      if (strlen(argv[i]) < 2)
-      {
-         // ignore settings smaller than 2 characters for now.
-         continue;
-      }
-
-      if(argv[i][0] == '-' && argv[i][1] == 'l')
-         lifterSettings->parseLifterSettings(argv[i]);
-      else if(argv[i][0] == '-' && argv[i][1] == 'u')
-         udmSettings->parseUdmSettings(argv[i]);
-      else if(argv[i][0] == '-' && argv[i][1] == 'c')
-         codegenSettings->parseCodegenSettings(argv[i]);
-   }
-    std::string testing_file = "../testing_files/elfC/bsearch";
+   std::string testing_file = "../testing_files/elfC/bsearch";
    lifterSettings->setBinaryPath(testing_file);
    lifterSettings->setServerUrl("http://145.14.158.175:29200");
-    codegenSettings->setOutputFilePath("../output");
+
+   lifterSettings->writeSettingsToFile();
+
+   codegenSettings->setOutputFilePath("../output");
    
    std::shared_ptr<lifter::LifterContext> lifterCtx = utils::getLifterCtx();
    if(!lifterCtx)

@@ -6,6 +6,19 @@
 frontend::MainWindowQT::MainWindowQT(QMainWindow *parent)
 : QMainWindow(parent)
 {
+    // Get the primary screen
+    QScreen *primaryScreen = QApplication::primaryScreen();
+
+    // Get the screen geometry
+    QRect screenGeometry = primaryScreen->geometry();
+
+    // Calculate the desired size based on the screen resolution
+    int desiredWidth = screenGeometry.width() * 0.6;
+    int desiredHeight = screenGeometry.height() * 0.6;
+
+    // Set the window size
+    resize(desiredWidth, desiredHeight);
+
     // load the initial widgets and a splitter
     QWidget* centralWidget = new QWidget(this);
     QVBoxLayout* layout = new QVBoxLayout(centralWidget);
