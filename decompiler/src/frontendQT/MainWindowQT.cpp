@@ -99,7 +99,7 @@ void frontend::MainWindowQT::onFileReceived(const QString &filePath) {
     resizeScreen(0.75);
 
     // decompile file given the binaryPath
-    m_isDecompiled = decompileFiles(filePath);
+    decompileFiles(filePath);
     const QString& outputPath = QString::fromStdString(settings::CodegenSettings::getInstance()->getFinalOutputFilePath());
 
     auto fileViewer = new frontend::FileViewerQT(this, outputPath);
