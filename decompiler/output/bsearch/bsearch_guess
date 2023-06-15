@@ -1,4 +1,4 @@
-Fn guess(s: i32, d: i32) -> void
+fn guess(s: i32, d: i32) -> void
 {
 	bool lvar_9 = false
 	i32 lvar_1 = 0, lvar_2 = 0

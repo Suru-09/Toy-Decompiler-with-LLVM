@@ -13,7 +13,7 @@ codeGen::GenerateFnHeader::GenerateFnHeader(llvm::Function& f)
 std::string codeGen::GenerateFnHeader::generate()
 {
     std::string result = "";
-    result += "Fn " + fn.getName().str() + "(";
+    result += "fn " + fn.getName().str() + "(";
     
     bool isCommaNeeded = true;
     uint64_t argCount = fn.arg_size(), argIndex = 0;

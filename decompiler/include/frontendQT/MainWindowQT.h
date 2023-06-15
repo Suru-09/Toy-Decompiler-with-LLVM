@@ -14,6 +14,7 @@
 
 #include <iostream>
 #include <memory>
+#include "FileSelectorQT.h"
 
 namespace frontend {
 
@@ -26,14 +27,16 @@ public:
 
 public slots:
     void onFileReceived(const QString& filePath);
+    void onReturnButtonClicked();
 
 private:
     QListWidget* m_fileListWidget;
     QPlainTextEdit* m_textEdit;
     QString m_currentFilePath;
-    bool m_isDecompiled;
 
     bool decompileFiles(const QString &binPath);
+    frontend::FileSelectorQT *loadFileSelector();
+    void resizeScreen(const double &sizePercent);
 };
 
 }   // end of namespace frontend

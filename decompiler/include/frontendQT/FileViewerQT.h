@@ -20,6 +20,10 @@ public:
 
 public slots:
     void onFileClicked(QListWidgetItem* item);
+    void onBackButtonClicked();
+
+signals:
+    void backButtonClicked();
 
 private:
     QListWidget* m_fileListWidget;

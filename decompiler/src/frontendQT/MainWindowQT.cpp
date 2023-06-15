@@ -10,29 +10,41 @@
 #include "settings/UdmSettings.h"
 #include "settings/CodegenSettings.h"
 
-#include <iostream>
 #include <memory>
-#include <future>
 #include <thread>
 
 #include <curl/curl.h>
-
+#include <QApplication>
 
 frontend::MainWindowQT::MainWindowQT(QMainWindow *parent)
 : QMainWindow(parent)
 {
-    // resize screen to 75% of the primary screen size.
+    loadFileSelector();
+}
+
+void frontend::MainWindowQT::resizeScreen(const double &sizePercent) {
     QScreen *primaryScreen = QApplication::primaryScreen();
     QRect screenGeometry = primaryScreen->geometry();
-    int desiredWidth = screenGeometry.width() * 0.75;
-    int desiredHeight = screenGeometry.height() * 0.75;
+    int desiredWidth = screenGeometry.width() * sizePercent;
+    int desiredHeight = screenGeometry.height() * sizePercent;
     resize(desiredWidth, desiredHeight);
 
-    // create the main layout
-    auto dropArea = new frontend::FileSelectorQT(this);
-    setCentralWidget(dropArea);
+    // center the window
+    int screenWidth = screenGeometry.width();
+    int screenHeight = screenGeometry.height();
+    int x = (screenWidth - desiredWidth) / 2;
+    int y = (screenHeight - desiredHeight) / 2;
+    move(x, y);
+}
 
-    connect(dropArea, &frontend::FileSelectorQT::selectedFile, this, &frontend::MainWindowQT::onFileReceived);
+frontend::FileSelectorQT *frontend::MainWindowQT::loadFileSelector() {
+    // make sure the window is a reasonable size
+    resizeScreen(0.25);
+    auto fileSelector = new FileSelectorQT(this);
+    setCentralWidget(fileSelector);
+
+    connect(fileSelector, &FileSelectorQT::selectedFile, this, &MainWindowQT::onFileReceived);
+    return fileSelector;
 }
 
 bool frontend::MainWindowQT::decompileFiles(const QString &binPath) {
@@ -83,13 +95,26 @@ bool frontend::MainWindowQT::decompileFiles(const QString &binPath) {
 }
 
 void frontend::MainWindowQT::onFileReceived(const QString &filePath) {
+    // increase the size of the window
+    resizeScreen(0.75);
+
     // decompile file given the binaryPath
     m_isDecompiled = decompileFiles(filePath);
     const QString& outputPath = QString::fromStdString(settings::CodegenSettings::getInstance()->getFinalOutputFilePath());
 
     auto fileViewer = new frontend::FileViewerQT(this, outputPath);
     setCentralWidget(fileViewer);
+
+    connect(fileViewer, &frontend::FileViewerQT::backButtonClicked, this, &frontend::MainWindowQT::onReturnButtonClicked);
 }
+
+void frontend::MainWindowQT::onReturnButtonClicked() {
+    auto fileSelector = loadFileSelector();
+    setCentralWidget(fileSelector);
+
+    connect(fileSelector, &frontend::FileSelectorQT::selectedFile, this, &frontend::MainWindowQT::onFileReceived);
+}
+
 
 
 

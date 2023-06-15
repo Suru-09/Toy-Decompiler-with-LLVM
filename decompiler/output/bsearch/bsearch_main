@@ -1,4 +1,4 @@
-Fn main() -> i32
+fn main() -> i32
 {
 	i32 lvar_1 = 0
 	printf("Did you pick a number between 1 and 100?")
