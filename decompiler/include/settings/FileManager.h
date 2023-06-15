@@ -2,6 +2,7 @@
 #define REVERSE_ENGINEERING_TOOL_FILEMANAGER_H
 
 #include <unordered_map>
+#include <string>
 
 namespace settings {
 

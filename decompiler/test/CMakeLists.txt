@@ -1,8 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
 
-set(CMAKE_CXX_STANDARD 17)
-
-
 set(TEST_SOURCES
     udm/UdmTest.cpp
     udm/IntervalTest.cpp
@@ -22,13 +19,13 @@ llvm_map_components_to_libnames(llvm_libs support core irreader object analysis)
 # linking the google library
 target_link_libraries(${PROJECT_NAME}-test
     PRIVATE
-        ${PROJECT_NAME}-frontendQT
         ${PROJECT_NAME}-udm
         ${PROJECT_NAME}-logger
         ${PROJECT_NAME}-utils
         ${PROJECT_NAME}-lifter
         ${PROJECT_NAME}-codeGen
         ${PROJECT_NAME}-settings
+        ${PROJECT_NAME}-frontendQT
         # DO NOT MOVE LLVM UPPER(it will try to link it wrongly 
         # -> linking errors in .txt sections of own libs)
         ${llvm_libs}

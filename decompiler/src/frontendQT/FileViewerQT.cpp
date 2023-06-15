@@ -55,7 +55,7 @@ frontend::FileViewerQT::FileViewerQT(QWidget *parent, const QString& path)
     }
     auto leftSideWidth = maxFileNameLength + maxFileNameLength / 2;
     // Set the width and font for the left side (m_fileListWidget)
-    m_fileListWidget->setFixedWidth(leftSideWidth * 10);
+    m_fileListWidget->setFixedWidth(leftSideWidth * 20);
 
     connect(m_fileListWidget, &QListWidget::itemClicked, this, &FileViewerQT::onFileClicked);
     connect(backButton, &QPushButton::clicked, this, &FileViewerQT::onBackButtonClicked);

@@ -14,6 +14,7 @@
 #include <thread>
 
 #include <curl/curl.h>
+
 #include <QApplication>
 
 frontend::MainWindowQT::MainWindowQT(QMainWindow *parent)
@@ -114,9 +115,3 @@ void frontend::MainWindowQT::onReturnButtonClicked() {
 
     connect(fileSelector, &frontend::FileSelectorQT::selectedFile, this, &frontend::MainWindowQT::onFileReceived);
 }
-
-
-
-
-
-
