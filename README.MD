@@ -1,5 +1,23 @@
 # **Reverse Engineering Tool**
 
+## About
+
+-----------------------
+
+This is a tool that provides a pilot solution for decompiling combining multiple state-of-the-art techniques and also employs solid software that has been developed of the course of many years such as LLVM, Capstone, RetDec, etc.
+It comprises three modules: Lifter, Universal Decompiling Machine and Code Generation.
+
+- **Overview of the decompiler**:
+  - <img src="decompiler/documents/decompilation_overview.svg">
+
+- **Lifter** - This module is responsible for lifting the binary code to LLVM IR code. It uses the RetDec service to do that. This id done by implementation of a Typescript server that communicates with a C++ client.
+  - Lifter server architecture:
+    <img src="decompiler/documents/retdec_server.svg">
+- **Universal Decompiling Machine** - This module is responsible for two things namely: control flow analysis and data flow analysis.
+  - **Control flow analysis** - this step is responsible for finding information about loops, conditionals, latch nodes, follow node etc.
+  - **Data flow analysis** - is responsible for optimizing the LLVM IR code received from the lifter.
+- **Code Generation** - This module generates the final high-level DSL, using all the information gathered before and making the results more readable for the user.
+
 ## Dependencies
 
 -----------------------
