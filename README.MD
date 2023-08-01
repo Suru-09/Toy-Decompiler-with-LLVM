@@ -1,4 +1,4 @@
-# **Reverse Engineering Tool**
+# **Toy Decompiler**
 
 ## About
 
